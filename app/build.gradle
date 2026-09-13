@@ -2,7 +2,6 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     id 'kotlin-kapt'
-//    alias(libs.plugins.google.gms.google.services)
 }
 
 android {
@@ -20,23 +19,6 @@ android {
         //Universal APK Supporting All ABIs
         ndk {
             abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
-        }
-    }
-
-    flavorDimensions "firebase"
-
-    productFlavors {
-        prod {
-            dimension "firebase"
-//            applicationIdSuffix ".prod"
-//            versionNameSuffix "-prod"
-            buildConfigField "boolean", "USE_FIREBASE", "true"
-        }
-        nofirebase {
-            dimension "firebase"
-//            applicationIdSuffix ".nofirebase"
-//            versionNameSuffix "-nofirebase"
-            buildConfigField "boolean", "USE_FIREBASE", "false"
         }
     }
 
@@ -88,12 +70,6 @@ android {
     }
 }
 
-gradle.startParameter.taskNames.any { task ->
-    if (task.toLowerCase().contains("prod")) {
-        apply plugin: libs.plugins.google.gms.google.services.get().pluginId
-    }
-}
-
 dependencies {
 
     implementation libs.appcompat
@@ -105,10 +81,6 @@ dependencies {
     testImplementation libs.junit
     androidTestImplementation libs.ext.junit
     androidTestImplementation libs.espresso.core
-
-    //ONLY FOR PROD FLAVOR BUILD
-    prodImplementation libs.firebase.analytics
-    prodImplementation libs.firebase.messaging
 
     //FOR LAYOUT DIMENSIONS
     implementation libs.ssp.android
