@@ -96,7 +96,7 @@
         android:id="@+id/versionTxt"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="version 1.0.0"
+        android:text="version 1.1.0"
         android:gravity="center"
         android:paddingStart="@dimen/_12sdp"
         tools:ignore="RtlSymmetry"
