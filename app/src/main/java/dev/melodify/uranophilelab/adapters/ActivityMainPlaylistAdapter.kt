@@ -11,12 +11,11 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.facebook.shimmer.ShimmerFrameLayout
 import com.google.gson.Gson
+import com.squareup.picasso.Picasso
 import dev.melodify.uranophilelab.R
 import dev.melodify.uranophilelab.activities.ListActivity
 import dev.melodify.uranophilelab.adapters.ActivityMainPlaylistAdapter.PlaylistAdapterViewHolder
 import dev.melodify.uranophilelab.model.AlbumItem
-import com.squareup.picasso.Picasso
-import androidx.core.net.toUri
 
 class ActivityMainPlaylistAdapter(private val data: MutableList<AlbumItem?>) :
     RecyclerView.Adapter<PlaylistAdapterViewHolder?>() {
@@ -39,27 +38,33 @@ class ActivityMainPlaylistAdapter(private val data: MutableList<AlbumItem?>) :
 
     override fun onBindViewHolder(holder: PlaylistAdapterViewHolder, position: Int) {
         if (getItemViewType(position) == 1) {
-            (holder.itemView.findViewById<View?>(R.id.shimmer) as ShimmerFrameLayout).startShimmer()
+            (holder.itemView.findViewById<View?>(R.id.shimmer) as? ShimmerFrameLayout)?.startShimmer()
             return
         }
 
-        (holder.itemView.findViewById<View?>(R.id.title) as TextView).text = data[position]!!.albumTitle()
+        val item = data[position] ?: return
+
+        holder.itemView.findViewById<TextView?>(R.id.title)?.text = item.albumTitle()
         val imageView = holder.itemView.findViewById<ImageView?>(R.id.imageView)
-        Picasso.get().load(data[position]!!.albumCover?.toUri()).into(imageView)
+        val coverUrl: String? = item.albumCover
+        if (coverUrl != null && coverUrl.isNotEmpty() && imageView != null) {
+            Picasso.get().load(Uri.parse(coverUrl)).into(imageView)
+        }
 
         holder.itemView.setOnClickListener { v: View? ->
-            v!!.context.startActivity(
+            val playlistItem = data[position] ?: return@setOnClickListener
+            v?.context?.startActivity(
                 Intent(v.context, ListActivity::class.java).putExtra(
                     "data",
-                    Gson().toJson(data[position])
+                    Gson().toJson(playlistItem)
                 )
             )
         }
     }
 
     override fun getItemViewType(position: Int): Int {
-        if (data[position]!!.id == "<shimmer>") return 1
-        return 0
+        val item = data[position] ?: return 0
+        return if (item.id == "<shimmer>") 1 else 0
     }
 
     class PlaylistAdapterViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)

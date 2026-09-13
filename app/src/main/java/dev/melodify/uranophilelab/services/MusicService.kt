@@ -45,45 +45,37 @@ class MusicService : Service() {
             }
         }
 
-        if (intent == null || intent.extras == null) return START_STICKY
+        if (intent == null) return START_STICKY
+        val extras = intent.extras ?: return START_STICKY
 
-        val actionName = intent.extras!!.getString("action", "")
+        val actionName = extras.getString("action", "")
         Log.d("MusicService", "onStartCommand called with action: $actionName")
-        if (actionName != null) {
+        if (!actionName.isNullOrEmpty()) {
             when (actionName) {
                 MusicPlayerManager.ACTION_NEXT -> {
-                    // Handle next action
                     MusicPlayerManager.nextTrack()
-                    if (actionPlaying != null) {
-                        try {
-                            actionPlaying!!.nextClicked()
-                        } catch (e: Exception) {
-                            Log.e("MusicService", "Error in callback", e)
-                        }
+                    try {
+                        actionPlaying?.nextClicked()
+                    } catch (e: Exception) {
+                        Log.e("MusicService", "Error in callback", e)
                     }
                 }
 
                 MusicPlayerManager.ACTION_PREV -> {
-                    // Handle previous action
                     MusicPlayerManager.prevTrack()
-                    if (actionPlaying != null) {
-                        try {
-                            actionPlaying!!.prevClicked()
-                        } catch (e: Exception) {
-                            Log.e("MusicService", "Error in callback", e)
-                        }
+                    try {
+                        actionPlaying?.prevClicked()
+                    } catch (e: Exception) {
+                        Log.e("MusicService", "Error in callback", e)
                     }
                 }
 
                 MusicPlayerManager.ACTION_PLAY -> {
-                    // Handle play/pause action
                     MusicPlayerManager.togglePlayPause()
-                    if (actionPlaying != null) {
-                        try {
-                            actionPlaying!!.playClicked()
-                        } catch (e: Exception) {
-                            Log.e("MusicService", "Error in callback", e)
-                        }
+                    try {
+                        actionPlaying?.playClicked()
+                    } catch (e: Exception) {
+                        Log.e("MusicService", "Error in callback", e)
                     }
                 }
             }

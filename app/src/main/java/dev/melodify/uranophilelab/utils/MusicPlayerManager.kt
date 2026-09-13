@@ -17,6 +17,7 @@ import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
 import androidx.annotation.OptIn
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
@@ -45,6 +46,7 @@ import com.squareup.picasso.Picasso
 import com.squareup.picasso.Target
 import java.io.File
 
+@OptIn(UnstableApi::class)
 object MusicPlayerManager {
     private const val TAG = "MusicPlayerManager"
 
@@ -74,9 +76,10 @@ object MusicPlayerManager {
     var TEXT_ON_IMAGE_COLOR: Int = IMAGE_BG_COLOR xor 0x00FFFFFF
     var TEXT_ON_IMAGE_COLOR1: Int = IMAGE_BG_COLOR xor 0x00FFFFFF
 
-    private var appContext: Context? = null
+    var appContext: Context? = null
     private var simpleCache: SimpleCache? = null
     private var sharedPreferenceManager: SharedPreferenceManager? = null
+    private var notificationTarget: Target? = null
 
     @OptIn(UnstableApi::class)
     fun init(context: Context) {
@@ -84,11 +87,16 @@ object MusicPlayerManager {
         appContext = context.applicationContext
         sharedPreferenceManager = SharedPreferenceManager.getInstance(appContext!!)
 
-        val cacheDir = File(appContext!!.cacheDir, "audio_cache")
-        val databaseProvider = ExoDatabaseProvider(appContext!!)
-        val cacheSize = (100 * 1024 * 1024).toLong() // 100 MB
-        val cacheEvictor = LeastRecentlyUsedCacheEvictor(cacheSize)
-        simpleCache = SimpleCache(cacheDir, cacheEvictor, databaseProvider)
+        try {
+            val cacheDir = File(appContext!!.cacheDir, "audio_cache")
+            if (!cacheDir.exists()) cacheDir.mkdirs()
+            val databaseProvider = ExoDatabaseProvider(appContext!!)
+            val cacheSize = (100 * 1024 * 1024).toLong() // 100 MB
+            val cacheEvictor = LeastRecentlyUsedCacheEvictor(cacheSize)
+            simpleCache = SimpleCache(cacheDir, cacheEvictor, databaseProvider)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error creating SimpleCache", e)
+        }
 
         val httpDataSourceFactory = DefaultHttpDataSource.Factory()
             .setUserAgent(Util.getUserAgent(appContext!!, "AudioCachingApp"))
@@ -96,13 +104,18 @@ object MusicPlayerManager {
             .setReadTimeoutMs(15000)
             .setAllowCrossProtocolRedirects(true)
 
-        val cacheDataSourceFactory = CacheDataSource.Factory()
-            .setCache(simpleCache!!)
-            .setUpstreamDataSourceFactory(httpDataSourceFactory)
-            .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)
+        val mediaSourceFactory = if (simpleCache != null) {
+            val cacheDataSourceFactory = CacheDataSource.Factory()
+                .setCache(simpleCache!!)
+                .setUpstreamDataSourceFactory(httpDataSourceFactory)
+                .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)
+            DefaultMediaSourceFactory(cacheDataSourceFactory)
+        } else {
+            DefaultMediaSourceFactory(httpDataSourceFactory)
+        }
 
         player = ExoPlayer.Builder(appContext!!)
-            .setMediaSourceFactory(DefaultMediaSourceFactory(cacheDataSourceFactory))
+            .setMediaSourceFactory(mediaSourceFactory)
             .setHandleAudioBecomingNoisy(true)
             .setAudioAttributes(
                 AudioAttributes.Builder()
@@ -221,7 +234,8 @@ object MusicPlayerManager {
             .build()
         mediaSession?.setPlaybackState(state)
 
-        val duration = if (player?.duration != null && player!!.duration > 0) player!!.duration else -1L
+        val playerDuration = player?.duration
+        val duration = if (playerDuration != null && playerDuration > 0) playerDuration else -1L
         val metadata = MediaMetadataCompat.Builder()
             .putString(MediaMetadataCompat.METADATA_KEY_TITLE, MUSIC_TITLE)
             .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, MUSIC_DESCRIPTION)
@@ -254,7 +268,7 @@ object MusicPlayerManager {
             .setOnlyAlertOnce(true)
 
         try {
-            Picasso.get().load(IMAGE_URL).into(object : Target {
+            val target = object : Target {
                 override fun onBitmapLoaded(bitmap: Bitmap, from: Picasso.LoadedFrom?) {
                     try {
                         Palette.from(bitmap).generate { palette ->
@@ -282,30 +296,33 @@ object MusicPlayerManager {
                 }
                 override fun onBitmapFailed(e: Exception?, errorDrawable: Drawable?) { showBasicNotification(builder, playPauseButton != R.drawable.play_arrow_24px) }
                 override fun onPrepareLoad(placeHolderDrawable: Drawable?) {}
-            })
+            }
+            notificationTarget = target
+            Picasso.get().load(IMAGE_URL).into(target)
         } catch (e: Exception) {
             showBasicNotification(builder, playPauseButton != R.drawable.play_arrow_24px)
         }
     }
 
     private fun showBasicNotification(builder: NotificationCompat.Builder, isPlaying: Boolean) {
+        val ctx = appContext ?: return
         val notification = builder.build()
         latestNotification = notification
         if (isPlaying) {
             try {
-                val intent = Intent(appContext, dev.melodify.uranophilelab.services.MusicService::class.java)
-                androidx.core.content.ContextCompat.startForegroundService(
-                    appContext!!,
+                val intent = Intent(ctx, dev.melodify.uranophilelab.services.MusicService::class.java)
+                ContextCompat.startForegroundService(
+                    ctx,
                     intent
                 )
                 musicService?.startForeground(1, notification)
             } catch (e: Exception) {
-                val manager = appContext?.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
+                val manager = ctx.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
                 manager?.notify(1, notification)
             }
         } else {
             try { musicService?.stopForeground(false) } catch (e: Exception) {}
-            val manager = appContext?.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
+            val manager = ctx.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
             manager?.notify(1, notification)
         }
     }
@@ -378,8 +395,9 @@ object MusicPlayerManager {
     }
 
     fun playTrack() {
-        val ctx = BaseApplicationClass.currentActivity ?: appContext ?: return
-        ApiManager(ctx).retrieveSongById(MUSIC_ID!!, null, object : RequestNetwork.RequestListener {
+        val ctx = appContext ?: return
+        val id = MUSIC_ID ?: return
+        ApiManager(ctx).retrieveSongById(id, null, object : RequestNetwork.RequestListener {
             override fun onResponse(tag: String?, response: String?, responseHeaders: HashMap<String?, Any?>?) {
                 val songResponse = Gson().fromJson(response, SongResponse::class.java)
                 if (songResponse.success && !songResponse.data.isNullOrEmpty()) {

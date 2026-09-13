@@ -86,11 +86,15 @@ class RequestNetworkController {
         val reqBuilder = Request.Builder()
         val headerBuilder = Headers.Builder()
 
-        if (requestNetwork.headers?.isNotEmpty() == true) {
-            val headers = requestNetwork.headers!!
-
-            for (header in headers.entries) {
-                headerBuilder.add(header.key!!, header.value.toString())
+        val headers = requestNetwork.headers
+        if (headers != null && !headers.isEmpty()) {
+            for (key in headers.keys) {
+                if (key != null) {
+                    val value = headers[key]
+                    if (value != null) {
+                        headerBuilder.add(key, value.toString())
+                    }
+                }
             }
         }
 
@@ -105,22 +109,30 @@ class RequestNetworkController {
                         throw NullPointerException("unexpected url: " + url)
                     }
 
-                    if (requestNetwork.params?.isNotEmpty() == true) {
-                        val params = requestNetwork.params!!
-
-                        for (param in params.entries) {
-                            httpBuilder.addQueryParameter(param.key!!, param.value.toString())
+                    val params = requestNetwork.params
+                    if (params != null && !params.isEmpty()) {
+                        for (key in params.keys) {
+                            if (key != null) {
+                                val value = params[key]
+                                if (value != null) {
+                                    httpBuilder.addQueryParameter(key, value.toString())
+                                }
+                            }
                         }
                     }
 
                     reqBuilder.url(httpBuilder.build()).headers(headerBuilder.build()).get()
                 } else {
                     val formBuilder = FormBody.Builder()
-                    if (requestNetwork.params?.isNotEmpty() == true) {
-                        val params = requestNetwork.params!!
-
-                        for (param in params.entries) {
-                            formBuilder.add(param.key!!, param.value.toString())
+                    val params = requestNetwork.params
+                    if (params != null && !params.isEmpty()) {
+                        for (key in params.keys) {
+                            if (key != null) {
+                                val value = params[key]
+                                if (value != null) {
+                                    formBuilder.add(key, value.toString())
+                                }
+                            }
                         }
                     }
 

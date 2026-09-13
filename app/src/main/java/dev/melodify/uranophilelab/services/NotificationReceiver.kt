@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import androidx.core.content.ContextCompat
 import dev.melodify.uranophilelab.activities.MusicOverviewActivity
 import dev.melodify.uranophilelab.utils.MusicPlayerManager
 
@@ -17,35 +18,24 @@ class NotificationReceiver : BroadcastReceiver() {
         val action = intent.action
         Log.i(TAG, "Received action: $action")
 
-        // Create intent for MusicService
         val serviceIntent = Intent(context, MusicService::class.java)
 
-        // Get ApplicationClass instance
-        // val baseApplicationClass = context.getApplicationContext() as BaseApplicationClass?
-
         when (action) {
-            MusicPlayerManager.ACTION_NEXT -> {
-                Log.i(TAG, "Processing NEXT action")
-                serviceIntent.putExtra("action", action)
-                context.startService(serviceIntent)
-            }
-
-            MusicPlayerManager.ACTION_PREV -> {
-                Log.i(TAG, "Processing PREVIOUS action")
-                serviceIntent.putExtra("action", action)
-                context.startService(serviceIntent)
-            }
-
+            MusicPlayerManager.ACTION_NEXT,
+            MusicPlayerManager.ACTION_PREV,
             MusicPlayerManager.ACTION_PLAY -> {
-                Log.i(TAG, "Processing PLAY/PAUSE action")
+                Log.i(TAG, "Processing media action: $action")
                 serviceIntent.putExtra("action", action)
-                context.startService(serviceIntent)
+                try {
+                    ContextCompat.startForegroundService(context, serviceIntent)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to start MusicService for action: $action", e)
+                }
             }
 
             "action_click" -> {
                 Log.i(TAG, "Processing CLICK action")
                 try {
-                    // Launch activity for the current track
                     val activityIntent: Intent = Intent(context, MusicOverviewActivity::class.java)
                         .putExtra("id", MusicPlayerManager.MUSIC_ID)
                         .setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)

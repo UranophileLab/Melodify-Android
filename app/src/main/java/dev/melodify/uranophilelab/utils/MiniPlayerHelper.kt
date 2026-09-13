@@ -20,14 +20,15 @@ import com.google.gson.Gson
 import dev.melodify.uranophilelab.records.SongResponse
 import dev.melodify.uranophilelab.network.ApiManager
 import dev.melodify.uranophilelab.network.utility.RequestNetwork
+import java.lang.ref.WeakReference
 
 object MiniPlayerHelper {
     private val handler = Handler(Looper.getMainLooper())
-    private var activeActivity: AppCompatActivity? = null
+    private var activeActivity: WeakReference<AppCompatActivity>? = null
     
     private val updateRunnable = object : Runnable {
         override fun run() {
-            val act = activeActivity
+            val act = activeActivity?.get()
             if (act != null && !act.isFinishing && !act.isDestroyed) {
                 updatePlayBar(act)
                 handler.postDelayed(this, 1000)
@@ -75,13 +76,13 @@ object MiniPlayerHelper {
     }
     
     fun onActivityResume(activity: AppCompatActivity) {
-        activeActivity = activity
+        activeActivity = WeakReference(activity)
         handler.removeCallbacks(updateRunnable)
         handler.post(updateRunnable)
     }
     
     fun onActivityPause(activity: AppCompatActivity) {
-        if (activeActivity == activity) {
+        if (activeActivity?.get() == activity) {
             activeActivity = null
             handler.removeCallbacks(updateRunnable)
         }

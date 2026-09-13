@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.os.Handler
@@ -19,27 +20,34 @@ import org.jaudiotagger.tag.mp4.field.Mp4TagReverseDnsField
 import java.io.File
 import java.io.FileOutputStream
 import java.net.URL
+import java.util.concurrent.Executors
 
 object TrackDownloader {
     private const val TAG = "TrackDownloader"
+    private val executor = Executors.newSingleThreadExecutor()
+    private val mainHandler = Handler(Looper.getMainLooper())
+
+    fun sanitizeFileName(name: String?): String {
+        if (name.isNullOrBlank()) return "Untitled"
+        return name.replace(Regex("[\\\\/:*?\"<>|]"), "_").trim()
+    }
 
     fun isAlreadyDownloaded(title: String?): Boolean {
+        if (title.isNullOrBlank()) return false
+        val safeTitle = sanitizeFileName(title)
         val musicDir = File(
             Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),
             "Melotune"
         )
-
         if (!musicDir.exists()) {
             return false
         }
-        val songFile = File(musicDir, "$title.m4a")
-        val songFile1 = File(musicDir, "$title.mp4")
-        val songFile2 = File(musicDir, "$title.mp3")
-        return songFile.exists() || songFile1.exists() || songFile2.exists()
+        val extensions = listOf(".mp4", ".m4a", ".mp3", "")
+        return extensions.any { ext -> File(musicDir, "$safeTitle$ext").exists() }
     }
 
     fun getDownloadedTracks(context: Context): MutableList<DownloadedTrack?> {
-        val data: MutableList<DownloadedTrack?> = ArrayList<DownloadedTrack?>()
+        val data: MutableList<DownloadedTrack?> = ArrayList()
         val musicDir = File(
             Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),
             "Melotune"
@@ -48,22 +56,28 @@ object TrackDownloader {
             return data
         }
         val files = musicDir.listFiles() ?: return data
+        val uidFieldId = "----:" + context.packageName + ":TrackUID"
+
         for (file in files) {
+            if (!file.isFile || file.length() == 0L) continue
             try {
                 val f = AudioFileIO.read(file)
-                val tag = f.getTag()
-                val audioHeader = f.getAudioHeader()
-                var trackUID: String?
-                val uidFieldIdPrefix = "----:" + context.packageName + ":" // prefix for safety
-                val uidFieldId = uidFieldIdPrefix + "TrackUID"
-                val title: String? = if (tag != null) tag.getFirst(FieldKey.TITLE) else file.name
-                val artist: String? = if (tag != null) tag.getFirst(FieldKey.ARTIST) else ""
-                val album: String? = if (tag != null) tag.getFirst(FieldKey.ALBUM) else ""
-                val year: String? = if (tag != null) tag.getFirst(FieldKey.YEAR) else ""
-                val bitrate = if (audioHeader != null) audioHeader.bitRate.toString() else "344"
+                val tag = f.tag
+                val audioHeader = f.audioHeader
+
+                val tagTitle = tag?.getFirst(FieldKey.TITLE)
+                val title: String = if (!tagTitle.isNullOrBlank()) {
+                    tagTitle
+                } else {
+                    file.nameWithoutExtension
+                }
+                val artist: String = tag?.getFirst(FieldKey.ARTIST) ?: ""
+                val album: String = tag?.getFirst(FieldKey.ALBUM) ?: ""
+                val year: String = tag?.getFirst(FieldKey.YEAR) ?: ""
+                val bitrate = audioHeader?.bitRate ?: "344"
                 val trackLength = audioHeader?.trackLength?.toString() ?: "0"
 
-                trackUID = null
+                var trackUID: String? = null
                 if (tag != null) {
                     val field = tag.getFirstField(uidFieldId)
                     if (field != null) {
@@ -71,8 +85,8 @@ object TrackDownloader {
                             trackUID = field.toString()
                             try {
                                 val m = field.javaClass.getMethod("getContent")
-                                val `val` = m.invoke(field)
-                                if (`val` != null) trackUID = `val`.toString()
+                                val valObj = m.invoke(field)
+                                if (valObj != null) trackUID = valObj.toString()
                             } catch (_: NoSuchMethodException) {
                             }
                         } catch (_: Exception) {
@@ -93,12 +107,11 @@ object TrackDownloader {
                     }
                 }
 
-                val coverImage = if (tag != null) tag.firstArtwork.binaryData else null
-                val bitmap = if (coverImage != null) BitmapFactory.decodeByteArray(
-                    coverImage,
-                    0,
-                    coverImage.size
-                ) else null
+                val coverImageBytes = tag?.firstArtwork?.binaryData
+                val bitmap = if (coverImageBytes != null) {
+                    decodeSampledBitmapFromByteArray(coverImageBytes, 300, 300)
+                } else null
+
                 val downloadedTrack = DownloadedTrack(
                     file,
                     title,
@@ -111,140 +124,162 @@ object TrackDownloader {
                     trackUID
                 )
                 data.add(downloadedTrack)
-                println(downloadedTrack)
             } catch (e: Exception) {
-                Log.e(TAG, "Error reading file: " + e.message)
+                Log.e(TAG, "Error reading file ${file.name}: " + e.message)
             }
         }
         return data
     }
 
+    private fun decodeSampledBitmapFromByteArray(data: ByteArray, reqWidth: Int, reqHeight: Int): Bitmap? {
+        return try {
+            val options = BitmapFactory.Options().apply {
+                inJustDecodeBounds = true
+            }
+            BitmapFactory.decodeByteArray(data, 0, data.size, options)
+            options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight)
+            options.inJustDecodeBounds = false
+            BitmapFactory.decodeByteArray(data, 0, data.size, options)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to decode sampled artwork", e)
+            null
+        }
+    }
+
+    private fun calculateInSampleSize(options: BitmapFactory.Options, reqWidth: Int, reqHeight: Int): Int {
+        val (height: Int, width: Int) = options.outHeight to options.outWidth
+        var inSampleSize = 1
+        if (height > reqHeight || width > reqWidth) {
+            val halfHeight: Int = height / 2
+            val halfWidth: Int = width / 2
+            while (halfHeight / inSampleSize >= reqHeight && halfWidth / inSampleSize >= reqWidth) {
+                inSampleSize *= 2
+            }
+        }
+        return inSampleSize
+    }
+
     fun downloadAndEmbedMetadata(context: Context, song: Song, listener: TrackDownloadListener) {
         val audioUrl = song.downloadUrl?.lastOrNull()?.url ?: ""
         val imageUrl = song.image?.lastOrNull()?.url ?: ""
-        val title = song.name()
+        val rawTitle = song.name() ?: ""
+        val safeTitle = sanitizeFileName(rawTitle)
         val artist = song.artists?.primary?.firstOrNull()?.name() ?: ""
         val album = song.album?.name() ?: ""
 
-        Thread(Runnable {
-            Handler(Looper.getMainLooper()).post(Runnable { listener.onStarted() })
-            Log.d(TAG, "⬇️ Downloading and embedding metadata...")
+        if (audioUrl.isBlank()) {
+            mainHandler.post { listener.onError("Audio URL is unavailable") }
+            return
+        }
+
+        executor.execute {
+            mainHandler.post { listener.onStarted() }
+            Log.d(TAG, "⬇️ Downloading and embedding metadata for: $rawTitle")
+            var tempFile: File? = null
+            var artworkFile: File? = null
+
             try {
-                val tempFile = File(context.cacheDir, "$title.mp4")
-                URL(audioUrl).openStream().use { `in` ->
-                    FileOutputStream(tempFile).use { out ->
-                        val buffer = ByteArray(4096)
-                        var bytesRead: Int
-                        while ((`in`.read(buffer).also { bytesRead = it }) != -1) {
-                            out.write(buffer, 0, bytesRead)
-                        }
+                tempFile = File(context.cacheDir, "$safeTitle.mp4")
+                URL(audioUrl).openStream().use { input ->
+                    FileOutputStream(tempFile).use { output ->
+                        input.copyTo(output)
                     }
                 }
+
                 val audioFile = AudioFileIO.read(tempFile)
                 val tag = audioFile.getTagOrCreateAndSetDefault()
 
-                tag.setField(FieldKey.TITLE, title)
+                tag.setField(FieldKey.TITLE, rawTitle)
                 tag.setField(FieldKey.ARTIST, artist)
                 tag.setField(FieldKey.ALBUM, album)
-                tag.setField(FieldKey.YEAR, song.year)
-                tag.setField(FieldKey.ARTIST, artist)
+                if (!song.year.isNullOrBlank()) {
+                    tag.setField(FieldKey.YEAR, song.year)
+                }
 
                 val uidField = Mp4TagReverseDnsField(
                     "----",
                     context.packageName,
                     "TrackUID",
-                    song.id
+                    song.id ?: ""
                 )
-
                 tag.setField(uidField)
 
-                val artworkFile = File(context.cacheDir, "artwork.jpg")
-                URL(imageUrl).openStream().use { `in` ->
-                    FileOutputStream(artworkFile).use { out ->
-                        val buffer = ByteArray(4096)
-                        var bytesRead: Int
-                        while ((`in`.read(buffer).also { bytesRead = it }) != -1) {
-                            out.write(buffer, 0, bytesRead)
+                if (imageUrl.isNotBlank()) {
+                    try {
+                        artworkFile = File(context.cacheDir, "artwork_${System.currentTimeMillis()}.jpg")
+                        URL(imageUrl).openStream().use { input ->
+                            FileOutputStream(artworkFile).use { output ->
+                                input.copyTo(output)
+                            }
                         }
+                        val artwork = ArtworkFactory.createArtworkFromFile(artworkFile)
+                        tag.deleteArtworkField()
+                        tag.setField(artwork)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Failed to embed artwork: ${e.message}")
                     }
                 }
-                val artwork = ArtworkFactory.createArtworkFromFile(artworkFile)
-                tag.deleteArtworkField()
-                tag.setField(artwork)
 
                 audioFile.setTag(tag)
                 audioFile.commit()
 
-                val values = getContentValues(title, artist, album, song.id)
-
                 val resolver = context.contentResolver
-                val audioCollection =
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) MediaStore.Audio.Media.getContentUri(
-                        MediaStore.VOLUME_EXTERNAL_PRIMARY
-                    ) else MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-
-                val newUri = resolver.insert(audioCollection, values)
-                if (newUri == null) {
-                    Log.e(TAG, "Failed to insert into MediaStore")
-                    Handler(Looper.getMainLooper()).post(Runnable { listener.onError("Failed to insert into MediaStore") })
-                    return@Runnable
+                val values = ContentValues().apply {
+                    put(MediaStore.Audio.Media.TITLE, rawTitle)
+                    put(MediaStore.Audio.Media.ARTIST, artist)
+                    put(MediaStore.Audio.Media.ALBUM, album)
+                    put(MediaStore.Audio.Media.MIME_TYPE, "audio/mp4")
+                    put(MediaStore.Audio.Media.IS_MUSIC, true)
                 }
 
-                URL("file://" + tempFile.absolutePath).openStream().use { `in` ->
-                    resolver.openOutputStream(newUri).use { out ->
-                        val buffer = ByteArray(4096)
-                        var bytesRead: Int
-                        while ((`in`.read(buffer).also { bytesRead = it }) != -1) {
-                            checkNotNull(out)
-                            out.write(buffer, 0, bytesRead)
-                        }
-                        checkNotNull(out)
-                        out.flush()
+                val musicDir = File(
+                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),
+                    "Melotune"
+                )
+                if (!musicDir.exists()) {
+                    musicDir.mkdirs()
+                }
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    values.put(MediaStore.Audio.Media.DISPLAY_NAME, "$safeTitle.mp4")
+                    values.put(MediaStore.Audio.Media.RELATIVE_PATH, "${Environment.DIRECTORY_MUSIC}/Melotune")
+                    val audioCollection = MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+                    val newUri = resolver.insert(audioCollection, values)
+                        ?: throw Exception("Failed to insert into MediaStore")
+
+                    tempFile.inputStream().use { input ->
+                        resolver.openOutputStream(newUri)?.use { output ->
+                            input.copyTo(output)
+                        } ?: throw Exception("Failed to open MediaStore output stream")
                     }
+                } else {
+                    val targetFile = File(musicDir, "$safeTitle.mp4")
+                    tempFile.copyTo(targetFile, overwrite = true)
+                    values.put(MediaStore.Audio.Media.DISPLAY_NAME, "$safeTitle.mp4")
+                    values.put(MediaStore.Audio.Media.DATA, targetFile.absolutePath)
+                    val newUri = resolver.insert(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, values)
+                    val scanUri = newUri ?: Uri.fromFile(targetFile)
+                    context.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, scanUri))
                 }
-                if (!tempFile.delete()) Log.e(TAG, "Failed to delete temp file")
 
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-                    context.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, newUri))
-                }
-
-                Log.d(TAG, "✅ Downloaded and tagged: $title")
+                Log.d(TAG, "✅ Downloaded and tagged: $rawTitle")
             } catch (e: Exception) {
-                Log.e(TAG, "Error: " + e.message)
-                Handler(Looper.getMainLooper()).post(Runnable { listener.onError(e.message) })
+                Log.e(TAG, "Error downloading track: ${e.message}", e)
+                mainHandler.post { listener.onError(e.message ?: "Unknown download error") }
             } finally {
-                Handler(Looper.getMainLooper()).post(Runnable { listener.onFinished() })
+                tempFile?.let { if (it.exists()) it.delete() }
+                artworkFile?.let { if (it.exists()) it.delete() }
+                mainHandler.post { listener.onFinished() }
             }
-        }).start()
-    }
-
-    private fun getContentValues(
-        title: String?,
-        artist: String?,
-        album: String?,
-        id: String?
-    ): ContentValues {
-        val values = ContentValues()
-        values.put(MediaStore.Audio.Media.DISPLAY_NAME, title)
-        values.put(MediaStore.Audio.Media.MIME_TYPE, "audio/mp4")
-        values.put(MediaStore.Audio.Media.IS_MUSIC, true)
-        values.put(MediaStore.Audio.Media.TITLE, title)
-        values.put(MediaStore.Audio.Media.ARTIST, artist)
-        values.put(MediaStore.Audio.Media.ALBUM, album)
-        values.put(MediaStore.Audio.Media.RELATIVE_PATH, Environment.DIRECTORY_MUSIC + "/Melotune")
-        values.put(MediaStore.Audio.Media._ID, id)
-        return values
+        }
     }
 
     interface TrackDownloadListener {
         fun onStarted()
-
         fun onFinished()
-
         fun onError(errorMessage: String?)
     }
 
-    
     data class DownloadedTrack(
         val file: File?,
         val title: String?,
@@ -257,4 +292,3 @@ object TrackDownloader {
         val trackUID: String?
     )
 }
-

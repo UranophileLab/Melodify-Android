@@ -10,20 +10,19 @@ import dev.melodify.uranophilelab.utils.TrackDownloader
 import dev.melodify.uranophilelab.utils.attachSnapHelper
 
 class DownloadManagerActivity : AppCompatActivity() {
-    private var binding: ActivityDownloadManagerBinding? = null
+    private lateinit var binding: ActivityDownloadManagerBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityDownloadManagerBinding.inflate(layoutInflater)
-        setContentView(binding!!.getRoot())
+        setContentView(binding.getRoot())
 
-        binding!!.recyclerView.setLayoutManager(LinearLayoutManager(this))
-        binding!!.recyclerView.attachSnapHelper()
+        binding.recyclerView.layoutManager = LinearLayoutManager(this)
+        binding.recyclerView.attachSnapHelper()
+
         val tracks = TrackDownloader.getDownloadedTracks(this)
-        binding!!.recyclerView.setAdapter(
-            ActivityDownloadManagerListAdapter(
-                tracks.filterNotNull().toMutableList()
-            )
+        binding.recyclerView.adapter = ActivityDownloadManagerListAdapter(
+            tracks.filterNotNull().toMutableList()
         )
     }
 

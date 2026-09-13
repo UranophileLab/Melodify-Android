@@ -22,6 +22,7 @@ class RequestNetwork(val activity: Context?) {
         tag: String?,
         requestListener: RequestListener?
     ) {
+        if (requestListener == null) return
         Log.i(
             "RequestNetwork.java", "startRequestNetwork: " +
                     "\tmethod: " + method +
@@ -30,7 +31,7 @@ class RequestNetwork(val activity: Context?) {
                     "\tParams: " + this.params
         )
         RequestNetworkController.instance
-            .execute(this, method ?: "", url ?: "", tag, requestListener!!)
+            .execute(this, method ?: "", url ?: "", tag, requestListener)
     }
 
     interface RequestListener {

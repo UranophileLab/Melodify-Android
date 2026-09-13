@@ -253,17 +253,10 @@ class SharedPreferenceManager private constructor(context: Context) {
     // add library to saved libraries (keeps same semantics as original)
     fun addLibraryToSavedLibraries(library: Library?) {
         if (library == null) return
-        var savedLibraries = this.savedLibrariesData
-        if (savedLibraries == null) savedLibraries = SavedLibraries(ArrayList())
-        // make defensive copy of list if needed; assuming lists() returns modifiable list
-        var list = savedLibraries.lists
-        if (list == null) {
-            list = ArrayList()
-            // if SavedLibraries has a setter, ideally set here; we assume lists() returns modifiable list
-        }
+        val savedLibraries = this.savedLibrariesData ?: SavedLibraries(ArrayList())
+        val list = ArrayList(savedLibraries.lists ?: ArrayList())
         list.add(library)
-        // reserialize full object
-        this.savedLibrariesData = savedLibraries
+        this.savedLibrariesData = SavedLibraries(list)
     }
 
     fun removeLibraryFromSavedLibraries(index: Int) {
@@ -340,10 +333,8 @@ class SharedPreferenceManager private constructor(context: Context) {
             return
         }
         for (entry in all.entries) {
-            val key: String = entry.key!!
+            val key: String = entry.key ?: continue
             val value: Any = entry.value ?: continue
-            // In your previous manager, values were JSON strings for complex objects.
-            // But there may be primitives (boolean, int, etc.). Serialize everything with Gson for consistency.
             val json: String? = value as? String ?: gson.toJson(value)
             putJson(key, json)
         }
@@ -355,7 +346,6 @@ class SharedPreferenceManager private constructor(context: Context) {
      * Call this only after you verified migration succeeded and Room contains your data.
      */
     fun clearOldPrefsAsync(context: Context, onComplete: Runnable?) {
-        // This is synchronous operation on prefs but cheap; run it directly
         val prefs = context.applicationContext
             .getSharedPreferences(OLD_PREFS_NAME, Context.MODE_PRIVATE)
         prefs.edit { clear() }
@@ -363,14 +353,17 @@ class SharedPreferenceManager private constructor(context: Context) {
     }
 
     companion object {
-        // ---------- Singleton and helpers ----------
         private var instance: SharedPreferenceManager? = null
-
-        // old SharedPreferences name used by your previous manager
         private const val OLD_PREFS_NAME = "cache"
 
         fun getInstance(context: Context): SharedPreferenceManager {
-            if (instance == null) instance = SharedPreferenceManager(context)
+            if (instance == null) {
+                synchronized(SharedPreferenceManager::class.java) {
+                    if (instance == null) {
+                        instance = SharedPreferenceManager(context.applicationContext)
+                    }
+                }
+            }
             return instance!!
         }
     }

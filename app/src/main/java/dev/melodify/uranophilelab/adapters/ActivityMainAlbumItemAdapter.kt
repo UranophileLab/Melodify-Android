@@ -9,12 +9,11 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.facebook.shimmer.ShimmerFrameLayout
 import com.google.gson.Gson
+import com.squareup.picasso.Picasso
 import dev.melodify.uranophilelab.R
 import dev.melodify.uranophilelab.activities.ListActivity
 import dev.melodify.uranophilelab.adapters.ActivityMainAlbumItemAdapter.ActivityMainAlbumItemAdapterViewHolder
 import dev.melodify.uranophilelab.model.AlbumItem
-import com.squareup.picasso.Picasso
-import androidx.core.net.toUri
 
 class ActivityMainAlbumItemAdapter(private val data: MutableList<AlbumItem?>) :
     RecyclerView.Adapter<ActivityMainAlbumItemAdapterViewHolder?>() {
@@ -36,26 +35,33 @@ class ActivityMainAlbumItemAdapter(private val data: MutableList<AlbumItem?>) :
 
     override fun onBindViewHolder(holder: ActivityMainAlbumItemAdapterViewHolder, position: Int) {
         if (getItemViewType(position) == 1) {
-            (holder.itemView.findViewById<View?>(R.id.shimmer) as ShimmerFrameLayout).startShimmer()
+            (holder.itemView.findViewById<View?>(R.id.shimmer) as? ShimmerFrameLayout)?.startShimmer()
             return
         }
 
-        (holder.itemView.findViewById<View?>(R.id.albumTitle) as TextView).text =
-            data[position]!!.albumTitle()
-        (holder.itemView.findViewById<View?>(R.id.albumSubTitle) as TextView).text = data[position]!!.albumSubTitle()
+        val item = if (position in 0 until data.size) data[position] else null
+        if (item == null) return
 
-        holder.itemView.findViewById<View>(R.id.albumTitle).isSelected = true
-        holder.itemView.findViewById<View>(R.id.albumSubTitle).isSelected = true
+        holder.itemView.findViewById<TextView?>(R.id.albumTitle)?.text = item.albumTitle()
+        holder.itemView.findViewById<TextView?>(R.id.albumSubTitle)?.text = item.albumSubTitle()
+
+        holder.itemView.findViewById<View?>(R.id.albumTitle)?.isSelected = true
+        holder.itemView.findViewById<View?>(R.id.albumSubTitle)?.isSelected = true
 
         val coverImage = holder.itemView.findViewById<ImageView?>(R.id.coverImage)
-        Picasso.get().load(data[position]!!.albumCover?.toUri()).into(coverImage)
+        val coverUrl: String? = item.albumCover
+        if (!coverUrl.isNullOrEmpty() && coverImage != null) {
+            Picasso.get().load(Uri.parse(coverUrl)).into(coverImage)
+        }
 
         holder.itemView.setOnClickListener { v: View? ->
-            v!!.context.startActivity(
+            val albumItem = if (position in 0 until data.size) data[position] else null
+            if (albumItem == null) return@setOnClickListener
+            v?.context?.startActivity(
                 Intent(v.context, ListActivity::class.java)
-                    .putExtra("data", Gson().toJson(data[position]))
+                    .putExtra("data", Gson().toJson(albumItem))
                     .putExtra("type", "album")
-                    .putExtra("id", data[position]!!.id)
+                    .putExtra("id", albumItem.id)
             )
         }
     }
@@ -65,8 +71,8 @@ class ActivityMainAlbumItemAdapter(private val data: MutableList<AlbumItem?>) :
     }
 
     override fun getItemViewType(position: Int): Int {
-        if (data[position]!!.albumTitle() == "<shimmer>") return 1
-        else return 0
+        val item = if (position in 0 until data.size) data[position] else null
+        return if (item?.albumTitle() == "<shimmer>") 1 else 0
     }
 
     class ActivityMainAlbumItemAdapterViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)

@@ -1,21 +1,19 @@
 package dev.melodify.uranophilelab.adapters
 
 import android.content.Intent
-import android.net.Uri
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.net.toUri
 import androidx.recyclerview.widget.RecyclerView
 import com.facebook.shimmer.ShimmerFrameLayout
+import com.squareup.picasso.Picasso
 import dev.melodify.uranophilelab.R
 import dev.melodify.uranophilelab.activities.MusicOverviewActivity
 import dev.melodify.uranophilelab.model.AlbumItem
 import dev.melodify.uranophilelab.utils.MusicPlayerManager
-import com.squareup.picasso.Picasso
-import androidx.core.net.toUri
-
 
 class ActivityMainPopularSongs(private val data: MutableList<AlbumItem?>) :
     RecyclerView.Adapter<ActivityMainPopularSongs.ViewHolder?>() {
@@ -34,18 +32,24 @@ class ActivityMainPopularSongs(private val data: MutableList<AlbumItem?>) :
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         if (getItemViewType(position) == 1) {
-            (holder.itemView.findViewById<View?>(R.id.shimmer) as ShimmerFrameLayout).startShimmer()
+            (holder.itemView.findViewById<View?>(R.id.shimmer) as? ShimmerFrameLayout)?.startShimmer()
             return
         }
 
-        (holder.itemView.findViewById<View?>(R.id.albumTitle) as TextView).text = data[position]!!.albumTitle()
-        (holder.itemView.findViewById<View?>(R.id.albumSubTitle) as TextView).text = data[position]!!.albumSubTitle()
+        val item = if (position in 0 until data.size) data[position] else return
+        if (item == null) return
 
-        holder.itemView.findViewById<View>(R.id.albumTitle).isSelected = true
-        holder.itemView.findViewById<View>(R.id.albumSubTitle).isSelected = true
+        holder.itemView.findViewById<TextView?>(R.id.albumTitle)?.text = item.albumTitle()
+        holder.itemView.findViewById<TextView?>(R.id.albumSubTitle)?.text = item.albumSubTitle()
+
+        holder.itemView.findViewById<View?>(R.id.albumTitle)?.isSelected = true
+        holder.itemView.findViewById<View?>(R.id.albumSubTitle)?.isSelected = true
 
         val coverImage = holder.itemView.findViewById<ImageView?>(R.id.coverImage)
-        Picasso.get().load(data[position]!!.albumCover?.toUri()).into(coverImage)
+        val coverUrl = item.albumCover
+        if (!coverUrl.isNullOrEmpty() && coverImage != null) {
+            Picasso.get().load(coverUrl.toUri()).into(coverImage)
+        }
 
         holder.itemView.setOnClickListener { v: View? ->
             MusicPlayerManager.trackQueue?.clear()
@@ -54,18 +58,19 @@ class ActivityMainPopularSongs(private val data: MutableList<AlbumItem?>) :
                 "Click at pos: " + position + ". Populating queue with " + data.size + " items."
             )
             for (i in data.indices) {
-                val id = data[i]!!.id
+                val songItem = data[i] ?: continue
+                val id = songItem.id
                 Log.d(
                     "AdapterDebug",
-                    "Queue[" + i + "]: " + id + " - " + data[i]!!.albumTitle()
+                    "Queue[" + i + "]: " + id + " - " + songItem.albumTitle()
                 )
                 MusicPlayerManager.trackQueue?.add(id)
             }
             MusicPlayerManager.track_position = position
-            v!!.context.startActivity(
+            v?.context?.startActivity(
                 Intent(v.context, MusicOverviewActivity::class.java).putExtra(
                     "id",
-                    data[position]!!.id
+                    item.id
                 )
             )
         }
@@ -76,7 +81,8 @@ class ActivityMainPopularSongs(private val data: MutableList<AlbumItem?>) :
     }
 
     override fun getItemViewType(position: Int): Int {
-        return if (data[position]!!.albumTitle() == "<shimmer>") 1 else 0
+        val item = if (position in 0 until data.size) data[position] else return 0
+        return if (item?.albumTitle() == "<shimmer>") 1 else 0
     }
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)

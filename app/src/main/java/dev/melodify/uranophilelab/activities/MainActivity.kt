@@ -4,15 +4,13 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.content.res.ColorStateList
-import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
-import android.os.Handler
 import android.util.Log
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions
 import androidx.activity.result.contract.ActivityResultContracts.RequestPermission
@@ -39,19 +37,16 @@ import dev.melodify.uranophilelab.records.AlbumsSearch
 import dev.melodify.uranophilelab.records.ArtistsSearch
 import dev.melodify.uranophilelab.records.PlaylistsSearch
 import dev.melodify.uranophilelab.records.SongSearch
+import dev.melodify.uranophilelab.utils.MiniPlayerHelper
 import dev.melodify.uranophilelab.utils.MusicPlayerManager
 import dev.melodify.uranophilelab.utils.SharedPreferenceManager
-import com.squareup.picasso.Picasso
+import dev.melodify.uranophilelab.utils.attachSnapHelper
 import com.yarolegovich.slidingrootnav.SlidingRootNav
 import com.yarolegovich.slidingrootnav.SlidingRootNavBuilder
 import me.everything.android.ui.overscroll.OverScrollDecoratorHelper
 import org.json.JSONException
 import org.json.JSONObject
 import java.util.Calendar
-import androidx.core.net.toUri
-import dev.melodify.uranophilelab.utils.MiniPlayerHelper
-import dev.melodify.uranophilelab.utils.UpdateUtil
-import dev.melodify.uranophilelab.utils.attachSnapHelper
 
 class MainActivity : AppCompatActivity() {
     private var requestStoragePermission: ActivityResultLauncher<Array<String>>? = null
@@ -71,7 +66,8 @@ class MainActivity : AppCompatActivity() {
 
             override fun onNetworkDisconnected() {
                 if (songs.isEmpty() || artists.isEmpty() || albums.isEmpty() || playlists.isEmpty()) showOfflineData()
-                Snackbar.make(binding!!.getRoot(), "No Internet Connection", Snackbar.LENGTH_LONG)
+                val currentBinding = binding ?: return
+                Snackbar.make(currentBinding.getRoot(), "No Internet Connection", Snackbar.LENGTH_LONG)
                     .show()
             }
         })
@@ -80,18 +76,30 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding!!.getRoot())
+        val inflatedBinding = ActivityMainBinding.inflate(layoutInflater)
+        binding = inflatedBinding
+        setContentView(inflatedBinding.getRoot())
 
         baseApplicationClass = applicationContext as BaseApplicationClass?
-        BaseApplicationClass.currentActivity = this
-        BaseApplicationClass.updateTheme()
+        BaseApplicationClass.updateTheme(this)
 
         slidingRootNavBuilder = SlidingRootNavBuilder(this)
             .withMenuLayout(R.layout.main_drawer_layout)
             .withContentClickableWhenMenuOpened(false)
             .withDragDistance(250)
             .inject()
+
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (slidingRootNavBuilder?.isMenuOpened == true) {
+                    slidingRootNavBuilder?.closeMenu()
+                } else {
+                    isEnabled = false
+                    onBackPressedDispatcher.onBackPressed()
+                    isEnabled = true
+                }
+            }
+        })
 
         // Set version text in the drawer layout
         updateVersionTextInDrawer()
@@ -101,77 +109,54 @@ class MainActivity : AppCompatActivity() {
         setupGreeting()
         setupCategoryFilterChips()
 
-        binding!!.profileIcon.setOnClickListener {
-            slidingRootNavBuilder!!.openMenu(
-                true
-            )
+        inflatedBinding.profileIcon.setOnClickListener {
+            slidingRootNavBuilder?.openMenu(true)
         }
 
         val span: Int = calculateNoOfColumns(this, 200f)
-        binding!!.playlistRecyclerView.setLayoutManager(GridLayoutManager(this, span))
+        inflatedBinding.playlistRecyclerView.layoutManager = GridLayoutManager(this, span)
 
-        binding!!.popularSongsRecyclerView.setLayoutManager(
-            LinearLayoutManager(
-                this,
-                LinearLayoutManager.HORIZONTAL,
-                false
-            )
-        )
-        binding!!.popularArtistsRecyclerView.setLayoutManager(
-            LinearLayoutManager(
-                this,
-                LinearLayoutManager.HORIZONTAL,
-                false
-            )
-        )
-        binding!!.popularAlbumsRecyclerView.setLayoutManager(
-            LinearLayoutManager(
-                this,
-                LinearLayoutManager.HORIZONTAL,
-                false
-            )
-        )
-        binding!!.savedRecyclerView.setLayoutManager(
-            LinearLayoutManager(
-                this,
-                LinearLayoutManager.HORIZONTAL,
-                false
-            )
-        )
+        inflatedBinding.popularSongsRecyclerView.layoutManager =
+            LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        inflatedBinding.popularArtistsRecyclerView.layoutManager =
+            LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        inflatedBinding.popularAlbumsRecyclerView.layoutManager =
+            LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        inflatedBinding.savedRecyclerView.layoutManager =
+            LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
 
         // Snap helpers — smooth magnetic scroll on all horizontal lists
-        binding!!.popularSongsRecyclerView.attachSnapHelper()
-        binding!!.popularArtistsRecyclerView.attachSnapHelper()
-        binding!!.popularAlbumsRecyclerView.attachSnapHelper()
-        binding!!.savedRecyclerView.attachSnapHelper()
+        inflatedBinding.popularSongsRecyclerView.attachSnapHelper()
+        inflatedBinding.popularArtistsRecyclerView.attachSnapHelper()
+        inflatedBinding.popularAlbumsRecyclerView.attachSnapHelper()
+        inflatedBinding.savedRecyclerView.attachSnapHelper()
 
         OverScrollDecoratorHelper.setUpOverScroll(
-            binding!!.popularSongsRecyclerView,
+            inflatedBinding.popularSongsRecyclerView,
             OverScrollDecoratorHelper.ORIENTATION_HORIZONTAL
         )
         OverScrollDecoratorHelper.setUpOverScroll(
-            binding!!.popularArtistsRecyclerView,
+            inflatedBinding.popularArtistsRecyclerView,
             OverScrollDecoratorHelper.ORIENTATION_HORIZONTAL
         )
         OverScrollDecoratorHelper.setUpOverScroll(
-            binding!!.popularAlbumsRecyclerView,
+            inflatedBinding.popularAlbumsRecyclerView,
             OverScrollDecoratorHelper.ORIENTATION_HORIZONTAL
         )
         OverScrollDecoratorHelper.setUpOverScroll(
-            binding!!.savedRecyclerView,
+            inflatedBinding.savedRecyclerView,
             OverScrollDecoratorHelper.ORIENTATION_HORIZONTAL
         )
 
-        binding!!.refreshLayout.setOnRefreshListener {
+        inflatedBinding.refreshLayout.setOnRefreshListener {
             showShimmerData()
             showData()
-            binding!!.refreshLayout.isRefreshing = false
+            binding?.refreshLayout?.isRefreshing = false
         }
 
         MiniPlayerHelper.initMiniPlayer(this)
 
         showShimmerData()
-        //showOfflineData()
         showData()
 
         showSavedLibrariesData()
@@ -190,13 +175,11 @@ class MainActivity : AppCompatActivity() {
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.R) {
             requestStoragePermission()
         }
-
-        UpdateUtil.checkForUpdates(this)
     }
 
     private fun requestStoragePermission() {
         if (!checkIfStorageAccessAvailable()) {
-            requestStoragePermission!!.launch(
+            requestStoragePermission?.launch(
                 arrayOf(
                     Manifest.permission.READ_EXTERNAL_STORAGE,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE
@@ -206,10 +189,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun checkIfStorageAccessAvailable(): Boolean {
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.R) {
-            return true
+        return if (Build.VERSION.SDK_INT > Build.VERSION_CODES.R) {
+            true
         } else {
-            return (ContextCompat.checkSelfPermission(
+            (ContextCompat.checkSelfPermission(
                 this,
                 Manifest.permission.READ_EXTERNAL_STORAGE
             ) == PackageManager.PERMISSION_GRANTED)
@@ -221,61 +204,58 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showSavedLibrariesData() {
-        val savedLibraries =
-            SharedPreferenceManager.getInstance(this).savedLibrariesData
-        binding!!.savedLibrariesSection.visibility =
-            if (savedLibraries != null && !(savedLibraries.lists?.isEmpty()
-                    ?: true)
-            ) View.VISIBLE else View.GONE
-        if (savedLibraries != null) binding!!.savedRecyclerView.setAdapter(
-            SavedLibrariesAdapter(
+        val currentBinding = binding ?: return
+        val savedLibraries = SharedPreferenceManager.getInstance(this).savedLibrariesData
+        currentBinding.savedLibrariesSection.visibility =
+            if (savedLibraries != null && !(savedLibraries.lists?.isEmpty() ?: true)) View.VISIBLE else View.GONE
+        if (savedLibraries != null) {
+            currentBinding.savedRecyclerView.adapter = SavedLibrariesAdapter(
                 savedLibraries.lists ?: mutableListOf()
             )
-        )
+        }
     }
 
     private fun onDrawerItemsClicked() {
-        slidingRootNavBuilder!!.layout.findViewById<View>(R.id.settings).setOnClickListener {
+        val layout = slidingRootNavBuilder?.layout ?: return
+        layout.findViewById<View>(R.id.settings)?.setOnClickListener {
             startActivity(Intent(this, SettingsActivity::class.java))
-            slidingRootNavBuilder!!.closeMenu()
+            slidingRootNavBuilder?.closeMenu()
         }
 
-        slidingRootNavBuilder!!.layout.findViewById<View>(R.id.logo)
-            .setOnClickListener { slidingRootNavBuilder!!.closeMenu() }
+        layout.findViewById<View>(R.id.logo)?.setOnClickListener {
+            slidingRootNavBuilder?.closeMenu()
+        }
 
-        slidingRootNavBuilder!!.layout.findViewById<View>(R.id.library).setOnClickListener {
+        layout.findViewById<View>(R.id.library)?.setOnClickListener {
             startActivity(Intent(this@MainActivity, SavedLibrariesActivity::class.java))
-            slidingRootNavBuilder!!.closeMenu()
+            slidingRootNavBuilder?.closeMenu()
         }
 
-        slidingRootNavBuilder!!.layout.findViewById<View>(R.id.about)
-            .setOnClickListener {
-                startActivity(Intent(this@MainActivity, AboutActivity::class.java))
-                slidingRootNavBuilder!!.closeMenu()
-            }
+        layout.findViewById<View>(R.id.about)?.setOnClickListener {
+            startActivity(Intent(this@MainActivity, AboutActivity::class.java))
+            slidingRootNavBuilder?.closeMenu()
+        }
 
-        slidingRootNavBuilder!!.layout.findViewById<View>(R.id.download_manager)
-            .setOnClickListener {
-                startActivity(Intent(this@MainActivity, DownloadManagerActivity::class.java))
-                slidingRootNavBuilder!!.closeMenu()
-            }
+        layout.findViewById<View>(R.id.download_manager)?.setOnClickListener {
+            startActivity(Intent(this@MainActivity, DownloadManagerActivity::class.java))
+            slidingRootNavBuilder?.closeMenu()
+        }
     }
 
     /**
-     * Updates the version text in the navigation drawer with the app's current
-     * version
+     * Updates the version text in the navigation drawer with the app's current version
      */
     private fun updateVersionTextInDrawer() {
         try {
             val versionName = packageManager.getPackageInfo(packageName, 0).versionName
-            val drawerLayout: View? = slidingRootNavBuilder!!.layout
+            val drawerLayout: View? = slidingRootNavBuilder?.layout
             if (drawerLayout != null) {
                 val versionTextView = drawerLayout.findViewById<View?>(R.id.versionTxt)
                 if (versionTextView is TextView) {
                     versionTextView.text = "version $versionName"
                 }
             }
-        } catch (e: PackageManager.NameNotFoundException) {
+        } catch (e: Exception) {
             Log.e(TAG, "Error getting app version: " + e.message)
         }
     }
@@ -293,11 +273,6 @@ class MainActivity : AppCompatActivity() {
         MiniPlayerHelper.onActivityPause(this)
     }
 
-    override fun onBackPressed() {
-        if (slidingRootNavBuilder!!.isMenuOpened) slidingRootNavBuilder!!.closeMenu()
-        else super.onBackPressed()
-    }
-
     override fun onDestroy() {
         MusicPlayerManager.cancelNotification()
         super.onDestroy()
@@ -309,11 +284,11 @@ class MainActivity : AppCompatActivity() {
         albums.clear()
         playlists.clear()
 
-        val songSeeds = listOf("2023","2024","2025","2026","Hits", "Latest", "Romantic", "Chill", "Lo-Fi", "Dance", "Hindi", "Sad", "Love", "Workout", " ")
-        val artistSeeds = listOf("2023","2024","2025","2026", " ")
-        val albumSeeds = listOf("2023","2024","2025","2026","Hits", "Latest", "New", "Sad", "Lo-Fi", "Romantic", "Rock", "Pop", "Classic", "Party", " ")
-        val playlistSeeds = listOf("2023","2024","2025","2026","Hits", "Latest", "Trending", "Party", "Devotional", "Chill", "Love", "Sad", "Top", "Classic", " ")
-        
+        val songSeeds = listOf("2023", "2024", "2025", "2026", "Hits", "Latest", "Romantic", "Chill", "Lo-Fi", "Dance", "Hindi", "Sad", "Love", "Workout")
+        val artistSeeds = listOf("Arijit", "Taylor", "Drake", "BTS", "Ed Sheeran", "Shreya", "Justin", "Badshah")
+        val albumSeeds = listOf("2023", "2024", "2025", "2026", "Hits", "Latest", "New", "Sad", "Lo-Fi", "Romantic", "Rock", "Pop", "Classic", "Party")
+        val playlistSeeds = listOf("2023", "2024", "2025", "2026", "Hits", "Latest", "Trending", "Party", "Devotional", "Chill", "Love", "Sad", "Top", "Classic")
+
         val songQuery = songSeeds.random()
         val artistQuery = artistSeeds.random()
         val albumQuery = albumSeeds.random()
@@ -327,37 +302,34 @@ class MainActivity : AppCompatActivity() {
                 response: String?,
                 responseHeaders: HashMap<String?, Any?>?
             ) {
-                val songSearch = Gson().fromJson(response, SongSearch::class.java)
-                Log.i(TAG, "onResponse: $response")
-                if (songSearch.success) {
-                    val resultsList = songSearch.data?.results ?: emptyList()
-                    for (results in resultsList) {
-                        if (results == null) continue
-                        val imageList = results.image
-                        val imageUrl =
-                            if (!imageList.isNullOrEmpty()) imageList[imageList.size - 1]?.url
-                                ?: "" else ""
-                        songs.add(
-                            AlbumItem(
-                                results.name(), results.language + " " + results.year,
-                                imageUrl, results.id
+                val currentBinding = binding ?: return
+                try {
+                    val songSearch = Gson().fromJson(response, SongSearch::class.java)
+                    Log.i(TAG, "onResponse: $response")
+                    if (songSearch?.success == true) {
+                        val resultsList = songSearch.data?.results ?: emptyList()
+                        for (results in resultsList) {
+                            if (results == null) continue
+                            val imageList = results.image
+                            val imageUrl =
+                                if (!imageList.isNullOrEmpty()) imageList[imageList.size - 1]?.url ?: "" else ""
+                            songs.add(
+                                AlbumItem(
+                                    results.name(), results.language + " " + results.year,
+                                    imageUrl, results.id
+                                )
                             )
-                        )
-                    }
-                    val adapter = ActivityMainPopularSongs(songs)
-                    binding!!.popularSongsRecyclerView.setAdapter(adapter)
-                    adapter.notifyDataSetChanged()
-                    BaseApplicationClass.sharedPreferenceManager?.homeSongsRecommended = songSearch
-                } else {
-                    try {
+                        }
+                        val adapter = ActivityMainPopularSongs(songs)
+                        currentBinding.popularSongsRecyclerView.adapter = adapter
+                        adapter.notifyDataSetChanged()
+                        BaseApplicationClass.sharedPreferenceManager?.homeSongsRecommended = songSearch
+                    } else {
                         showOfflineData()
-                        Toast.makeText(
-                            this@MainActivity, JSONObject(response.toString()).getString("message"),
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    } catch (e: JSONException) {
-                        Log.e(TAG, "onResponse: ", e)
                     }
+                } catch (e: Exception) {
+                    Log.e(TAG, "onResponse song parse error: ", e)
+                    showOfflineData()
                 }
             }
 
@@ -372,29 +344,26 @@ class MainActivity : AppCompatActivity() {
                 response: String?,
                 responseHeaders: HashMap<String?, Any?>?
             ) {
-                val artistSearch =
-                    Gson().fromJson(response, ArtistsSearch::class.java)
-                Log.i(TAG, "onResponse: $response")
-                if (artistSearch.success) {
-                    val resultsList = artistSearch.data?.results ?: emptyList()
-                    for (results in resultsList) {
-                        artists.add(results)
-                    }
-                    val adapter = ActivityMainArtistsItemAdapter(artists)
-                    binding!!.popularArtistsRecyclerView.setAdapter(adapter)
-                    adapter.notifyDataSetChanged()
-                    BaseApplicationClass.sharedPreferenceManager?.homeArtistsRecommended =
-                        artistSearch
-                } else {
-                    try {
+                val currentBinding = binding ?: return
+                try {
+                    val artistSearch = Gson().fromJson(response, ArtistsSearch::class.java)
+                    Log.i(TAG, "onResponse: $response")
+                    if (artistSearch?.success == true) {
+                        val resultsList = artistSearch.data?.results ?: emptyList()
+                        for (results in resultsList) {
+                            if (results == null) continue
+                            artists.add(results)
+                        }
+                        val adapter = ActivityMainArtistsItemAdapter(artists)
+                        currentBinding.popularArtistsRecyclerView.adapter = adapter
+                        adapter.notifyDataSetChanged()
+                        BaseApplicationClass.sharedPreferenceManager?.homeArtistsRecommended = artistSearch
+                    } else {
                         showOfflineData()
-                        Toast.makeText(
-                            this@MainActivity, JSONObject(response.toString()).getString("message"),
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    } catch (e: JSONException) {
-                        Log.e(TAG, "onResponse: ", e)
                     }
+                } catch (e: Exception) {
+                    Log.e(TAG, "onResponse artist parse error: ", e)
+                    showOfflineData()
                 }
             }
 
@@ -409,38 +378,34 @@ class MainActivity : AppCompatActivity() {
                 response: String?,
                 responseHeaders: HashMap<String?, Any?>?
             ) {
-                val albumsSearch = Gson().fromJson(response, AlbumsSearch::class.java)
-                Log.i(TAG, "onResponse: $response")
-                if (albumsSearch.success) {
-                    val resultsList = albumsSearch.data?.results ?: emptyList()
-                    for (results in resultsList) {
-                        if (results == null) continue
-                        val imageList = results.image
-                        val imageUrl =
-                            if (!imageList.isNullOrEmpty()) imageList[imageList.size - 1]?.url
-                                ?: "" else ""
-                        albums.add(
-                            AlbumItem(
-                                results.name(), results.language + " " + results.year,
-                                imageUrl, results.id
+                val currentBinding = binding ?: return
+                try {
+                    val albumsSearch = Gson().fromJson(response, AlbumsSearch::class.java)
+                    Log.i(TAG, "onResponse: $response")
+                    if (albumsSearch?.success == true) {
+                        val resultsList = albumsSearch.data?.results ?: emptyList()
+                        for (results in resultsList) {
+                            if (results == null) continue
+                            val imageList = results.image
+                            val imageUrl =
+                                if (!imageList.isNullOrEmpty()) imageList[imageList.size - 1]?.url ?: "" else ""
+                            albums.add(
+                                AlbumItem(
+                                    results.name(), results.language + " " + results.year,
+                                    imageUrl, results.id
+                                )
                             )
-                        )
-                    }
-                    val adapter = ActivityMainAlbumItemAdapter(albums)
-                    binding!!.popularAlbumsRecyclerView.setAdapter(adapter)
-                    adapter.notifyDataSetChanged()
-                    BaseApplicationClass.sharedPreferenceManager?.homeAlbumsRecommended =
-                        albumsSearch
-                } else {
-                    try {
-                        Toast.makeText(
-                            this@MainActivity, JSONObject(response.toString()).getString("message"),
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        }
+                        val adapter = ActivityMainAlbumItemAdapter(albums)
+                        currentBinding.popularAlbumsRecyclerView.adapter = adapter
+                        adapter.notifyDataSetChanged()
+                        BaseApplicationClass.sharedPreferenceManager?.homeAlbumsRecommended = albumsSearch
+                    } else {
                         showOfflineData()
-                    } catch (e: JSONException) {
-                        Log.e(TAG, "onResponse: ", e)
                     }
+                } catch (e: Exception) {
+                    Log.e(TAG, "onResponse album parse error: ", e)
+                    showOfflineData()
                 }
             }
 
@@ -457,40 +422,34 @@ class MainActivity : AppCompatActivity() {
                     response: String?,
                     responseHeaders: HashMap<String?, Any?>?
                 ) {
-                    val playlistsSearch =
-                        Gson().fromJson(response, PlaylistsSearch::class.java)
-                    Log.i(TAG, "onResponse: $response")
-                    if (playlistsSearch.success) {
-                        val resultsList = playlistsSearch.data?.results ?: emptyList()
-                        for (results in resultsList) {
-                            if (results == null) continue
-                            val imageList = results.image
-                            val imageUrl =
-                                if (!imageList.isNullOrEmpty()) imageList[imageList.size - 1]?.url
-                                    ?: "" else ""
-                            playlists.add(
-                                AlbumItem(
-                                    results.name(), "",
-                                    imageUrl, results.id
+                    val currentBinding = binding ?: return
+                    try {
+                        val playlistsSearch = Gson().fromJson(response, PlaylistsSearch::class.java)
+                        Log.i(TAG, "onResponse: $response")
+                        if (playlistsSearch?.success == true) {
+                            val resultsList = playlistsSearch.data?.results ?: emptyList()
+                            for (results in resultsList) {
+                                if (results == null) continue
+                                val imageList = results.image
+                                val imageUrl =
+                                    if (!imageList.isNullOrEmpty()) imageList[imageList.size - 1]?.url ?: "" else ""
+                                playlists.add(
+                                    AlbumItem(
+                                        results.name(), "",
+                                        imageUrl, results.id
+                                    )
                                 )
-                            )
-                        }
-                        val adapter = ActivityMainPlaylistAdapter(playlists)
-                        binding!!.playlistRecyclerView.setAdapter(adapter)
-                        adapter.notifyDataSetChanged()
-                        BaseApplicationClass.sharedPreferenceManager?.homePlaylistRecommended =
-                            playlistsSearch
-                    } else {
-                        try {
-                            Toast.makeText(
-                                this@MainActivity,
-                                JSONObject(response.toString()).getString("message"),
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            }
+                            val adapter = ActivityMainPlaylistAdapter(playlists)
+                            currentBinding.playlistRecyclerView.adapter = adapter
+                            adapter.notifyDataSetChanged()
+                            BaseApplicationClass.sharedPreferenceManager?.homePlaylistRecommended = playlistsSearch
+                        } else {
                             showOfflineData()
-                        } catch (e: JSONException) {
-                            Log.e(TAG, "onResponse: ", e)
                         }
+                    } catch (e: Exception) {
+                        Log.e(TAG, "onResponse playlist parse error: ", e)
+                        showOfflineData()
                     }
                 }
 
@@ -501,9 +460,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showShimmerData() {
+        val currentBinding = binding ?: return
         val dataShimmer: MutableList<AlbumItem?> = ArrayList()
-        val artistsShimmer: MutableList<ArtistsSearch.Data.Results?> =
-            ArrayList()
+        val artistsShimmer: MutableList<ArtistsSearch.Data.Results?> = ArrayList()
         for (i in 0..10) {
             dataShimmer.add(AlbumItem("<shimmer>", "<shimmer>", "<shimmer>", "<shimmer>"))
             artistsShimmer.add(
@@ -517,20 +476,17 @@ class MainActivity : AppCompatActivity() {
                 )
             )
         }
-        binding!!.popularSongsRecyclerView.setAdapter(ActivityMainAlbumItemAdapter(dataShimmer))
-        binding!!.popularAlbumsRecyclerView.setAdapter(ActivityMainAlbumItemAdapter(dataShimmer))
-        binding!!.popularArtistsRecyclerView.setAdapter(
-            ActivityMainArtistsItemAdapter(
-                artistsShimmer
-            )
-        )
-        binding!!.playlistRecyclerView.setAdapter(ActivityMainPlaylistAdapter(dataShimmer))
+        currentBinding.popularSongsRecyclerView.adapter = ActivityMainAlbumItemAdapter(dataShimmer)
+        currentBinding.popularAlbumsRecyclerView.adapter = ActivityMainAlbumItemAdapter(dataShimmer)
+        currentBinding.popularArtistsRecyclerView.adapter = ActivityMainArtistsItemAdapter(artistsShimmer)
+        currentBinding.playlistRecyclerView.adapter = ActivityMainPlaylistAdapter(dataShimmer)
     }
 
     private fun showOfflineData() {
+        val currentBinding = binding ?: return
         val prefManager = BaseApplicationClass.sharedPreferenceManager ?: return
         val songSearch: SongSearch? = prefManager.homeSongsRecommended
-        if (songSearch != null) {
+        if (songSearch?.success == true) {
             val resultsList = songSearch.data?.results ?: emptyList()
             for (results in resultsList) {
                 if (results == null) continue
@@ -545,23 +501,24 @@ class MainActivity : AppCompatActivity() {
                 )
             }
             val adapter = ActivityMainPopularSongs(songs)
-            binding!!.popularSongsRecyclerView.setAdapter(adapter)
+            currentBinding.popularSongsRecyclerView.adapter = adapter
             adapter.notifyDataSetChanged()
         }
 
         val artistsSearch: ArtistsSearch? = prefManager.homeArtistsRecommended
-        if (artistsSearch != null) {
+        if (artistsSearch?.success == true) {
             val resultsList = artistsSearch.data?.results ?: emptyList()
             for (results in resultsList) {
+                if (results == null) continue
                 artists.add(results)
             }
             val adapter = ActivityMainArtistsItemAdapter(artists)
-            binding!!.popularArtistsRecyclerView.setAdapter(adapter)
+            currentBinding.popularArtistsRecyclerView.adapter = adapter
             adapter.notifyDataSetChanged()
         }
 
         val albumsSearch: AlbumsSearch? = prefManager.homeAlbumsRecommended
-        if (albumsSearch != null) {
+        if (albumsSearch?.success == true) {
             val resultsList = albumsSearch.data?.results ?: emptyList()
             for (results in resultsList) {
                 if (results == null) continue
@@ -576,12 +533,12 @@ class MainActivity : AppCompatActivity() {
                 )
             }
             val adapter = ActivityMainAlbumItemAdapter(albums)
-            binding!!.popularAlbumsRecyclerView.setAdapter(adapter)
+            currentBinding.popularAlbumsRecyclerView.adapter = adapter
             adapter.notifyDataSetChanged()
         }
 
         val playlistsSearch: PlaylistsSearch? = prefManager.homePlaylistRecommended
-        if (playlistsSearch != null) {
+        if (playlistsSearch?.success == true) {
             val resultsList = playlistsSearch.data?.results ?: emptyList()
             for (results in resultsList) {
                 if (results == null) continue
@@ -596,11 +553,9 @@ class MainActivity : AppCompatActivity() {
                 )
             }
             val adapter = ActivityMainPlaylistAdapter(playlists)
-            binding!!.playlistRecyclerView.setAdapter(adapter)
+            currentBinding.playlistRecyclerView.adapter = adapter
             adapter.notifyDataSetChanged()
         }
-
-        // showData(); //TODO: showData if new data is available
     }
 
     fun openSearch(view: View?) {
@@ -610,14 +565,12 @@ class MainActivity : AppCompatActivity() {
     private val requestPermissionLauncher = registerForActivityResult(RequestPermission()) { _: Boolean? -> }
 
     private fun askNotificationPermission() {
-        // This is only necessary for API level >= 33 (TIRAMISU)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(
                     this,
                     Manifest.permission.POST_NOTIFICATIONS
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
-                // Directly ask for the permission
                 requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
         }
@@ -627,10 +580,10 @@ class MainActivity : AppCompatActivity() {
         fun calculateNoOfColumns(
             context: Context,
             columnWidthDp: Float
-        ): Int { // For example columnWidthDp=180
+        ): Int {
             val displayMetrics = context.resources.displayMetrics
             val screenWidthDp = displayMetrics.widthPixels / displayMetrics.density
-            return (screenWidthDp / columnWidthDp + 0.5).toInt() // +0.5 for correct rounding to int.
+            return (screenWidthDp / columnWidthDp + 0.5).toInt()
         }
     }
 

@@ -1,7 +1,7 @@
 package dev.melodify.uranophilelab
 
-import android.app.Activity
 import android.app.Application
+import android.content.Context
 import androidx.appcompat.app.AppCompatDelegate
 import dev.melodify.uranophilelab.activities.SettingsActivity.SettingsSharedPrefManager
 import dev.melodify.uranophilelab.utils.MusicPlayerManager
@@ -15,17 +15,19 @@ open class BaseApplicationClass : Application() {
 
         sharedPreferenceManager = SharedPreferenceManager.getInstance(this)
         MusicPlayerManager.init(this)
+        updateTheme(this)
 
-        sharedPreferenceManager!!.migrateFromOldPrefs(this) { sharedPreferenceManager!!.clearOldPrefsAsync(this, null) }
+        sharedPreferenceManager?.migrateFromOldPrefs(this) { 
+            sharedPreferenceManager?.clearOldPrefsAsync(this, null) 
+        }
     }
 
     companion object {
         var sharedPreferenceManager: SharedPreferenceManager? = null
-        var currentActivity: Activity? = null
 
-        fun updateTheme() {
-            if (currentActivity == null) return
-            val settingsSharedPrefManager = SettingsSharedPrefManager(currentActivity!!)
+        fun updateTheme(context: Context? = null) {
+            val ctx = context ?: MusicPlayerManager.appContext ?: return
+            val settingsSharedPrefManager = SettingsSharedPrefManager(ctx)
             val theme = settingsSharedPrefManager.theme
             AppCompatDelegate.setDefaultNightMode(
                 when (theme) {

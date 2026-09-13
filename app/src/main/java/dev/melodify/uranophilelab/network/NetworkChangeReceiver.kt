@@ -14,27 +14,36 @@ class NetworkChangeReceiver(private val listener: NetworkStatusListener) : Broad
         fun onNetworkDisconnected()
     }
 
-    override fun onReceive(context: Context, intent: Intent?) {
-        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val activeNetwork = cm.activeNetworkInfo
+    override fun onReceive(context: Context?, intent: Intent?) {
+        if (context == null) return
+        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
+        val activeNetwork = cm?.activeNetworkInfo
 
         if (activeNetwork != null && activeNetwork.isConnected) {
-            listener.onNetworkConnected() // Internet is connected
+            listener.onNetworkConnected()
         } else {
-            listener.onNetworkDisconnected() // No internet connection
+            listener.onNetworkDisconnected()
         }
     }
 
     companion object {
-        // Register the receiver
-        fun registerReceiver(context: Context, receiver: NetworkChangeReceiver?) {
-            val filter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
-            context.registerReceiver(receiver, filter)
+        fun registerReceiver(context: Context?, receiver: NetworkChangeReceiver?) {
+            if (context == null || receiver == null) return
+            try {
+                val filter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
+                context.registerReceiver(receiver, filter)
+            } catch (e: Exception) {
+                // Ignore if already registered
+            }
         }
 
-        // Unregister the receiver
-        fun unregisterReceiver(context: Context, receiver: NetworkChangeReceiver?) {
-            context.unregisterReceiver(receiver)
+        fun unregisterReceiver(context: Context?, receiver: NetworkChangeReceiver?) {
+            if (context == null || receiver == null) return
+            try {
+                context.unregisterReceiver(receiver)
+            } catch (e: Exception) {
+                // Receiver not registered
+            }
         }
     }
 }

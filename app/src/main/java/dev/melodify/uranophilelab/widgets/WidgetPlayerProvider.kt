@@ -79,26 +79,35 @@ class WidgetPlayerProvider : AppWidgetProvider() {
             views.setOnClickPendingIntent(R.id.button_next, getPendingSelfIntent(context, "ACTION_NEXT"))
             views.setOnClickPendingIntent(R.id.button_prev, getPendingSelfIntent(context, "ACTION_PREV"))
 
-            // Album Art
             val imageUrl = MusicPlayerManager.IMAGE_URL
             if (!imageUrl.isNullOrEmpty()) {
-                Picasso.get().load(imageUrl).into(object : Target {
+                val target = object : Target {
                     override fun onBitmapLoaded(bitmap: Bitmap?, from: Picasso.LoadedFrom?) {
-                        views.setImageViewBitmap(R.id.widget_album_art, bitmap)
+                        widgetTargets.remove(appWidgetId)
+                        if (bitmap != null) {
+                            views.setImageViewBitmap(R.id.widget_album_art, bitmap)
+                        } else {
+                            views.setImageViewResource(R.id.widget_album_art, R.mipmap.ic_launcher)
+                        }
                         appWidgetManager.updateAppWidget(appWidgetId, views)
                     }
                     override fun onBitmapFailed(e: Exception?, errorDrawable: Drawable?) {
+                        widgetTargets.remove(appWidgetId)
                         views.setImageViewResource(R.id.widget_album_art, R.mipmap.ic_launcher)
                         appWidgetManager.updateAppWidget(appWidgetId, views)
                     }
                     override fun onPrepareLoad(placeHolderDrawable: Drawable?) {}
-                })
+                }
+                widgetTargets[appWidgetId] = target
+                Picasso.get().load(imageUrl).into(target)
             } else {
                 views.setImageViewResource(R.id.widget_album_art, R.mipmap.ic_launcher)
             }
 
             appWidgetManager.updateAppWidget(appWidgetId, views)
         }
+
+        private val widgetTargets = HashMap<Int, Target>()
 
         private fun getPendingSelfIntent(context: Context, action: String): PendingIntent {
             val intent = Intent(context, WidgetControlReceiver::class.java)

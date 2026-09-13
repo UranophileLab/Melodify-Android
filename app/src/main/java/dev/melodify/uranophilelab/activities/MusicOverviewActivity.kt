@@ -685,9 +685,6 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
     override fun onResume() {
         super.onResume()
 
-        // Set as current activity in ApplicationClass
-        BaseApplicationClass.currentActivity = this
-
         // Bind to the service
         val intent = Intent(this, MusicService::class.java)
         bindService(intent, this, BIND_AUTO_CREATE)
