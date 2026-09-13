@@ -73,7 +73,7 @@
 
         </LinearLayout>
 
-        <com.harsh.shah.saavnmp3.utils.customview.BottomSheetItemView
+        <dev.melodify.uranophilelab.utils.customview.BottomSheetItemView
             android:id="@+id/add_to_library"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

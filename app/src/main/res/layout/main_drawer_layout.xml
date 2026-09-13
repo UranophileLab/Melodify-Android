@@ -44,13 +44,6 @@
                 android:textSize="@dimen/_16ssp"
                 android:textColor="@color/textMain" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Made By Harsh &lt;3"
-                android:textSize="@dimen/_9ssp"
-                android:textColor="@color/textSec" />
-
         </LinearLayout>
 
 
@@ -62,7 +55,7 @@
         android:background="@color/textSec"
         android:layout_marginVertical="@dimen/_8sdp" />
 
-    <com.harsh.shah.saavnmp3.utils.customview.BottomSheetItemView
+    <dev.melodify.uranophilelab.utils.customview.BottomSheetItemView
         android:id="@+id/library"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -70,7 +63,7 @@
         android:src="@drawable/baseline_library_music_24"
         app:srcPadding="@dimen/_4sdp" />
 
-    <com.harsh.shah.saavnmp3.utils.customview.BottomSheetItemView
+    <dev.melodify.uranophilelab.utils.customview.BottomSheetItemView
         android:id="@+id/download_manager"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -78,7 +71,7 @@
         android:src="@drawable/baseline_download_for_offline_24"
         app:srcPadding="@dimen/_4sdp" />
 
-    <com.harsh.shah.saavnmp3.utils.customview.BottomSheetItemView
+    <dev.melodify.uranophilelab.utils.customview.BottomSheetItemView
         android:id="@+id/settings"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -86,7 +79,7 @@
         android:src="@drawable/settings_24px"
         app:srcPadding="@dimen/_4sdp" />
 
-    <com.harsh.shah.saavnmp3.utils.customview.BottomSheetItemView
+    <dev.melodify.uranophilelab.utils.customview.BottomSheetItemView
         android:id="@+id/about"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

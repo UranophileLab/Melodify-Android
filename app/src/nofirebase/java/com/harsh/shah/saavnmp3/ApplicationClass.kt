@@ -1,4 +1,4 @@
-package com.harsh.shah.saavnmp3
+package dev.melodify.uranophilelab
 
 class ApplicationClass : BaseApplicationClass() {
     override fun onCreate() {

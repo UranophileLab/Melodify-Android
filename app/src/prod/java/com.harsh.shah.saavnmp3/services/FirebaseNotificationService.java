@@ -1,4 +1,4 @@
-package com.harsh.shah.saavnmp3.services;
+package dev.melodify.uranophilelab.services;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -17,8 +17,8 @@ import androidx.core.app.NotificationCompat;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
-import com.harsh.shah.saavnmp3.R;
-import com.harsh.shah.saavnmp3.activities.MainActivity;
+import dev.melodify.uranophilelab.R;
+import dev.melodify.uranophilelab.activities.MainActivity;
 
 import java.io.InputStream;
 import java.net.HttpURLConnection;

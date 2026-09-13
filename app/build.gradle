@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace 'com.harsh.shah.saavnmp3'
+    namespace 'dev.melodify.uranophilelab'
     compileSdk 37
 
     defaultConfig {
-        applicationId "com.harsh.shah.saavnmp3"
+        applicationId "dev.melodify.uranophilelab"
         minSdk 23
         targetSdk 36
         versionCode 13

@@ -6,10 +6,10 @@
     <color name="textSec">@color/text_secondary_light</color>
     <color name="buttonBackground">@color/button_dark</color>
     <color name="dividerBackground">@color/divider_light</color>
-    <color name="green">@color/spotify_dark_green</color>
+    <color name="green">@color/cyan_accent</color>
 
     <color name="activity_main_cta_button">@color/textMain</color>
 
-    <color name="widget_transparent_75">#BF000000</color>
+    <color name="widget_transparent_75">#BF0F172A</color>
 
 </resources>

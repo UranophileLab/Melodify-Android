@@ -1,4 +1,4 @@
-package com.harsh.shah.saavnmp3.services
+package dev.melodify.uranophilelab.services
 
 import android.app.Service
 import android.content.Intent

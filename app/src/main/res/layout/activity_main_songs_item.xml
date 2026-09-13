@@ -4,26 +4,29 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:background="@color/background"
-    app:cardCornerRadius="@dimen/_8sdp"
-    android:layout_marginHorizontal="@dimen/_5sdp"
-    android:layout_marginVertical="@dimen/_2sdp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground"
+    android:layout_marginHorizontal="@dimen/_4sdp"
+    android:layout_marginVertical="@dimen/_4sdp"
+    app:cardCornerRadius="@dimen/_12sdp"
+    app:cardElevation="0dp"
     app:strokeWidth="0dp"
-    app:cardBackgroundColor="@color/background">
+    app:cardBackgroundColor="@android:color/transparent">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:padding="@dimen/_11sdp">
+        android:padding="@dimen/_6sdp">
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardView"
-            android:layout_width="@dimen/_90sdp"
-            android:layout_height="@dimen/_90sdp"
-            android:layout_marginBottom="8dp"
-            app:cardBackgroundColor="@color/background"
-            app:cardCornerRadius="@dimen/_8sdp"
-            app:layout_constraintBottom_toTopOf="@+id/albumTitle"
+            android:layout_width="@dimen/_95sdp"
+            android:layout_height="@dimen/_95sdp"
+            app:cardCornerRadius="@dimen/_12sdp"
+            app:cardElevation="@dimen/_3sdp"
+            app:strokeWidth="0.5dp"
+            app:strokeColor="@color/textSec"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
@@ -32,6 +35,7 @@
                 android:id="@+id/coverImage"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:scaleType="centerCrop"
                 android:background="@color/textSec"
                 tools:srcCompat="@drawable/ic_launcher_foreground" />
 
@@ -39,39 +43,36 @@
 
         <TextView
             android:id="@+id/albumTitle"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:maxWidth="@dimen/_80sdp"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="1dp"
-            android:fontFamily="@font/avenir_next_regular"
+            android:layout_marginTop="@dimen/_6sdp"
+            android:fontFamily="@font/avenir_next_bold"
             android:gravity="center"
             android:text="Album Name"
             android:textColor="@color/textMain"
-            android:textSize="@dimen/_13ssp"
-            app:layout_constraintBottom_toTopOf="@+id/albumSubTitle"
-            app:layout_constraintEnd_toEndOf="@+id/cardView"
-            app:layout_constraintStart_toStartOf="@+id/cardView"
-            app:layout_constraintTop_toBottomOf="@+id/cardView"
-            android:scrollHorizontally="true"
-            android:ellipsize="marquee"
-            android:singleLine="true"/>
-
-        <TextView
-            android:id="@+id/albumSubTitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:maxWidth="@dimen/_90sdp"
-            android:gravity="center"
-            android:text="Album Description"
-            android:fontFamily="@font/avenir_next_light"
-            android:textColor="@color/textSec"
-            android:textSize="@dimen/_11ssp"
+            android:textSize="@dimen/_12ssp"
             android:scrollHorizontally="true"
             android:ellipsize="marquee"
             android:singleLine="true"
-            app:layout_constraintEnd_toEndOf="@+id/albumTitle"
-            app:layout_constraintStart_toStartOf="@+id/albumTitle"
+            app:layout_constraintEnd_toEndOf="@+id/cardView"
+            app:layout_constraintStart_toStartOf="@+id/cardView"
+            app:layout_constraintTop_toBottomOf="@+id/cardView" />
+
+        <TextView
+            android:id="@+id/albumSubTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_2sdp"
+            android:gravity="center"
+            android:text="Album Description"
+            android:fontFamily="@font/avenir_next_regular"
+            android:textColor="@color/textSec"
+            android:textSize="@dimen/_10ssp"
+            android:scrollHorizontally="true"
+            android:ellipsize="marquee"
+            android:singleLine="true"
+            app:layout_constraintEnd_toEndOf="@+id/cardView"
+            app:layout_constraintStart_toStartOf="@+id/cardView"
             app:layout_constraintTop_toBottomOf="@+id/albumTitle" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>

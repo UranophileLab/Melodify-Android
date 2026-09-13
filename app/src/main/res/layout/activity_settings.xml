@@ -73,7 +73,7 @@
                 android:textStyle="bold"
                 android:textSize="@dimen/_14sdp" />
 
-            <com.harsh.shah.saavnmp3.utils.customview.MaterialCustomSwitch
+            <dev.melodify.uranophilelab.utils.customview.MaterialCustomSwitch
                 android:id="@+id/download_over_cellular"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -82,7 +82,7 @@
                 app:textOn="Download starts or continue when you're connected to Wi-Fi or cellular."
                 app:checked="true" />
 
-            <com.harsh.shah.saavnmp3.utils.customview.MaterialCustomSwitch
+            <dev.melodify.uranophilelab.utils.customview.MaterialCustomSwitch
                 android:id="@+id/high_quality_track"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -107,7 +107,7 @@
                 android:textStyle="bold"
                 android:textSize="@dimen/_14sdp" />
 
-            <com.harsh.shah.saavnmp3.utils.customview.MaterialCustomSwitch
+            <dev.melodify.uranophilelab.utils.customview.MaterialCustomSwitch
                 android:id="@+id/store_in_cache"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -144,7 +144,7 @@
                 android:textStyle="bold"
                 android:textSize="@dimen/_14sdp" />
 
-            <com.harsh.shah.saavnmp3.utils.customview.MaterialCustomSwitch
+            <dev.melodify.uranophilelab.utils.customview.MaterialCustomSwitch
                 android:id="@+id/explicit"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -169,7 +169,7 @@
                 android:textStyle="bold"
                 android:textSize="@dimen/_14sdp" />
 
-            <com.harsh.shah.saavnmp3.utils.customview.MaterialCustomSwitch
+            <dev.melodify.uranophilelab.utils.customview.MaterialCustomSwitch
                 android:id="@+id/play_in_background"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

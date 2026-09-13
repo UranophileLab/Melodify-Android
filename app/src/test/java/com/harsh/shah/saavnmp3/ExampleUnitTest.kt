@@ -1,4 +1,4 @@
-package com.harsh.shah.saavnmp3
+package dev.melodify.uranophilelab
 
 import org.junit.Assert
 import org.junit.Test

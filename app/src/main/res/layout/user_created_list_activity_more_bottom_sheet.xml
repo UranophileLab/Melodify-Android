@@ -73,7 +73,7 @@
 
         </LinearLayout>
 
-        <com.harsh.shah.saavnmp3.utils.customview.BottomSheetItemView
+        <dev.melodify.uranophilelab.utils.customview.BottomSheetItemView
             android:id="@+id/remove_library"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -81,7 +81,7 @@
             android:src="@drawable/round_close_24"
             app:srcPadding="@dimen/_4sdp"/>
 
-        <com.harsh.shah.saavnmp3.utils.customview.BottomSheetItemView
+        <dev.melodify.uranophilelab.utils.customview.BottomSheetItemView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:title="Download library"

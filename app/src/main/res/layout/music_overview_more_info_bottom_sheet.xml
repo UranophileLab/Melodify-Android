@@ -73,21 +73,21 @@
 
         </LinearLayout>
 
-        <com.harsh.shah.saavnmp3.utils.customview.BottomSheetItemView
+        <dev.melodify.uranophilelab.utils.customview.BottomSheetItemView
             android:id="@+id/go_to_album"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:title="Go to album"
             android:src="@drawable/baseline_album_24"/>
 
-        <com.harsh.shah.saavnmp3.utils.customview.BottomSheetItemView
+        <dev.melodify.uranophilelab.utils.customview.BottomSheetItemView
             android:id="@+id/add_to_library"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:title="Add to library"
             android:src="@drawable/round_add_24"/>
 
-        <com.harsh.shah.saavnmp3.utils.customview.BottomSheetItemView
+        <dev.melodify.uranophilelab.utils.customview.BottomSheetItemView
             android:id="@+id/download"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

@@ -2,28 +2,27 @@
     <!-- Base application theme. -->
     <style name="Base.Theme.Melotune" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
         <item name="android:statusBarColor">@color/background</item>
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:navigationBarColor">@color/background</item>
-        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">false</item>
 
         <!-- Dark theme colors -->
-        <item name="colorPrimary">@color/spotify_green</item>
-        <item name="colorPrimaryVariant">@color/spotify_dark_green</item>
-        <item name="colorOnPrimary">@color/text_dark</item>
+        <item name="colorPrimary">@color/ocean_blue</item>
+        <item name="colorPrimaryVariant">@color/cyan_accent</item>
+        <item name="colorOnPrimary">@color/text_light</item>
 
         <item name="android:colorBackground">@color/background_dark</item>
         <item name="colorOnBackground">@color/text_light</item>
 
-        <item name="colorSurface">@color/spotify_black</item>
+        <item name="colorSurface">#1E293B</item>
         <item name="colorOnSurface">@color/text_light</item>
 
-        <item name="colorAccent">@color/spotify_green</item>
+        <item name="colorAccent">@color/cyan_accent</item>
 
         <!-- Text colors -->
         <item name="android:textColor">@color/text_light</item>
-        <item name="android:textColorSecondary">@color/text_secondary_dark</item>
+        <item name="android:textColorSecondary">@color/text_secondary_light</item>
 
         <!-- Divider -->
         <item name="android:divider">@color/divider_dark</item>

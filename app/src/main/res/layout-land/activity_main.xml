@@ -87,7 +87,7 @@
                 </LinearLayout>
 
                 <LinearLayout
-                    android:id="@+id/__popular_songs_section"
+                    android:id="@+id/popular_songs_section"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/_12sdp"
@@ -116,13 +116,13 @@
                 </LinearLayout>
 
                 <LinearLayout
-                    android:id="@+id/__popular_artists_section"
+                    android:id="@+id/popular_artists_section"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/_8sdp"
                     android:orientation="vertical"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/__popular_songs_section">
+                    app:layout_constraintTop_toBottomOf="@id/popular_songs_section">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -145,13 +145,13 @@
                 </LinearLayout>
 
                 <LinearLayout
-                    android:id="@+id/__popular_albums_section"
+                    android:id="@+id/popular_albums_section"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/_8sdp"
                     android:orientation="vertical"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/__popular_artists_section">
+                    app:layout_constraintTop_toBottomOf="@id/popular_artists_section">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -180,7 +180,7 @@
                     android:layout_marginTop="@dimen/_8sdp"
                     android:orientation="vertical"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/__popular_albums_section">
+                    app:layout_constraintTop_toBottomOf="@id/popular_albums_section">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -203,7 +203,7 @@
                 </LinearLayout>
 
                 <LinearLayout
-                    android:id="@+id/__popular_playlists_section"
+                    android:id="@+id/popular_playlists_section"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/_8sdp"

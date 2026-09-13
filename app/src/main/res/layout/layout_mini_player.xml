@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Wraps the mini-player card in a FrameLayout so we can overlay
-  a thin progress bar at the very bottom without disrupting the
-  existing horizontal layout.
+  Floating mini-player card layout
 -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -10,10 +8,10 @@
     android:id="@+id/play_bar_background"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="@dimen/_12sdp"
-    android:layout_marginVertical="@dimen/_8sdp"
+    android:layout_marginHorizontal="@dimen/_10sdp"
+    android:layout_marginBottom="@dimen/_10sdp"
     android:background="@drawable/play_bar_background"
-    android:elevation="@dimen/_24sdp"
+    android:elevation="@dimen/_12sdp"
     android:visibility="gone"
     tools:visibility="visible">
 
@@ -22,20 +20,23 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="@dimen/_8sdp"
+        android:paddingHorizontal="@dimen/_8sdp"
+        android:paddingVertical="@dimen/_6sdp"
         android:gravity="center_vertical">
 
         <com.google.android.material.card.MaterialCardView
-            android:layout_width="@dimen/_30sdp"
-            android:layout_height="@dimen/_30sdp"
+            android:layout_width="@dimen/_34sdp"
+            android:layout_height="@dimen/_34sdp"
             app:cardBackgroundColor="@android:color/transparent"
-            app:cardCornerRadius="@dimen/_8sdp"
-            app:strokeWidth="0dp">
+            app:cardCornerRadius="@dimen/_10sdp"
+            app:strokeWidth="0.5dp"
+            app:strokeColor="@color/textSec">
 
             <ImageView
                 android:id="@+id/play_bar_cover_image"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:scaleType="centerCrop"
                 android:background="@color/spotify_dark_green"
                 android:contentDescription="Mini Player Cover Image" />
 
@@ -45,7 +46,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_marginStart="@dimen/_8sdp"
+            android:layout_marginStart="@dimen/_10sdp"
+            android:layout_marginEnd="@dimen/_6sdp"
             android:layout_weight="1">
 
             <TextView
@@ -55,7 +57,7 @@
                 android:singleLine="true"
                 android:ellipsize="marquee"
                 android:text="@string/app_name"
-                android:textStyle="bold"
+                android:fontFamily="@font/avenir_next_bold"
                 android:textColor="@color/textMain"
                 android:textSize="@dimen/_12ssp" />
 
@@ -66,6 +68,7 @@
                 android:singleLine="true"
                 android:ellipsize="marquee"
                 android:text="@string/app_name"
+                android:fontFamily="@font/avenir_next_regular"
                 android:textColor="@color/textSec"
                 android:textSize="@dimen/_10ssp" />
 
@@ -74,46 +77,51 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:gravity="center_vertical"
             android:orientation="horizontal">
 
             <ImageView
                 android:id="@+id/play_bar_prev_icon"
-                android:layout_width="@dimen/_30sdp"
-                android:layout_height="@dimen/_30sdp"
+                android:layout_width="@dimen/_28sdp"
+                android:layout_height="@dimen/_28sdp"
                 android:focusable="true"
                 android:src="@drawable/skip_previous_24px"
                 android:clickable="true"
-                android:padding="@dimen/_4sdp"
+                android:padding="@dimen/_3sdp"
+                app:tint="@color/textMain"
                 android:contentDescription="Previous" />
 
             <ImageView
                 android:id="@+id/play_bar_play_pause_icon"
-                android:layout_width="@dimen/_30sdp"
-                android:layout_height="@dimen/_30sdp"
+                android:layout_width="@dimen/_32sdp"
+                android:layout_height="@dimen/_32sdp"
                 android:src="@drawable/play_arrow_24px"
-                android:padding="@dimen/_4sdp"
+                android:padding="@dimen/_2sdp"
                 android:focusable="true"
                 android:clickable="true"
+                app:tint="@color/textMain"
                 android:contentDescription="Play/Pause" />
 
             <ImageView
                 android:id="@+id/play_bar_next_icon"
-                android:layout_width="@dimen/_30sdp"
-                android:layout_height="@dimen/_30sdp"
+                android:layout_width="@dimen/_28sdp"
+                android:layout_height="@dimen/_28sdp"
                 android:focusable="true"
                 android:src="@drawable/skip_next_24px"
                 android:clickable="true"
-                android:padding="@dimen/_4sdp"
+                android:padding="@dimen/_3sdp"
+                app:tint="@color/textMain"
                 android:contentDescription="Next" />
 
             <ImageView
                 android:id="@+id/play_bar_queue_icon"
-                android:layout_width="@dimen/_30sdp"
-                android:layout_height="@dimen/_30sdp"
+                android:layout_width="@dimen/_28sdp"
+                android:layout_height="@dimen/_28sdp"
                 android:focusable="true"
                 android:src="@drawable/ic_queue_music"
                 android:clickable="true"
                 android:padding="@dimen/_4sdp"
+                app:tint="@color/textMain"
                 android:contentDescription="Queue" />
 
         </LinearLayout>
@@ -122,14 +130,12 @@
 
     <!--
       Thin progress bar pinned to the bottom of the card.
-      Uses a ProgressBar in horizontal style with max=1000
-      for smooth sub-second resolution.
     -->
     <ProgressBar
         android:id="@+id/play_bar_progress"
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="match_parent"
-        android:layout_height="2dp"
+        android:layout_height="2.5dp"
         android:layout_gravity="bottom"
         android:max="1000"
         android:progress="0"

@@ -1,4 +1,4 @@
-package com.harsh.shah.saavnmp3
+package dev.melodify.uranophilelab
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -17,6 +17,6 @@ class ExampleInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().getTargetContext()
-        Assert.assertEquals("com.harsh.shah.saavnmp3", appContext.getPackageName())
+        Assert.assertEquals("dev.melodify.uranophilelab", appContext.getPackageName())
     }
 }
