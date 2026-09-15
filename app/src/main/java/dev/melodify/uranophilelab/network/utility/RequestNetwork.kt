@@ -3,7 +3,8 @@
 import android.content.Context
 import android.util.Log
 
-class RequestNetwork(val activity: Context?) {
+class RequestNetwork(context: Context?) {
+    val appContext: Context? = context?.applicationContext
     var params: HashMap<String?, Any?>? = HashMap<String?, Any?>()
         private set
     var headers: HashMap<String?, Any?>? = HashMap<String?, Any?>()

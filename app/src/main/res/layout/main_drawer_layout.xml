@@ -64,6 +64,22 @@
         app:srcPadding="@dimen/_4sdp" />
 
     <dev.melodify.uranophilelab.utils.customview.BottomSheetItemView
+        android:id="@+id/favorites"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:title="Favorites"
+        android:src="@drawable/favorite_24px"
+        app:srcPadding="@dimen/_4sdp" />
+
+    <dev.melodify.uranophilelab.utils.customview.BottomSheetItemView
+        android:id="@+id/history"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:title="History"
+        android:src="@drawable/round_history_24"
+        app:srcPadding="@dimen/_4sdp" />
+
+    <dev.melodify.uranophilelab.utils.customview.BottomSheetItemView
         android:id="@+id/download_manager"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -96,7 +112,7 @@
         android:id="@+id/versionTxt"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="version 1.1.0"
+        android:text="version 2.0.0"
         android:gravity="center"
         android:paddingStart="@dimen/_12sdp"
         tools:ignore="RtlSymmetry"

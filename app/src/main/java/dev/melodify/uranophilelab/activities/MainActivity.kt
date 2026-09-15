@@ -231,6 +231,16 @@ class MainActivity : AppCompatActivity() {
             slidingRootNavBuilder?.closeMenu()
         }
 
+        layout.findViewById<View>(R.id.favorites)?.setOnClickListener {
+            startActivity(Intent(this@MainActivity, FavoritesActivity::class.java))
+            slidingRootNavBuilder?.closeMenu()
+        }
+
+        layout.findViewById<View>(R.id.history)?.setOnClickListener {
+            startActivity(Intent(this@MainActivity, HistoryActivity::class.java))
+            slidingRootNavBuilder?.closeMenu()
+        }
+
         layout.findViewById<View>(R.id.about)?.setOnClickListener {
             startActivity(Intent(this@MainActivity, AboutActivity::class.java))
             slidingRootNavBuilder?.closeMenu()
@@ -274,8 +284,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        MusicPlayerManager.cancelNotification()
         super.onDestroy()
+        binding = null
     }
 
     private fun showData() {

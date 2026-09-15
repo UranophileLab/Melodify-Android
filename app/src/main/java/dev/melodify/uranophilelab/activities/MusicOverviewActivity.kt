@@ -28,6 +28,7 @@ import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import dev.melodify.uranophilelab.model.history.SongHistoryItem
 import com.google.android.material.snackbar.Snackbar
 import com.google.gson.Gson
 import dev.melodify.uranophilelab.BaseApplicationClass
@@ -470,6 +471,23 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
             ).show()
         }
 
+        binding?.favoriteIcon?.setOnClickListener {
+            val currentSong = mSongResponse?.data?.getOrNull(0)
+            val songTitle = binding!!.title.text.toString()
+            val primaryArtist = if (artistsList.size > 0) artistsList[0].name() else ""
+            val songItem = SongHistoryItem(
+                id = ID_FROM_EXTRA,
+                title = if (songTitle != "loading...") songTitle else currentSong?.name() ?: "",
+                artist = primaryArtist,
+                imageUrl = IMAGE_URL
+            )
+            val prefs = SharedPreferenceManager.getInstance(this)
+            val added = prefs.toggleFavorite(songItem)
+            updateFavoriteStatus()
+            val msg = if (added) "Added to Favorites" else "Removed from Favorites"
+            Snackbar.make(binding!!.root, msg, Snackbar.LENGTH_SHORT).show()
+        }
+
         binding!!.shareIcon.setOnClickListener(View.OnClickListener {
             if (SHARE_URL.isBlank()) return@OnClickListener
             val sendIntent = Intent()
@@ -703,6 +721,8 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
         handler.removeCallbacks(runnable)
         mHandler.removeCallbacks(mUpdateTimeTask)
 
+        musicService?.setCallback(null)
+
         // Unbind from service
         try {
             unbindService(this)
@@ -719,10 +739,12 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
     }
 
     override fun onDestroy() {
+        musicService?.setCallback(null)
+        musicService = null
+        handler.removeCallbacksAndMessages(null)
+        mHandler.removeCallbacksAndMessages(null)
         super.onDestroy()
-        // Final cleanup
-        handler.removeCallbacks(runnable)
-        mHandler.removeCallbacks(mUpdateTimeTask)
+        binding = null
     }
 
     override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
@@ -827,9 +849,20 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
 
         artistsList = song.artists?.primary?.filterNotNull()?.toMutableList() ?: mutableListOf()
 
-        SONG_URL = MusicPlayerManager.getDownloadUrl(downloadUrls)
+        val primaryArtist = if (artistsList.size > 0) artistsList[0].name() else ""
+        SharedPreferenceManager.getInstance(this).addSongToHistory(
+            SongHistoryItem(
+                id = song.id ?: ID_FROM_EXTRA,
+                title = song.name(),
+                artist = primaryArtist,
+                imageUrl = IMAGE_URL
+            )
+        )
 
-        if ((MusicPlayerManager.MUSIC_ID != ID_FROM_EXTRA || forced)) {
+        SONG_URL = MusicPlayerManager.getDownloadUrl(downloadUrls)
+        updateFavoriteStatus()
+
+        if (MusicPlayerManager.MUSIC_ID != ID_FROM_EXTRA || MusicPlayerManager.player?.isPlaying != true || forced) {
             MusicPlayerManager.setMusicDetails(
                 IMAGE_URL, binding!!.title.text.toString(),
                 binding!!.description.text.toString(), ID_FROM_EXTRA
@@ -918,34 +951,34 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
                 binding!!.totalDuration.text = convertDuration(p.duration)
             } else {
                 // If duration is not yet available, set a default or retry
-                binding!!.totalDuration.text = "00:00"
+                binding?.totalDuration?.text = "00:00"
                 // Schedule a retry to get the duration
-                Handler(Looper.getMainLooper()).postDelayed({
-                    val p2 = MusicPlayerManager.player
-                    if (p2 != null && p2.duration > 0) {
-                        binding!!.totalDuration.text = convertDuration(p2.duration)
+                handler.postDelayed({
+                    if (!isFinishing && !isDestroyed && binding != null) {
+                        val p2 = MusicPlayerManager.player
+                        if (p2 != null && p2.duration > 0) {
+                            binding?.totalDuration?.text = convertDuration(p2.duration)
+                        }
                     }
                 }, 500)
             }
 
             // Set play state
             if (MusicPlayerManager.player?.isPlaying == true) {
-                binding!!.playPauseImage.setImageResource(R.drawable.baseline_pause_24)
+                binding?.playPauseImage?.setImageResource(R.drawable.baseline_pause_24)
             } else {
-                binding!!.playPauseImage.setImageResource(R.drawable.play_arrow_24px)
+                binding?.playPauseImage?.setImageResource(R.drawable.play_arrow_24px)
             }
             updateSeekbar()
-
-            // Update notification
-            // showNotification(BaseApplicationClass.player.isPlaying() ?
-            // R.drawable.baseline_pause_24
-            // : R.drawable.play_arrow_24px);
-            // BaseApplicationClass handles notification updates
         } catch (e: Exception) {
             Log.e(TAG, "Error preparing media player", e)
             // Try to recover
             Toast.makeText(this, "Error playing track. Retrying...", Toast.LENGTH_SHORT).show()
-            Handler().postDelayed(Runnable { this.prepareMediaPLayer() }, 1000)
+            handler.postDelayed({
+                if (!isFinishing && !isDestroyed) {
+                    this.prepareMediaPLayer()
+                }
+            }, 1000)
         }
     }
 
@@ -953,6 +986,7 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
 
     fun updateSeekbar() {
         handler.removeCallbacks(runnable)
+        if (isFinishing || isDestroyed || binding == null) return
         try {
             if (MusicPlayerManager.player == null) {
                 Log.e(TAG, "Player is null in updateSeekbar")
@@ -966,26 +1000,29 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
 
             if (duration > 0) {
                 val progress = ((currentPosition.toFloat() / duration) * 100).toInt()
-                binding!!.seekbar.progress = progress
-                binding!!.elapsedDuration.text = convertDuration(currentPosition)
+                binding?.seekbar?.progress = progress
+                binding?.elapsedDuration?.text = convertDuration(currentPosition)
                 
                 lyricsAdapter?.updateTime(currentPosition, currentLyricsRecyclerView)
             }
         } catch (e: Exception) {
             Log.e(TAG, "Exception in updateSeekbar", e)
         }
-        handler.postDelayed(runnable, 250)
+        if (!isFinishing && !isDestroyed) {
+            handler.postDelayed(runnable, 250)
+        }
     }
 
-    private val mHandler = Handler()
+    private val mHandler = Handler(Looper.getMainLooper())
     private val mUpdateTimeTask = Runnable { this.updateTrackInfo() }
 
     private fun updateTrackInfo() {
         mHandler.removeCallbacks(mUpdateTimeTask)
+        if (isFinishing || isDestroyed || binding == null) return
         
-        val currentTitle = binding!!.title.text.toString()
+        val currentTitle = binding?.title?.text?.toString() ?: ""
         if (currentTitle != MusicPlayerManager.MUSIC_TITLE) {
-            binding!!.title.text = MusicPlayerManager.MUSIC_TITLE
+            binding?.title?.text = MusicPlayerManager.MUSIC_TITLE
             
             val currentTrackData = MusicPlayerManager.CURRENT_TRACK?.data?.getOrNull(0)
             if (currentTrackData != null && currentTitle.isNotEmpty()) {
@@ -993,37 +1030,39 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
             }
         }
         
-        if (binding!!.description.text.toString() != MusicPlayerManager.MUSIC_DESCRIPTION) {
-            binding!!.description.text = MusicPlayerManager.MUSIC_DESCRIPTION
+        if (binding?.description?.text?.toString() != MusicPlayerManager.MUSIC_DESCRIPTION) {
+            binding?.description?.text = MusicPlayerManager.MUSIC_DESCRIPTION
         }
-        Picasso.get().load(MusicPlayerManager.IMAGE_URL?.toUri())
-            .into(binding!!.coverImage)
+        if (!isFinishing && !isDestroyed && binding != null) {
+            Picasso.get().load(MusicPlayerManager.IMAGE_URL?.toUri())
+                .into(binding!!.coverImage)
+        }
         val p = MusicPlayerManager.player ?: return
-        binding!!.seekbar.progress = ((p.currentPosition.toFloat() / p.duration) * 100).toInt()
+        binding?.seekbar?.progress = ((p.currentPosition.toFloat() / p.duration) * 100).toInt()
 
-        binding!!.seekbar.secondaryProgress = ((p.bufferedPosition.toFloat() / p.duration) * 100).toInt()
+        binding?.seekbar?.secondaryProgress = ((p.bufferedPosition.toFloat() / p.duration) * 100).toInt()
 
         val currentDuration: Long = p.currentPosition
-        binding!!.elapsedDuration.text = convertDuration(currentDuration)
+        binding?.elapsedDuration?.text = convertDuration(currentDuration)
 
-        if (binding!!.totalDuration.text.toString()
+        if (binding?.totalDuration?.text?.toString()
             != convertDuration(p.duration)
-        ) binding!!.totalDuration.text = convertDuration(p.duration)
+        ) binding?.totalDuration?.text = convertDuration(p.duration)
 
-        if (p.isPlaying) binding!!.playPauseImage.setImageResource(
+        if (p.isPlaying) binding?.playPauseImage?.setImageResource(
             R.drawable.baseline_pause_24
         )
-        else binding!!.playPauseImage.setImageResource(R.drawable.play_arrow_24px)
-
-        // ((ApplicationClass)getApplicationContext()).showNotification();
+        else binding?.playPauseImage?.setImageResource(R.drawable.play_arrow_24px)
 
         // Update repeat and shuffle button UI
         updateRepeatButtonUI()
 
-        if (p.shuffleModeEnabled) binding!!.shuffleIcon.imageTintList = ColorStateList.valueOf(getResources().getColor(R.color.spotify_green))
-        else binding!!.shuffleIcon.imageTintList = ColorStateList.valueOf(getResources().getColor(R.color.textSec))
+        if (p.shuffleModeEnabled) binding?.shuffleIcon?.imageTintList = ColorStateList.valueOf(getResources().getColor(R.color.spotify_green))
+        else binding?.shuffleIcon?.imageTintList = ColorStateList.valueOf(getResources().getColor(R.color.textSec))
 
-        mHandler.postDelayed(mUpdateTimeTask, 1000)
+        if (!isFinishing && !isDestroyed) {
+            mHandler.postDelayed(mUpdateTimeTask, 1000)
+        }
     }
 
     private fun updateRepeatButtonUI() {
@@ -1137,6 +1176,19 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
 
     fun showNotification(playPauseButton: Int) {
         MusicPlayerManager.showNotification()
+    }
+
+    private fun updateFavoriteStatus() {
+        if (ID_FROM_EXTRA.isNullOrEmpty()) return
+        val prefs = SharedPreferenceManager.getInstance(this)
+        val isFav = prefs.isFavorite(ID_FROM_EXTRA)
+        if (isFav) {
+            binding?.favoriteIcon?.setImageResource(R.drawable.favorite_24px)
+            binding?.favoriteIcon?.imageTintList = ColorStateList.valueOf(resources.getColor(R.color.red, theme))
+        } else {
+            binding?.favoriteIcon?.setImageResource(R.drawable.favorite_outline_24px)
+            binding?.favoriteIcon?.imageTintList = ColorStateList.valueOf(resources.getColor(R.color.textSec, theme))
+        }
     }
 
     companion object {

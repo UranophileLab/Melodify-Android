@@ -98,6 +98,11 @@ class ArtistProfileActivity : AppCompatActivity() {
         MiniPlayerHelper.onActivityPause(this)
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        binding = null
+    }
+
     private var artistId = "9999"
     private var artistSearch: ArtistSearch? = null
 

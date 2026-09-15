@@ -24,6 +24,9 @@ import dev.melodify.uranophilelab.records.SongResponse
 import dev.melodify.uranophilelab.records.SongSearch
 import dev.melodify.uranophilelab.records.sharedpref.SavedLibraries
 import dev.melodify.uranophilelab.records.sharedpref.SavedLibraries.Library
+import dev.melodify.uranophilelab.model.history.SongHistoryItem
+import dev.melodify.uranophilelab.model.history.AlbumHistoryItem
+import com.google.gson.reflect.TypeToken
 import androidx.core.content.edit
 
 /**
@@ -312,6 +315,117 @@ class SharedPreferenceManager private constructor(context: Context) {
             json,
             ArtistSearch::class.java
         )
+    }
+
+    // ---------- Song & Album History ----------
+    var songHistory: List<SongHistoryItem>
+        get() {
+            val json = getJson("song_history")
+            if (json.isNullOrEmpty()) return emptyList()
+            val type = object : TypeToken<List<SongHistoryItem>>() {}.type
+            return try {
+                gson.fromJson<List<SongHistoryItem>>(json, type) ?: emptyList()
+            } catch (e: Exception) {
+                emptyList()
+            }
+        }
+        set(list) {
+            putJson("song_history", gson.toJson(list))
+        }
+
+    fun addSongToHistory(item: SongHistoryItem) {
+        if (item.id.isNullOrBlank()) return
+        val current = songHistory.toMutableList()
+        current.removeAll { it.id == item.id }
+        current.add(0, item)
+        songHistory = if (current.size > 100) current.subList(0, 100) else current
+    }
+
+    fun clearSongHistory() {
+        putJson("song_history", gson.toJson(emptyList<SongHistoryItem>()))
+    }
+
+    var albumHistory: List<AlbumHistoryItem>
+        get() {
+            val json = getJson("album_history")
+            if (json.isNullOrEmpty()) return emptyList()
+            val type = object : TypeToken<List<AlbumHistoryItem>>() {}.type
+            return try {
+                gson.fromJson<List<AlbumHistoryItem>>(json, type) ?: emptyList()
+            } catch (e: Exception) {
+                emptyList()
+            }
+        }
+        set(list) {
+            putJson("album_history", gson.toJson(list))
+        }
+
+    fun addAlbumToHistory(item: AlbumHistoryItem) {
+        if (item.id.isNullOrBlank()) return
+        val current = albumHistory.toMutableList()
+        current.removeAll { it.id == item.id }
+        current.add(0, item)
+        albumHistory = if (current.size > 100) current.subList(0, 100) else current
+    }
+
+    fun clearAlbumHistory() {
+        putJson("album_history", gson.toJson(emptyList<AlbumHistoryItem>()))
+    }
+
+    fun clearAllHistory() {
+        clearSongHistory()
+        clearAlbumHistory()
+    }
+
+    // ---------- Favorites ----------
+    var favoriteSongs: List<SongHistoryItem>
+        get() {
+            val json = getJson("favorite_songs")
+            if (json.isNullOrEmpty()) return emptyList()
+            val type = object : TypeToken<List<SongHistoryItem>>() {}.type
+            return try {
+                gson.fromJson<List<SongHistoryItem>>(json, type) ?: emptyList()
+            } catch (e: Exception) {
+                emptyList()
+            }
+        }
+        set(list) {
+            putJson("favorite_songs", gson.toJson(list))
+        }
+
+    fun isFavorite(songId: String?): Boolean {
+        if (songId.isNullOrBlank()) return false
+        return favoriteSongs.any { it.id == songId }
+    }
+
+    fun addFavorite(song: SongHistoryItem) {
+        if (song.id.isNullOrBlank()) return
+        val current = favoriteSongs.toMutableList()
+        current.removeAll { it.id == song.id }
+        current.add(0, song)
+        favoriteSongs = current
+    }
+
+    fun removeFavorite(songId: String?) {
+        if (songId.isNullOrBlank()) return
+        val current = favoriteSongs.toMutableList()
+        current.removeAll { it.id == songId }
+        favoriteSongs = current
+    }
+
+    fun toggleFavorite(song: SongHistoryItem): Boolean {
+        val isFav = isFavorite(song.id)
+        if (isFav) {
+            removeFavorite(song.id)
+            return false
+        } else {
+            addFavorite(song)
+            return true
+        }
+    }
+
+    fun clearFavoriteSongs() {
+        putJson("favorite_songs", gson.toJson(emptyList<SongHistoryItem>()))
     }
 
     // ---------- Migration helpers for one-time migration ----------

@@ -131,8 +131,9 @@ class SearchActivity : AppCompatActivity() {
         MiniPlayerHelper.initMiniPlayer(this)
 
         OverScrollDecoratorHelper.setUpOverScroll(binding!!.hscrollview)
-        binding!!.recyclerView.setLayoutManager(LinearLayoutManager(this))
-        binding!!.recyclerView.attachSnapHelper()
+        binding!!.recyclerView.layoutManager = LinearLayoutManager(this)
+        binding!!.recyclerView.setHasFixedSize(true)
+        binding!!.recyclerView.setItemViewCacheSize(20)
 
         binding!!.edittext.requestFocus()
 
@@ -558,6 +559,13 @@ class SearchActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         MiniPlayerHelper.onActivityPause(this)
+    }
+
+    override fun onDestroy() {
+        searchRunnable?.let { searchHandler.removeCallbacks(it) }
+        searchHandler.removeCallbacksAndMessages(null)
+        super.onDestroy()
+        binding = null
     }
 
     fun backPress(view: View?) {

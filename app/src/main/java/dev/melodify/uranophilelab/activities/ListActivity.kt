@@ -22,6 +22,7 @@ import dev.melodify.uranophilelab.databinding.ActivityListMoreInfoBottomSheetBin
 import dev.melodify.uranophilelab.databinding.UserCreatedListActivityMoreBottomSheetBinding
 import dev.melodify.uranophilelab.model.AlbumItem
 import dev.melodify.uranophilelab.model.BasicDataRecord
+import dev.melodify.uranophilelab.model.history.AlbumHistoryItem
 import dev.melodify.uranophilelab.network.ApiManager
 import dev.melodify.uranophilelab.network.utility.RequestNetwork
 import dev.melodify.uranophilelab.records.AlbumSearch
@@ -460,11 +461,20 @@ class ListActivity : AppCompatActivity() {
         binding!!.albumTitle.text = data.name()
         binding!!.albumSubTitle.text = data.description()
         val imageList = data.image
-        if (!imageList.isNullOrEmpty()) {
+        val coverUrl = if (!imageList.isNullOrEmpty()) imageList[imageList.size - 1]?.url ?: "" else albumItem?.albumCover ?: ""
+        if (coverUrl.isNotEmpty()) {
             Picasso.get()
-                .load((imageList[imageList.size - 1]?.url ?: "").toUri())
+                .load(coverUrl.toUri())
                 .into(binding!!.albumCover)
         }
+        SharedPreferenceManager.getInstance(this).addAlbumToHistory(
+            AlbumHistoryItem(
+                id = data.id ?: albumItem?.id,
+                title = data.name(),
+                subtitle = data.description(),
+                imageUrl = coverUrl
+            )
+        )
         val songs = data.songs ?: mutableListOf()
         binding!!.recyclerView.setAdapter(
             ActivityListSongsItemAdapter(
@@ -551,6 +561,11 @@ class ListActivity : AppCompatActivity() {
 
     fun backPress(view: View?) {
         finish()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        binding = null
     }
 
 

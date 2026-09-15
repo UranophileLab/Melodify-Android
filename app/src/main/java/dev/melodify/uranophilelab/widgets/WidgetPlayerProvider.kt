@@ -81,6 +81,10 @@ class WidgetPlayerProvider : AppWidgetProvider() {
 
             val imageUrl = MusicPlayerManager.IMAGE_URL
             if (!imageUrl.isNullOrEmpty()) {
+                val oldTarget = widgetTargets.remove(appWidgetId)
+                if (oldTarget != null) {
+                    try { Picasso.get().cancelRequest(oldTarget) } catch (_: Exception) {}
+                }
                 val target = object : Target {
                     override fun onBitmapLoaded(bitmap: Bitmap?, from: Picasso.LoadedFrom?) {
                         widgetTargets.remove(appWidgetId)
@@ -101,6 +105,10 @@ class WidgetPlayerProvider : AppWidgetProvider() {
                 widgetTargets[appWidgetId] = target
                 Picasso.get().load(imageUrl).into(target)
             } else {
+                val oldTarget = widgetTargets.remove(appWidgetId)
+                if (oldTarget != null) {
+                    try { Picasso.get().cancelRequest(oldTarget) } catch (_: Exception) {}
+                }
                 views.setImageViewResource(R.id.widget_album_art, R.mipmap.ic_launcher)
             }
 

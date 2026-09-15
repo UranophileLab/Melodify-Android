@@ -1,7 +1,6 @@
 ﻿package dev.melodify.uranophilelab.network
 
 import android.content.Context
-import android.net.Uri
 import dev.melodify.uranophilelab.network.utility.RequestNetwork
 import dev.melodify.uranophilelab.network.utility.RequestNetworkController
 
@@ -10,7 +9,7 @@ class ApiManager(context: Context?) {
 
     fun globalSearch(text: String?, listener: RequestNetwork.RequestListener?) {
         val queryMap = HashMap<String?, Any?>()
-        queryMap["query"] = Uri.encode(text)
+        queryMap["query"] = text
         requestNetwork.setParams(queryMap, RequestNetworkController.REQUEST_PARAM)
         requestNetwork.startRequestNetwork(
             RequestNetworkController.GET,
@@ -25,7 +24,7 @@ class ApiManager(context: Context?) {
         listener: RequestNetwork.RequestListener
     ) {
         val queryMap = HashMap<String?, Any?>()
-        queryMap["query"] = Uri.encode(query)
+        queryMap["query"] = query
         if (page != null) queryMap["page"] = page
         if (limit != null) queryMap["limit"] = limit
         requestNetwork.setParams(queryMap, RequestNetworkController.REQUEST_PARAM)
@@ -42,7 +41,7 @@ class ApiManager(context: Context?) {
         listener: RequestNetwork.RequestListener
     ) {
         val queryMap = HashMap<String?, Any?>()
-        queryMap["query"] = Uri.encode(query)
+        queryMap["query"] = query
         if (page != null) queryMap["page"] = page
         if (limit != null) queryMap["limit"] = limit
         requestNetwork.setParams(queryMap, RequestNetworkController.REQUEST_PARAM)
@@ -59,7 +58,7 @@ class ApiManager(context: Context?) {
         listener: RequestNetwork.RequestListener
     ) {
         val queryMap = HashMap<String?, Any?>()
-        queryMap["query"] = Uri.encode(query)
+        queryMap["query"] = query
         if (page != null) queryMap["page"] = page
         if (limit != null) queryMap["limit"] = limit
         requestNetwork.setParams(queryMap, RequestNetworkController.REQUEST_PARAM)
@@ -76,7 +75,7 @@ class ApiManager(context: Context?) {
         listener: RequestNetwork.RequestListener
     ) {
         val queryMap = HashMap<String?, Any?>()
-        queryMap["query"] = Uri.encode(query)
+        queryMap["query"] = query
         if (page != null) queryMap["page"] = page
         if (limit != null) queryMap["limit"] = limit
         requestNetwork.setParams(queryMap, RequestNetworkController.REQUEST_PARAM)
@@ -125,6 +124,7 @@ class ApiManager(context: Context?) {
     }
 
     fun retrieveLyricsById(id: String, listener: RequestNetwork.RequestListener?) {
+        requestNetwork.setParams(HashMap(), RequestNetworkController.REQUEST_PARAM)
         requestNetwork.startRequestNetwork(
             RequestNetworkController.GET, "$SONGS_URL/$id/lyrics", "",
             listener
@@ -316,7 +316,7 @@ class ApiManager(context: Context?) {
         requestNetwork.setParams(queryMap, RequestNetworkController.REQUEST_PARAM)
         requestNetwork.startRequestNetwork(
             RequestNetworkController.GET,
-            ARTISTS_URL + "/" + artistId.toInt() + "/songs", "", requestListener
+            "$ARTISTS_URL/$artistId/songs", "", requestListener
         )
     }
 
@@ -336,7 +336,7 @@ class ApiManager(context: Context?) {
         requestNetwork.setParams(queryMap, RequestNetworkController.REQUEST_PARAM)
         requestNetwork.startRequestNetwork(
             RequestNetworkController.GET,
-            ARTISTS_URL + "/" + artistId.toInt() + "/albums", "", requestListener
+            "$ARTISTS_URL/$artistId/albums", "", requestListener
         )
     }
 
@@ -360,7 +360,7 @@ class ApiManager(context: Context?) {
     }
 
     companion object {
-        private const val BASE_URL = "https://melotune.lulli.qzz.io/api/"
+        private const val BASE_URL = "https://jiosaavn-api.uranophilelab.workers.dev/api/"
         private val SEARCH_URL: String = BASE_URL + "search"
         private const val SONGS = "/songs"
         private const val ALBUMS = "/albums"

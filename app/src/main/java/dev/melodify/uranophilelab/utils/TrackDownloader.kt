@@ -160,6 +160,7 @@ object TrackDownloader {
     }
 
     fun downloadAndEmbedMetadata(context: Context, song: Song, listener: TrackDownloadListener) {
+        val appContext = context.applicationContext
         val audioUrl = song.downloadUrl?.lastOrNull()?.url ?: ""
         val imageUrl = song.image?.lastOrNull()?.url ?: ""
         val rawTitle = song.name() ?: ""
@@ -179,7 +180,7 @@ object TrackDownloader {
             var artworkFile: File? = null
 
             try {
-                tempFile = File(context.cacheDir, "$safeTitle.mp4")
+                tempFile = File(appContext.cacheDir, "$safeTitle.mp4")
                 URL(audioUrl).openStream().use { input ->
                     FileOutputStream(tempFile).use { output ->
                         input.copyTo(output)
@@ -198,7 +199,7 @@ object TrackDownloader {
 
                 val uidField = Mp4TagReverseDnsField(
                     "----",
-                    context.packageName,
+                    appContext.packageName,
                     "TrackUID",
                     song.id ?: ""
                 )
@@ -206,7 +207,7 @@ object TrackDownloader {
 
                 if (imageUrl.isNotBlank()) {
                     try {
-                        artworkFile = File(context.cacheDir, "artwork_${System.currentTimeMillis()}.jpg")
+                        artworkFile = File(appContext.cacheDir, "artwork_${System.currentTimeMillis()}.jpg")
                         URL(imageUrl).openStream().use { input ->
                             FileOutputStream(artworkFile).use { output ->
                                 input.copyTo(output)
@@ -223,7 +224,7 @@ object TrackDownloader {
                 audioFile.setTag(tag)
                 audioFile.commit()
 
-                val resolver = context.contentResolver
+                val resolver = appContext.contentResolver
                 val values = ContentValues().apply {
                     put(MediaStore.Audio.Media.TITLE, rawTitle)
                     put(MediaStore.Audio.Media.ARTIST, artist)
@@ -259,7 +260,7 @@ object TrackDownloader {
                     values.put(MediaStore.Audio.Media.DATA, targetFile.absolutePath)
                     val newUri = resolver.insert(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, values)
                     val scanUri = newUri ?: Uri.fromFile(targetFile)
-                    context.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, scanUri))
+                    appContext.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, scanUri))
                 }
 
                 Log.d(TAG, "✅ Downloaded and tagged: $rawTitle")

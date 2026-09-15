@@ -59,6 +59,12 @@
             android:name=".activities.DownloadManagerActivity"
             android:exported="false" />
         <activity
+            android:name=".activities.FavoritesActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.HistoryActivity"
+            android:exported="false" />
+        <activity
             android:name=".activities.AboutActivity"
             android:exported="false" />
         <activity

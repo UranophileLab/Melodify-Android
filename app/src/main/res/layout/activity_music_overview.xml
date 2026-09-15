@@ -42,6 +42,17 @@
             android:src="@drawable/baseline_lyrics_24" />
 
         <ImageView
+            android:id="@+id/favorite_icon"
+            android:layout_width="@dimen/_40sdp"
+            android:layout_height="@dimen/_40sdp"
+            android:clickable="true"
+            android:contentDescription="Favorite"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:padding="@dimen/_10sdp"
+            android:src="@drawable/favorite_outline_24px" />
+
+        <ImageView
             android:id="@+id/share_icon"
             android:layout_width="@dimen/_40sdp"
             android:layout_height="@dimen/_40sdp"
@@ -74,8 +85,10 @@
         android:padding="@dimen/_8sdp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/__toolbar"
+        app:layout_constraintVertical_bias="0.0"
         app:layout_constraintVertical_weight="1">
 
         <FrameLayout
@@ -104,11 +117,11 @@
                 android:id="@+id/lyrics_recycler"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:visibility="gone"
                 android:clipToPadding="false"
+                android:paddingHorizontal="@dimen/_8sdp"
                 android:paddingTop="@dimen/_100sdp"
                 android:paddingBottom="@dimen/_100sdp"
-                android:paddingHorizontal="@dimen/_8sdp" />
+                android:visibility="gone" />
         </FrameLayout>
 
 
@@ -146,13 +159,14 @@
             android:layout_weight="1" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/seekbarContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/_8sdp">
 
             <SeekBar
                 android:id="@+id/seekbar"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -163,8 +177,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/_8sdp"
+                android:layout_marginTop="@dimen/_4sdp"
                 android:text="00:00"
-                app:layout_constraintStart_toStartOf="@+id/seekbar"
+                android:textColor="@color/textSec"
+                android:textSize="@dimen/_10ssp"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/seekbar" />
 
             <TextView
@@ -172,8 +189,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="@dimen/_8sdp"
-                android:text="06:12"
-                app:layout_constraintEnd_toEndOf="@+id/seekbar"
+                android:layout_marginTop="@dimen/_4sdp"
+                android:text="00:00"
+                android:textColor="@color/textSec"
+                android:textSize="@dimen/_10ssp"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/seekbar" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
@@ -192,10 +212,10 @@
                 android:id="@+id/shuffle_icon"
                 android:layout_width="@dimen/_35sdp"
                 android:layout_height="@dimen/_35sdp"
+                android:clickable="true"
+                android:focusable="true"
                 android:padding="@dimen/_8sdp"
                 android:src="@drawable/shuffle_24px"
-                android:focusable="true"
-                android:clickable="true"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -227,10 +247,10 @@
                     android:id="@+id/play_pause_image"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:clickable="true"
                     android:focusable="true"
                     android:padding="@dimen/_8sdp"
                     android:src="@drawable/play_arrow_24px"
-                    android:clickable="true"
                     app:tint="@color/background" />
 
             </com.google.android.material.card.MaterialCardView>
@@ -258,11 +278,11 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <ImageView
-            android:visibility="invisible"
             android:layout_width="@dimen/_35sdp"
             android:layout_height="@dimen/_35sdp"
             android:padding="@dimen/_8sdp"
             android:src="@drawable/favorite_outline_24px"
+            android:visibility="invisible"
             app:tint="@color/textMain" />
 
         <androidx.cardview.widget.CardView

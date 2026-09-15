@@ -95,6 +95,11 @@ class SettingsActivity : AppCompatActivity() {
         MiniPlayerHelper.onActivityPause(this)
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        binding = null
+    }
+
     fun backPress(view: View?) {
         finish()
     }

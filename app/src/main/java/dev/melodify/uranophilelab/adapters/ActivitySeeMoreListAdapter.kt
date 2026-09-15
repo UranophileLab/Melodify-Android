@@ -1,20 +1,19 @@
 package dev.melodify.uranophilelab.adapters
 
 import android.content.Intent
-import android.net.Uri
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.squareup.picasso.Picasso
 import dev.melodify.uranophilelab.R
 import dev.melodify.uranophilelab.activities.MusicOverviewActivity
 import dev.melodify.uranophilelab.records.SongResponse.Song
 import dev.melodify.uranophilelab.utils.MusicPlayerManager
-import com.squareup.picasso.Picasso
-import androidx.core.net.toUri
 
-class ActivitySeeMoreListAdapter : RecyclerView.Adapter<ActivitySeeMoreListAdapter.ViewHolder?> {
+class ActivitySeeMoreListAdapter : RecyclerView.Adapter<ActivitySeeMoreListAdapter.ViewHolder> {
     private val data: MutableList<Song?>?
 
     constructor(data: MutableList<Song?>?) {
@@ -25,49 +24,56 @@ class ActivitySeeMoreListAdapter : RecyclerView.Adapter<ActivitySeeMoreListAdapt
         this.data = ArrayList<Song?>()
     }
 
+    class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val coverImage: ImageView? = itemView.findViewById(R.id.coverImage)
+        val coverTitle: TextView? = itemView.findViewById(R.id.coverTitle)
+        val coverPlayed: TextView? = itemView.findViewById(R.id.coverPlayed)
+        val positionTextView: TextView? = itemView.findViewById(R.id.position)
+        val moreIcon: ImageView? = itemView.findViewById(R.id.more)
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val _v = View.inflate(
-            parent.context,
-            if (viewType == 1) R.layout.activity_artist_profile_view_top_songs_item else R.layout.progress_bar_layout,
-            null
-        )
-        _v.layoutParams = ViewGroup.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        )
-        return ViewHolder(_v)
+        val layoutRes = if (viewType == 1) R.layout.activity_artist_profile_view_top_songs_item else R.layout.progress_bar_layout
+        val view = LayoutInflater.from(parent.context).inflate(layoutRes, parent, false)
+        return ViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         if (getItemViewType(position) == 0) {
-            //((ShimmerFrameLayout) holder.itemView.findViewById(R.id.shimmer)).startShimmer();
             return
         }
 
-        val coverImage = holder.itemView.findViewById<ImageView?>(R.id.coverImage)
-        val coverTitle = holder.itemView.findViewById<TextView>(R.id.coverTitle)
-        val coverPlayed = holder.itemView.findViewById<TextView>(R.id.coverPlayed)
-        val positionTextView = holder.itemView.findViewById<TextView>(R.id.position)
-        holder.itemView.findViewById<ImageView?>(R.id.more)
+        if (data == null || position >= data.size) return
+        val song = data[position] ?: return
 
-        positionTextView.text = (position + 1).toString()
-        coverTitle.text = data!![position]!!.name()
-        coverPlayed.text = String.format("%s | %s", data[position]!!.year, data[position]!!.label)
-        val images = data[position]?.image
+        holder.positionTextView?.text = (position + 1).toString()
+        holder.coverTitle?.text = song.name()
+        holder.coverPlayed?.text = String.format("%s | %s", song.year ?: "", song.label ?: "")
+        val images = song.image
         val url = if (images.isNullOrEmpty()) "" else images[images.size - 1]?.url ?: ""
-        if (url.isNotEmpty()) {
-            Picasso.get().load(url.toUri()).into(coverImage)
+        val coverImageView = holder.coverImage
+        if (coverImageView != null) {
+            if (url.isNotEmpty()) {
+                Picasso.get()
+                    .load(url)
+                    .placeholder(R.drawable.headphone)
+                    .fit()
+                    .centerCrop()
+                    .into(coverImageView)
+            } else {
+                coverImageView.setImageResource(R.drawable.headphone)
+            }
         }
 
-        holder.itemView.setOnClickListener { view: View? ->
+        holder.itemView.setOnClickListener { view ->
             MusicPlayerManager.trackQueue?.clear()
             var clickIndex = position
             var validIndex = 0
             if (data != null) {
                 for (i in data.indices) {
-                    val song = data[i]
-                    if (song != null && song.id != null && song.id != "<shimmer>") {
-                        MusicPlayerManager.trackQueue?.add(song.id)
+                    val s = data[i]
+                    if (s?.id != null && s.id != "<shimmer>") {
+                        MusicPlayerManager.trackQueue?.add(s.id)
                         if (i == position) {
                             clickIndex = validIndex
                         }
@@ -76,11 +82,8 @@ class ActivitySeeMoreListAdapter : RecyclerView.Adapter<ActivitySeeMoreListAdapt
                 }
             }
             MusicPlayerManager.track_position = clickIndex
-            view!!.context.startActivity(
-                Intent(
-                    view.context,
-                    MusicOverviewActivity::class.java
-                ).putExtra("id", data!![position]!!.id)
+            view.context.startActivity(
+                Intent(view.context, MusicOverviewActivity::class.java).putExtra("id", song.id)
             )
         }
     }
@@ -90,12 +93,12 @@ class ActivitySeeMoreListAdapter : RecyclerView.Adapter<ActivitySeeMoreListAdapt
     }
 
     override fun getItemViewType(position: Int): Int {
-        return 1
+        return ITEM
     }
 
     fun add(da: Song?) {
-        data!!.add(da)
-        notifyItemInserted(data.size - 1)
+        data?.add(da)
+        notifyItemInserted((data?.size ?: 1) - 1)
     }
 
     fun addAll(moveResults: MutableList<Song?>) {
@@ -103,8 +106,6 @@ class ActivitySeeMoreListAdapter : RecyclerView.Adapter<ActivitySeeMoreListAdapt
             add(result)
         }
     }
-
-    class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 
     enum class Mode {
         TOP_SONGS,

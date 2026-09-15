@@ -7,6 +7,7 @@
     <color name="buttonBackground">@color/button_dark</color>
     <color name="dividerBackground">@color/divider_light</color>
     <color name="green">@color/cyan_accent</color>
+    <color name="red">#E91E63</color>
 
     <color name="activity_main_cta_button">@color/textMain</color>
 

@@ -40,6 +40,7 @@ import dev.melodify.uranophilelab.activities.MusicOverviewActivity
 import dev.melodify.uranophilelab.network.ApiManager
 import dev.melodify.uranophilelab.network.utility.RequestNetwork
 import dev.melodify.uranophilelab.records.SongResponse
+import dev.melodify.uranophilelab.model.history.SongHistoryItem
 import dev.melodify.uranophilelab.services.NotificationReceiver
 import dev.melodify.uranophilelab.widgets.WidgetPlayerProvider
 import com.squareup.picasso.Picasso
@@ -209,16 +210,21 @@ object MusicPlayerManager {
     fun getDownloadUrl(downloadUrlList: MutableList<SongResponse.DownloadUrl?>?): String {
         if (downloadUrlList.isNullOrEmpty()) return ""
         var bestUrl = ""
+        val targetQuality = TRACK_QUALITY?.trim() ?: "320kbps"
         for (downloadUrl in downloadUrlList) {
-            val url = downloadUrl?.url ?: continue
-            if (url.startsWith("https:") && downloadUrl.quality == TRACK_QUALITY) return url
-            if (downloadUrl.quality == TRACK_QUALITY) bestUrl = url
+            val url = downloadUrl?.url?.trim() ?: continue
+            val quality = downloadUrl.quality?.trim() ?: ""
+            if (quality.equals(targetQuality, ignoreCase = true) ||
+                quality.replace("kbps", "", ignoreCase = true).equals(targetQuality.replace("kbps", "", ignoreCase = true), ignoreCase = true)) {
+                if (url.startsWith("https:", ignoreCase = true)) return url
+                bestUrl = url
+            }
         }
         if (bestUrl.isNotEmpty()) {
-            return if (bestUrl.startsWith("http:")) bestUrl.replace("http:", "https:") else bestUrl
+            return if (bestUrl.startsWith("http:", ignoreCase = true)) bestUrl.replace("http:", "https:", ignoreCase = true) else bestUrl
         }
-        val lastUrl = downloadUrlList.lastOrNull()?.url ?: return ""
-        return if (lastUrl.startsWith("http:")) lastUrl.replace("http:", "https:") else lastUrl
+        val lastUrl = downloadUrlList.lastOrNull()?.url?.trim() ?: return ""
+        return if (lastUrl.startsWith("http:", ignoreCase = true)) lastUrl.replace("http:", "https:", ignoreCase = true) else lastUrl
     }
 
     fun showNotification(playPauseButton: Int = if (player?.playWhenReady == true) R.drawable.baseline_pause_24 else R.drawable.play_arrow_24px) {
@@ -399,19 +405,38 @@ object MusicPlayerManager {
         val id = MUSIC_ID ?: return
         ApiManager(ctx).retrieveSongById(id, null, object : RequestNetwork.RequestListener {
             override fun onResponse(tag: String?, response: String?, responseHeaders: HashMap<String?, Any?>?) {
-                val songResponse = Gson().fromJson(response, SongResponse::class.java)
+                if (response.isNullOrEmpty()) return
+                val songResponse = try {
+                    Gson().fromJson(response, SongResponse::class.java)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error parsing song response", e)
+                    null
+                } ?: return
                 if (songResponse.success && !songResponse.data.isNullOrEmpty()) {
                     CURRENT_TRACK = songResponse
-                    val firstSong = songResponse.data[0] ?: return
+                    val firstSong = songResponse.data?.get(0) ?: return
                     MUSIC_TITLE = firstSong.name()
                     MUSIC_DESCRIPTION = "${MusicOverviewActivity.convertPlayCount(firstSong.playCount ?: 0)} plays | ${firstSong.year} | ${firstSong.copyright}"
                     firstSong.image?.lastOrNull()?.url?.let { IMAGE_URL = it }
                     SONG_URL = getDownloadUrl(firstSong.downloadUrl)
                     setMusicDetails(IMAGE_URL, MUSIC_TITLE, MUSIC_DESCRIPTION, MUSIC_ID)
+
+                    val artistName = firstSong.artists?.primary?.filterNotNull()?.firstOrNull()?.name() ?: ""
+                    sharedPreferenceManager?.addSongToHistory(
+                        SongHistoryItem(
+                            id = MUSIC_ID,
+                            title = MUSIC_TITLE,
+                            artist = artistName,
+                            imageUrl = IMAGE_URL
+                        )
+                    )
+
                     prepareMediaPlayer()
                 }
             }
-            override fun onErrorResponse(tag: String?, message: String?) {}
+            override fun onErrorResponse(tag: String?, message: String?) {
+                Log.e(TAG, "onErrorResponse in playTrack: $message")
+            }
         })
     }
 
