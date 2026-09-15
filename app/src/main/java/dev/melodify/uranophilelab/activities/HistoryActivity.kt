@@ -1,0 +1,156 @@
+package dev.melodify.uranophilelab.activities
+
+import android.content.DialogInterface
+import android.os.Bundle
+import android.view.View
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import dev.melodify.uranophilelab.BaseApplicationClass
+import dev.melodify.uranophilelab.adapters.AlbumHistoryAdapter
+import dev.melodify.uranophilelab.adapters.SongHistoryAdapter
+import dev.melodify.uranophilelab.databinding.ActivityHistoryBinding
+import dev.melodify.uranophilelab.model.history.AlbumHistoryItem
+import dev.melodify.uranophilelab.model.history.SongHistoryItem
+import dev.melodify.uranophilelab.utils.MiniPlayerHelper
+import dev.melodify.uranophilelab.utils.SharedPreferenceManager
+import dev.melodify.uranophilelab.utils.attachSnapHelper
+
+class HistoryActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityHistoryBinding
+    private var songHistoryList: MutableList<SongHistoryItem> = mutableListOf()
+    private var albumHistoryList: MutableList<AlbumHistoryItem> = mutableListOf()
+
+    private var songAdapter: SongHistoryAdapter? = null
+    private var albumAdapter: AlbumHistoryAdapter? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        binding = ActivityHistoryBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        BaseApplicationClass.updateTheme(this)
+        MiniPlayerHelper.initMiniPlayer(this)
+
+        binding.songsRecycler.layoutManager = LinearLayoutManager(this)
+        binding.albumsRecycler.layoutManager = LinearLayoutManager(this)
+
+        binding.songsRecycler.attachSnapHelper()
+        binding.albumsRecycler.attachSnapHelper()
+
+        setupChipFilter()
+
+        binding.clearHistoryBtn.setOnClickListener {
+            showClearHistoryDialog()
+        }
+
+        loadHistoryData()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        MiniPlayerHelper.onActivityResume(this)
+        loadHistoryData()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        MiniPlayerHelper.onActivityPause(this)
+    }
+
+    fun backPress(view: View?) {
+        finish()
+    }
+
+    private fun loadHistoryData() {
+        val prefs = SharedPreferenceManager.getInstance(this)
+        songHistoryList = prefs.songHistory.toMutableList()
+        albumHistoryList = prefs.albumHistory.toMutableList()
+
+        songAdapter = SongHistoryAdapter(songHistoryList) {
+            updateEmptyState()
+        }
+        binding.songsRecycler.adapter = songAdapter
+
+        albumAdapter = AlbumHistoryAdapter(albumHistoryList) {
+            updateEmptyState()
+        }
+        binding.albumsRecycler.adapter = albumAdapter
+
+        updateEmptyState()
+    }
+
+    private fun updateEmptyState() {
+        val hasSongs = songHistoryList.isNotEmpty()
+        val hasAlbums = albumHistoryList.isNotEmpty()
+
+        val isAllChecked = binding.chipAll.isChecked
+        val isSongsChecked = binding.chipSongs.isChecked
+        val isAlbumsChecked = binding.chipAlbums.isChecked
+
+        val showSongs = (isAllChecked || isSongsChecked) && hasSongs
+        val showAlbums = (isAllChecked || isAlbumsChecked) && hasAlbums
+
+        binding.songSection.visibility = if (showSongs) View.VISIBLE else View.GONE
+        binding.albumSection.visibility = if (showAlbums) View.VISIBLE else View.GONE
+
+        val isFilterEmpty = when {
+            isSongsChecked -> !hasSongs
+            isAlbumsChecked -> !hasAlbums
+            else -> !hasSongs && !hasAlbums
+        }
+
+        if (isFilterEmpty) {
+            binding.nestedScroll.visibility = View.GONE
+            binding.emptyHistoryTv.visibility = View.VISIBLE
+        } else {
+            binding.nestedScroll.visibility = View.VISIBLE
+            binding.emptyHistoryTv.visibility = View.GONE
+        }
+    }
+
+    private fun setupChipFilter() {
+        binding.chipGroup.setOnCheckedStateChangeListener { _, checkedIds ->
+            if (checkedIds.isEmpty()) {
+                binding.chipAll.isChecked = true
+                return@setOnCheckedStateChangeListener
+            }
+            updateEmptyState()
+        }
+    }
+
+    private fun showClearHistoryDialog() {
+        val options = arrayOf("Clear Song History", "Clear Album History", "Clear All History")
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Clear History")
+            .setItems(options) { _: DialogInterface, which: Int ->
+                val prefs = SharedPreferenceManager.getInstance(this)
+                when (which) {
+                    0 -> {
+                        prefs.clearSongHistory()
+                        songHistoryList.clear()
+                        songAdapter?.notifyDataSetChanged()
+                        Toast.makeText(this, "Song history cleared", Toast.LENGTH_SHORT).show()
+                    }
+                    1 -> {
+                        prefs.clearAlbumHistory()
+                        albumHistoryList.clear()
+                        albumAdapter?.notifyDataSetChanged()
+                        Toast.makeText(this, "Album history cleared", Toast.LENGTH_SHORT).show()
+                    }
+                    2 -> {
+                        prefs.clearAllHistory()
+                        songHistoryList.clear()
+                        albumHistoryList.clear()
+                        songAdapter?.notifyDataSetChanged()
+                        albumAdapter?.notifyDataSetChanged()
+                        Toast.makeText(this, "All history cleared", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                updateEmptyState()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+}
