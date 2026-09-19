@@ -115,11 +115,16 @@ class ActivitySearchListItemAdapter(private val data: MutableList<SearchListItem
 
         val coverImageView = holder.coverImage
         if (coverImageView != null) {
-            val imageUrl: String? = item.coverImage
-            if (!imageUrl.isNullOrBlank()) {
+            val rawImageUrl: String? = item.coverImage
+            val imageUrl = if (!rawImageUrl.isNullOrEmpty() && rawImageUrl.contains("50x50")) {
+                rawImageUrl.replace("50x50", "500x500")
+            } else rawImageUrl ?: ""
+            val isInvalid = imageUrl.isBlank() || imageUrl.contains("default") || imageUrl.contains("artist-default")
+            if (!isInvalid) {
                 Picasso.get()
                     .load(imageUrl)
                     .placeholder(R.drawable.headphone)
+                    .error(R.drawable.headphone)
                     .fit()
                     .centerCrop()
                     .into(coverImageView)

@@ -28,6 +28,7 @@ import dev.melodify.uranophilelab.adapters.ActivityMainPlaylistAdapter
 import dev.melodify.uranophilelab.adapters.ActivityMainPopularSongs
 import dev.melodify.uranophilelab.adapters.SavedLibrariesAdapter
 import dev.melodify.uranophilelab.databinding.ActivityMainBinding
+import dev.melodify.uranophilelab.utils.UpdateManager
 import dev.melodify.uranophilelab.model.AlbumItem
 import dev.melodify.uranophilelab.network.ApiManager
 import dev.melodify.uranophilelab.network.NetworkChangeReceiver
@@ -156,6 +157,8 @@ class MainActivity : AppCompatActivity() {
 
         MiniPlayerHelper.initMiniPlayer(this)
 
+        UpdateManager.checkForUpdates(this)
+
         showShimmerData()
         showData()
 
@@ -217,28 +220,29 @@ class MainActivity : AppCompatActivity() {
 
     private fun onDrawerItemsClicked() {
         val layout = slidingRootNavBuilder?.layout ?: return
+        layout.findViewById<View>(R.id.library)?.setOnClickListener {
+            startActivity(Intent(this, SavedLibrariesActivity::class.java))
+            slidingRootNavBuilder?.closeMenu()
+        }
+
+        layout.findViewById<View>(R.id.favorites)?.setOnClickListener {
+            startActivity(Intent(this, FavoritesActivity::class.java))
+            slidingRootNavBuilder?.closeMenu()
+        }
+
+        layout.findViewById<View>(R.id.history)?.setOnClickListener {
+            startActivity(Intent(this, HistoryActivity::class.java))
+            slidingRootNavBuilder?.closeMenu()
+        }
+
         layout.findViewById<View>(R.id.settings)?.setOnClickListener {
             startActivity(Intent(this, SettingsActivity::class.java))
             slidingRootNavBuilder?.closeMenu()
         }
 
-        layout.findViewById<View>(R.id.logo)?.setOnClickListener {
+        layout.findViewById<View>(R.id.updates)?.setOnClickListener {
             slidingRootNavBuilder?.closeMenu()
-        }
-
-        layout.findViewById<View>(R.id.library)?.setOnClickListener {
-            startActivity(Intent(this@MainActivity, SavedLibrariesActivity::class.java))
-            slidingRootNavBuilder?.closeMenu()
-        }
-
-        layout.findViewById<View>(R.id.favorites)?.setOnClickListener {
-            startActivity(Intent(this@MainActivity, FavoritesActivity::class.java))
-            slidingRootNavBuilder?.closeMenu()
-        }
-
-        layout.findViewById<View>(R.id.history)?.setOnClickListener {
-            startActivity(Intent(this@MainActivity, HistoryActivity::class.java))
-            slidingRootNavBuilder?.closeMenu()
+            UpdateManager.checkForUpdates(this@MainActivity, isManualCheck = true)
         }
 
         layout.findViewById<View>(R.id.about)?.setOnClickListener {

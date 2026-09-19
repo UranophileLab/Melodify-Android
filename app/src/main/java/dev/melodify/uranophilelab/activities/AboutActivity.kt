@@ -7,7 +7,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dev.melodify.uranophilelab.BuildConfig
 import dev.melodify.uranophilelab.R
 import dev.melodify.uranophilelab.databinding.ActivityAboutBinding
-import dev.melodify.uranophilelab.utils.UpdateUtil
+import dev.melodify.uranophilelab.utils.UpdateManager
 
 class AboutActivity : AppCompatActivity() {
     var binding: ActivityAboutBinding? = null
@@ -23,7 +23,7 @@ class AboutActivity : AppCompatActivity() {
         binding!!.versionTxt.titleTextView?.text = BuildConfig.VERSION_NAME
         binding!!.versionTxt.setOnClickListener {
             Toast.makeText(this@AboutActivity, "Checking for updates...", Toast.LENGTH_SHORT).show()
-            UpdateUtil.checkForUpdates(this@AboutActivity, true)
+            UpdateManager.checkForUpdates(this@AboutActivity, isManualCheck = true)
         }
 
         binding!!.licenseTxt.setOnClickListener {

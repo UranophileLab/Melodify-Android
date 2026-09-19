@@ -510,9 +510,8 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
             val linearLayout = _binding.main
 
             _binding.goToAlbum.setOnClickListener(View.OnClickListener {
-                if (mSongResponse == null) return@OnClickListener
-                val song = mSongResponse!!.data?.get(0)
-                if (song?.album == null) return@OnClickListener
+                val song = mSongResponse?.data?.getOrNull(0) ?: return@OnClickListener
+                if (song.album == null) return@OnClickListener
                 val album = song.album
                 startActivity(
                     Intent(this@MusicOverviewActivity, ListActivity::class.java)
@@ -544,7 +543,7 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
                 materialAlertDialogBuilder.show()
             })
 
-            val song = mSongResponse!!.data?.get(0) ?: return@OnClickListener
+            val song = mSongResponse?.data?.getOrNull(0) ?: return@OnClickListener
 
             if (TrackDownloader.isAlreadyDownloaded(song.name())) {
                 _binding.download.titleTextView?.text = "Download Manager"
@@ -637,17 +636,21 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
         })
 
         binding!!.trackQuality.setOnClickListener { view: View? ->
-            val popupMenu = PopupMenu(this@MusicOverviewActivity, view!!)
+            val v = view ?: return@setOnClickListener
+            val popupMenu = PopupMenu(this@MusicOverviewActivity, v)
             popupMenu.menuInflater.inflate(R.menu.track_quality_menu, popupMenu.menu)
             popupMenu.setOnMenuItemClickListener { menuItem: MenuItem? ->
+                val item = menuItem ?: return@setOnMenuItemClickListener false
                 Toast.makeText(
                     this@MusicOverviewActivity,
-                    menuItem!!.title,
+                    item.title,
                     Toast.LENGTH_SHORT
                 ).show()
-                // Objects.requireNonNull(menuItem.getTitle());
-                MusicPlayerManager.setTrackQuality(menuItem.title.toString())
-                onSongFetched(mSongResponse!!, true)
+                MusicPlayerManager.setTrackQuality(item.title.toString())
+                val songResp = mSongResponse
+                if (songResp != null) {
+                    onSongFetched(songResp, true)
+                }
                 prepareMediaPLayer()
                 binding!!.trackQuality.text = MusicPlayerManager.TRACK_QUALITY
                 true
@@ -679,7 +682,7 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
                 // index = i;
                 Log.i(TAG, "pickedLibrary: $i")
 
-                val song = mSongResponse!!.data?.get(0) ?: return@OnClickListener
+                val song = mSongResponse?.data?.getOrNull(0) ?: return@OnClickListener
 
                 val songs = Library.Songs(
                     song.id,
@@ -750,7 +753,7 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
     override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
         val binder = service as MyBinder
         musicService = binder.service
-        musicService!!.setCallback(this@MusicOverviewActivity)
+        musicService?.setCallback(this@MusicOverviewActivity)
         Log.i(TAG, "onServiceConnected: ")
     }
 
@@ -762,9 +765,9 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
     private var SHARE_URL = ""
 
     fun showData() {
-        if (intent.extras == null) return
         val apiManager = ApiManager(this)
-        val ID = intent.extras!!.getString("id", "")
+        val ID = intent.getStringExtra("id") ?: intent.extras?.getString("id", "") ?: ""
+        if (ID.isEmpty()) return
         ID_FROM_EXTRA = ID
         // ((ApplicationClass)getApplicationContext()).setMusicDetails(null,null,null,ID);
         if (MusicPlayerManager.MUSIC_ID == ID) {
@@ -782,6 +785,7 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
                     response: String?,
                     responseHeaders: HashMap<String?, Any?>?
                 ) {
+                    if (isFinishing || isDestroyed || binding == null) return
                     val songResponse =
                         Gson().fromJson<SongResponse>(response, SongResponse::class.java)
                     if (songResponse.success) {
@@ -802,6 +806,7 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
                 }
 
                 override fun onErrorResponse(tag: String?, message: String?) {
+                    if (isFinishing || isDestroyed || binding == null) return
                     val cached = SharedPreferenceManager.getInstance(this@MusicOverviewActivity).getSongResponseById(ID)
                     if (cached != null) {
                         onSongFetched(cached)
@@ -811,7 +816,7 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
                 }
             }
 
-        if (intent.extras!!.getString("type", "") == "clear") {
+        if (intent.getStringExtra("type") == "clear") {
             MusicPlayerManager.trackQueue = ArrayList(mutableListOf<String?>(ID))
         }
         if ((ID.startsWith("http") || ID.startsWith("www")) && ID.contains("jiosaavn.com")) {
@@ -829,9 +834,10 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
     private var mSongResponse: SongResponse? = null
 
     private fun onSongFetched(songResponse: SongResponse, forced: Boolean = false) {
+        if (isFinishing || isDestroyed || binding == null) return
         mSongResponse = songResponse
         MusicPlayerManager.CURRENT_TRACK = mSongResponse
-        val song = songResponse.data?.get(0) ?: return
+        val song = songResponse.data?.getOrNull(0) ?: return
         binding!!.title.text = song.name()
         binding!!.description.text = String.format(
             "%s plays | %s | %s",
@@ -842,7 +848,7 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
         val image = song.image
         IMAGE_URL = if (!image.isNullOrEmpty()) image[image.size - 1]?.url ?: "" else ""
         SHARE_URL = song.url ?: ""
-        if (IMAGE_URL!!.isNotEmpty()) {
+        if (!IMAGE_URL.isNullOrEmpty()) {
             Picasso.get().load(IMAGE_URL?.toUri()).into(binding!!.coverImage)
         }
         val downloadUrls = song.downloadUrl
@@ -875,7 +881,8 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
     }
 
     private fun fetchLyricsForCurrentSong(song: SongResponse.Song) {
-        val wasVisible = binding!!.lyricsRecycler.isVisible
+        if (isFinishing || isDestroyed || binding == null) return
+        val wasVisible = binding?.lyricsRecycler?.isVisible == true
 
         binding!!.lyricsIcon.visibility = View.GONE
         binding!!.lyricsIcon.setColorFilter(resources.getColor(R.color.textSec, null))
@@ -901,6 +908,7 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
                 ).getOrNull()
 
                 withContext(Dispatchers.Main) {
+                    if (isFinishing || isDestroyed || binding == null) return@withContext
                     if (!fetchedLyrics.isNullOrEmpty()) {
                         val sentencesMap = com.samyak.lrclib.LrcLib.Lyrics(fetchedLyrics).sentences
                         if (!sentencesMap.isNullOrEmpty()) {
@@ -924,8 +932,6 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
                         }
                     } else {
                         Log.i(TAG, "No lyrics found for this song")
-                        // Optional: Toast or hint to user
-                        // Toast.makeText(this@MusicOverviewActivity, "Lyrics not found", Toast.LENGTH_SHORT).show()
                     }
                 }
             } catch (e: Exception) {
