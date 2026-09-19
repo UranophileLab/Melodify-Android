@@ -103,7 +103,7 @@
                         android:layout_marginTop="@dimen/_4sdp"
                         android:src="@drawable/round_info_outline_24"
                         app:srcPadding="@dimen/_4sdp"
-                        app:title="Version - 2.0.0" />
+                        app:title="Version - 3.0.0" />
 
                     <dev.melodify.uranophilelab.utils.customview.BottomSheetItemView
                         android:id="@+id/licenseTxt"

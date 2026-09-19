@@ -15,6 +15,7 @@ import dev.melodify.uranophilelab.utils.SharedPreferenceManager
 import dev.melodify.uranophilelab.utils.customview.MaterialCustomSwitch.OnCheckChangeListener
 import dev.melodify.uranophilelab.utils.MiniPlayerHelper
 import androidx.core.content.edit
+import dev.melodify.uranophilelab.utils.UpdateManager
 
 class SettingsActivity : AppCompatActivity() {
     var binding: ActivitySettingsBinding? = null
@@ -80,6 +81,10 @@ class SettingsActivity : AppCompatActivity() {
                 }
                 .setNegativeButton("No", null)
                 .show()
+        }
+
+        binding!!.checkForUpdates?.setOnClickListener {
+            UpdateManager.checkForUpdates(this, isManualCheck = true)
         }
 
         binding!!.themeChipGroup.check(if (settingsSharedPrefManager.theme == "dark") R.id.dark else if (settingsSharedPrefManager.theme == "light") R.id.light else R.id.system)

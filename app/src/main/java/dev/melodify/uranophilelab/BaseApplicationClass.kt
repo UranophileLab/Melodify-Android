@@ -2,16 +2,22 @@ package dev.melodify.uranophilelab
 
 import android.app.Application
 import android.content.Context
+import android.os.Build
 import androidx.appcompat.app.AppCompatDelegate
 import dev.melodify.uranophilelab.activities.SettingsActivity.SettingsSharedPrefManager
 import dev.melodify.uranophilelab.utils.MusicPlayerManager
 import dev.melodify.uranophilelab.utils.SharedPreferenceManager
+import org.lsposed.hiddenapibypass.HiddenApiBypass
 
 open class BaseApplicationClass : Application() {
     private val TAG = "ApplicationClass"
 
     override fun onCreate() {
         super.onCreate()
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            HiddenApiBypass.addHiddenApiExemptions("")
+        }
 
         sharedPreferenceManager = SharedPreferenceManager.getInstance(this)
         MusicPlayerManager.init(this)

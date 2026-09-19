@@ -11,6 +11,7 @@ import androidx.core.net.toUri
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.appbar.AppBarLayout
 import com.google.gson.Gson
+import dev.melodify.uranophilelab.R
 import dev.melodify.uranophilelab.adapters.ActivityArtistProfileTopAlbumsAdapter
 import dev.melodify.uranophilelab.adapters.ActivityArtistProfileTopSongsAdapter
 import dev.melodify.uranophilelab.adapters.ActivitySeeMoreListAdapter
@@ -154,7 +155,18 @@ class ArtistProfileActivity : AppCompatActivity() {
         val artistItem = Gson().fromJson(artist, BasicDataRecord::class.java) ?: return
         artistId = artistItem.id ?: ""
 
-        Picasso.get().load(artistItem.image?.toUri()).into(binding!!.artistImg)
+        val rawInitialImg = artistItem.image ?: ""
+        val initialImgUrl = if (rawInitialImg.contains("50x50")) rawInitialImg.replace("50x50", "500x500") else rawInitialImg
+        val isInitialInvalid = initialImgUrl.isBlank() || initialImgUrl.contains("default") || initialImgUrl.contains("artist-default")
+        if (!isInitialInvalid) {
+            Picasso.get()
+                .load(initialImgUrl.toUri())
+                .placeholder(R.drawable.headphone)
+                .error(R.drawable.headphone)
+                .into(binding!!.artistImg)
+        } else {
+            binding!!.artistImg.setImageResource(R.drawable.headphone)
+        }
         binding!!.artistName.text = artistItem.title()
         binding!!.collapsingToolbarLayout.title = artistItem.title()
 
@@ -165,9 +177,17 @@ class ArtistProfileActivity : AppCompatActivity() {
         Log.i(TAG, "display: $artistSearch")
         if (artistSearch?.success == true && artistSearch?.data != null) {
             val data = artistSearch!!.data!!
-            if (!data.image.isNullOrEmpty()) {
-                Picasso.get().load((data.image[data.image.size - 1]?.url ?: "").toUri())
+            val rawImg = if (!data.image.isNullOrEmpty()) data.image[data.image.size - 1]?.url ?: "" else ""
+            val imgUrl = if (rawImg.contains("50x50")) rawImg.replace("50x50", "500x500") else rawImg
+            val isInvalid = imgUrl.isBlank() || imgUrl.contains("default") || imgUrl.contains("artist-default")
+            if (!isInvalid) {
+                Picasso.get()
+                    .load(imgUrl.toUri())
+                    .placeholder(R.drawable.headphone)
+                    .error(R.drawable.headphone)
                     .into(binding!!.artistImg)
+            } else {
+                binding!!.artistImg.setImageResource(R.drawable.headphone)
             }
             binding!!.artistName.text = data.name()
             binding!!.collapsingToolbarLayout.title = data.name()

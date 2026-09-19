@@ -12,8 +12,8 @@ android {
         applicationId "dev.melodify.uranophilelab"
         minSdk 23
         targetSdk 36
-        versionCode 3
-        versionName '2.0.0'
+        versionCode 4
+        versionName '3.0.0'
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         //Universal APK Supporting All ABIs
@@ -144,4 +144,7 @@ dependencies {
     kapt libs.room.compiler
 
     implementation project(':lrclib')
+
+    // HIDDEN API EXEMPTIONS FOR ANDROID P+
+    implementation libs.hiddenapibypass
 }

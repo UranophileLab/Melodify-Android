@@ -47,9 +47,21 @@ class ActivityMainArtistsItemAdapter(private val data: MutableList<ArtistsSearch
         holder.itemView.findViewById<TextView?>(R.id.artist_name)?.text = item.name()
         val imageView = holder.itemView.findViewById<ImageView?>(R.id.artist_img)
         val images = item.image
-        val url = if (images.isNullOrEmpty()) "" else images[images.size - 1]?.url ?: ""
-        if (url.isNotEmpty() && imageView != null) {
-            Picasso.get().load(url.toUri()).into(imageView)
+        val rawUrl = if (images.isNullOrEmpty()) "" else images[images.size - 1]?.url ?: ""
+        val url = if (rawUrl.contains("50x50")) rawUrl.replace("50x50", "500x500") else rawUrl
+        val isInvalid = url.isBlank() || url.contains("default") || url.contains("artist-default")
+        if (imageView != null) {
+            if (!isInvalid) {
+                Picasso.get()
+                    .load(url.toUri())
+                    .placeholder(R.drawable.headphone)
+                    .error(R.drawable.headphone)
+                    .fit()
+                    .centerCrop()
+                    .into(imageView)
+            } else {
+                imageView.setImageResource(R.drawable.headphone)
+            }
         }
 
         holder.itemView.setOnClickListener(View.OnClickListener { v: View? ->
