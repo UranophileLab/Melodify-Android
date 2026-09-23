@@ -4,20 +4,20 @@
     android:viewportWidth="512"
     android:viewportHeight="512">
 
-    <!-- Background Squircle Badge (Dark Ocean Blue) -->
+    <!-- Background Squircle Badge (Dark Spotify Green) -->
     <path
-        android:fillColor="#0F172A"
+        android:fillColor="#122410"
         android:pathData="M 96,0 H 416 A 96,96 0 0 1 512,96 V 416 A 96,96 0 0 1 416,512 H 96 A 96,96 0 0 1 0,416 V 96 A 96,96 0 0 1 96,0 Z" />
 
-    <!-- Cyan Ambient Circle Glow -->
+    <!-- Green Ambient Circle Glow -->
     <path
-        android:fillColor="#00D2FF"
+        android:fillColor="#1DB954"
         android:pathData="M 256,96 C 344.37,96 416,167.63 416,256 C 416,344.37 344.37,416 256,416 C 167.63,416 96,344.37 96,256 C 96,167.63 167.63,96 256,96 Z"
         android:fillAlpha="0.35" />
 
     <!-- Waveform Equalizer Bars -->
     <path
-        android:fillColor="#00D2FF"
+        android:fillColor="#1DB954"
         android:pathData="M 120,200 H 144 V 312 H 120 Z" />
 
     <path
@@ -25,7 +25,7 @@
         android:pathData="M 160,150 H 184 V 362 H 160 Z" />
 
     <path
-        android:fillColor="#00D2FF"
+        android:fillColor="#1DB954"
         android:pathData="M 200,110 L 396,55 V 95 L 200,150 Z" />
 
     <path

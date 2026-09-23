@@ -1,17 +1,19 @@
 # Melodify
 
-Melodify is a modern, lightweight, privacy-focused Android music streaming app built with Kotlin. It offers an ad-free listening experience, a vibrant Ocean Blue & Cyan UI theme, and seamless playback without requiring an account.
+Melodify is a modern, lightweight, privacy-focused Android music streaming app built with Kotlin. It offers an ad-free listening experience, a vibrant Spotify Green & Deep Dark UI theme, and seamless playback without requiring an account.
 
 ## Features
 
 - **Ad-Free Experience**: Enjoy high-fidelity music streaming without any interruptions.
-- **Ocean Blue & Cyan Modern UI**: Beautiful, vibrant theme with custom vector branding and sleek dark/light mode support.
-- **Redesigned Home Screen**: Dynamic time-based greetings ("Good Morning / Afternoon / Evening"), modern rounded cards, and category filter chips (All, Songs, Albums, Artists, Playlists).
-- **Smart Floating Mini-Player**: Persistent mini-player across all screens featuring a live progress bar and floating card design.
+- **Spotify Green & Deep Dark UI**: Beautiful, vibrant theme with custom vector branding and sleek OLED deep dark mode support.
+- **Redesigned Home Screen**: Dynamic time-based greetings ("Good Morning / Afternoon / Evening"), 6-card quick access grid, and bottom navigation bar (Home, Search, Library).
+- **Single-Row Controls**: Sleek horizontal control row for album & playlist pages containing Add to Library, Download, Share, Shuffle, and green circular Play buttons.
+- **In-Playlist Search**: Real-time live track search directly inside album and playlist pages.
+- **Smart Floating Mini-Player**: Persistent mini-player across all screens featuring a live progress bar and dark rounded card design.
 - **Queue Management**: View upcoming tracks, remove songs, and **drag-and-drop to reorder** the playback queue on the fly.
 - **Player Gestures**: Swipe left or right on album art to smoothly skip to next or previous tracks.
 - **Synchronized Lyrics**: Built-in dynamic LRC lyrics display with real-time tracking and tap-to-toggle view.
-- **Search with History**: Instant global search with recent query chips, category filters (Songs, Albums, Playlists, Artists), and auto-suggestions.
+- **Search with History**: Instant global search with recent query chips and auto-suggestions.
 - **Background Playback Settings**: Configurable toggle to keep playing or stop playback when the app is removed from recents.
 - **Library & Playlists**: Create personalized playlists with full JSON **Export & Import** backup support.
 - **High-Quality Audio & Downloads**: Stream and download tracks with embedded metadata and album art.
@@ -45,6 +47,7 @@ Follow these instructions to get a copy of the project up and running on your lo
 ## Special Thanks
 
 - Special thanks to [Harsh Shah (SaavnMp3-Android)](https://github.com/Harshshah6/SaavnMp3-Android?hl=en-IN) for the base project foundation.
+- Featured on [PlayBook](https://github.com/Goodwy/PlayBook).
 
 ## License
 

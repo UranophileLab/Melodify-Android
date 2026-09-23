@@ -27,7 +27,7 @@
         android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Melotune"
+        android:theme="@style/Theme.Melodify"
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
 

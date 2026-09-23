@@ -9,7 +9,7 @@ import androidx.core.net.toUri
 import androidx.recyclerview.widget.RecyclerView
 import com.facebook.shimmer.ShimmerFrameLayout
 import com.google.gson.Gson
-import com.squareup.picasso.Picasso
+import com.bumptech.glide.Glide
 import dev.melodify.uranophilelab.R
 import dev.melodify.uranophilelab.activities.ArtistProfileActivity
 import dev.melodify.uranophilelab.adapters.ActivityMainArtistsItemAdapter.ActivityMainArtistsItemAdapterViewHolder
@@ -52,13 +52,11 @@ class ActivityMainArtistsItemAdapter(private val data: MutableList<ArtistsSearch
         val isInvalid = url.isBlank() || url.contains("default") || url.contains("artist-default")
         if (imageView != null) {
             if (!isInvalid) {
-                Picasso.get()
-                    .load(url.toUri())
+                Glide.with(imageView.context).load(url.toUri())
                     .placeholder(R.drawable.headphone)
                     .error(R.drawable.headphone)
-                    .fit()
-                    .centerCrop()
-                    .into(imageView)
+                    .fitCenter()
+                    .centerCrop().into(imageView)
             } else {
                 imageView.setImageResource(R.drawable.headphone)
             }

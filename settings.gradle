@@ -23,6 +23,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "SaavnMp3"
+rootProject.name = "Melodify"
 include ':app'
 include ':lrclib'

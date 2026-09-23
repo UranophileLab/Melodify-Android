@@ -13,8 +13,9 @@ import android.widget.RemoteViews
 import dev.melodify.uranophilelab.R
 import dev.melodify.uranophilelab.activities.MusicOverviewActivity
 import dev.melodify.uranophilelab.utils.MusicPlayerManager
-import com.squareup.picasso.Picasso
-import com.squareup.picasso.Target
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
 
 class WidgetPlayerProvider : AppWidgetProvider() {
     override fun onUpdate(
@@ -43,7 +44,7 @@ class WidgetPlayerProvider : AppWidgetProvider() {
 
             // Song Info
             val title = if (MusicPlayerManager.MUSIC_TITLE.isNullOrEmpty()) "Not Playing" else MusicPlayerManager.MUSIC_TITLE
-            val description = MusicPlayerManager.MUSIC_DESCRIPTION ?: "SaavnMp3"
+            val description = MusicPlayerManager.MUSIC_DESCRIPTION ?: "Melodify"
             
             // Extract artist from description if it follows "plays | year | copyright" or similar
             val artist = if (description.contains("|")) {
@@ -83,31 +84,27 @@ class WidgetPlayerProvider : AppWidgetProvider() {
             if (!imageUrl.isNullOrEmpty()) {
                 val oldTarget = widgetTargets.remove(appWidgetId)
                 if (oldTarget != null) {
-                    try { Picasso.get().cancelRequest(oldTarget) } catch (_: Exception) {}
+                    try { Glide.with(context.applicationContext).clear(oldTarget) } catch (_: Exception) {}
                 }
-                val target = object : Target {
-                    override fun onBitmapLoaded(bitmap: Bitmap?, from: Picasso.LoadedFrom?) {
+                val target = object : CustomTarget<Bitmap>() {
+                    override fun onResourceReady(bitmap: Bitmap, transition: Transition<in Bitmap>?) {
                         widgetTargets.remove(appWidgetId)
-                        if (bitmap != null) {
-                            views.setImageViewBitmap(R.id.widget_album_art, bitmap)
-                        } else {
-                            views.setImageViewResource(R.id.widget_album_art, R.mipmap.ic_launcher)
-                        }
+                        views.setImageViewBitmap(R.id.widget_album_art, bitmap)
                         appWidgetManager.updateAppWidget(appWidgetId, views)
                     }
-                    override fun onBitmapFailed(e: Exception?, errorDrawable: Drawable?) {
+                    override fun onLoadFailed(errorDrawable: Drawable?) {
                         widgetTargets.remove(appWidgetId)
                         views.setImageViewResource(R.id.widget_album_art, R.mipmap.ic_launcher)
                         appWidgetManager.updateAppWidget(appWidgetId, views)
                     }
-                    override fun onPrepareLoad(placeHolderDrawable: Drawable?) {}
+                    override fun onLoadCleared(placeholder: Drawable?) {}
                 }
                 widgetTargets[appWidgetId] = target
-                Picasso.get().load(imageUrl).into(target)
+                Glide.with(context.applicationContext).asBitmap().load(imageUrl).into(target)
             } else {
                 val oldTarget = widgetTargets.remove(appWidgetId)
                 if (oldTarget != null) {
-                    try { Picasso.get().cancelRequest(oldTarget) } catch (_: Exception) {}
+                    try { Glide.with(context.applicationContext).clear(oldTarget) } catch (_: Exception) {}
                 }
                 views.setImageViewResource(R.id.widget_album_art, R.mipmap.ic_launcher)
             }
@@ -115,7 +112,7 @@ class WidgetPlayerProvider : AppWidgetProvider() {
             appWidgetManager.updateAppWidget(appWidgetId, views)
         }
 
-        private val widgetTargets = HashMap<Int, Target>()
+        private val widgetTargets = HashMap<Int, CustomTarget<Bitmap>>()
 
         private fun getPendingSelfIntent(context: Context, action: String): PendingIntent {
             val intent = Intent(context, WidgetControlReceiver::class.java)

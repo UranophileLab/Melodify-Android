@@ -37,7 +37,7 @@ object TrackDownloader {
         val safeTitle = sanitizeFileName(title)
         val musicDir = File(
             Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),
-            "Melotune"
+            "Melodify"
         )
         if (!musicDir.exists()) {
             return false
@@ -50,7 +50,7 @@ object TrackDownloader {
         val data: MutableList<DownloadedTrack?> = ArrayList()
         val musicDir = File(
             Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),
-            "Melotune"
+            "Melodify"
         )
         if (!musicDir.exists()) {
             return data
@@ -235,7 +235,7 @@ object TrackDownloader {
 
                 val musicDir = File(
                     Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),
-                    "Melotune"
+                    "Melodify"
                 )
                 if (!musicDir.exists()) {
                     musicDir.mkdirs()
@@ -243,7 +243,7 @@ object TrackDownloader {
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     values.put(MediaStore.Audio.Media.DISPLAY_NAME, "$safeTitle.mp4")
-                    values.put(MediaStore.Audio.Media.RELATIVE_PATH, "${Environment.DIRECTORY_MUSIC}/Melotune")
+                    values.put(MediaStore.Audio.Media.RELATIVE_PATH, "${Environment.DIRECTORY_MUSIC}/Melodify")
                     val audioCollection = MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
                     val newUri = resolver.insert(audioCollection, values)
                         ?: throw Exception("Failed to insert into MediaStore")

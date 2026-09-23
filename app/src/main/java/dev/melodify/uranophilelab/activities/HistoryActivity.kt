@@ -2,6 +2,7 @@ package dev.melodify.uranophilelab.activities
 
 import android.content.DialogInterface
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -14,6 +15,7 @@ import dev.melodify.uranophilelab.databinding.ActivityHistoryBinding
 import dev.melodify.uranophilelab.model.history.AlbumHistoryItem
 import dev.melodify.uranophilelab.model.history.SongHistoryItem
 import dev.melodify.uranophilelab.utils.MiniPlayerHelper
+import dev.melodify.uranophilelab.utils.MusicPlayerManager
 import dev.melodify.uranophilelab.utils.SharedPreferenceManager
 import dev.melodify.uranophilelab.utils.attachSnapHelper
 
@@ -35,9 +37,6 @@ class HistoryActivity : AppCompatActivity() {
 
         binding.songsRecycler.layoutManager = LinearLayoutManager(this)
         binding.albumsRecycler.layoutManager = LinearLayoutManager(this)
-
-        binding.songsRecycler.attachSnapHelper()
-        binding.albumsRecycler.attachSnapHelper()
 
         setupChipFilter()
 
@@ -65,18 +64,50 @@ class HistoryActivity : AppCompatActivity() {
 
     private fun loadHistoryData() {
         val prefs = SharedPreferenceManager.getInstance(this)
-        songHistoryList = prefs.songHistory.toMutableList()
-        albumHistoryList = prefs.albumHistory.toMutableList()
 
-        songAdapter = SongHistoryAdapter(songHistoryList) {
-            updateEmptyState()
+        val curId = MusicPlayerManager.MUSIC_ID
+        val curTitle = MusicPlayerManager.MUSIC_TITLE
+        if (!curId.isNullOrBlank() && !curTitle.isNullOrBlank() && !curTitle.equals("loading...", true)) {
+            val rawArtist = MusicPlayerManager.MUSIC_DESCRIPTION?.split("|")?.firstOrNull()?.trim() ?: ""
+            val artistName = if (rawArtist.contains("plays", ignoreCase = true)) "" else rawArtist
+            prefs.addSongToHistory(
+                SongHistoryItem(
+                    id = curId,
+                    title = curTitle,
+                    artist = artistName,
+                    imageUrl = MusicPlayerManager.IMAGE_URL
+                )
+            )
         }
-        binding.songsRecycler.adapter = songAdapter
 
-        albumAdapter = AlbumHistoryAdapter(albumHistoryList) {
-            updateEmptyState()
+        val newSongs = prefs.songHistory
+        val newAlbums = prefs.albumHistory
+
+        Log.d("HistoryDebug", "loadHistoryData -> newSongs: ${newSongs.size}, newAlbums: ${newAlbums.size}")
+
+        songHistoryList.clear()
+        songHistoryList.addAll(newSongs)
+
+        albumHistoryList.clear()
+        albumHistoryList.addAll(newAlbums)
+
+        if (songAdapter == null) {
+            songAdapter = SongHistoryAdapter(songHistoryList) {
+                updateEmptyState()
+            }
+            binding.songsRecycler.adapter = songAdapter
+        } else {
+            songAdapter?.updateData(songHistoryList)
         }
-        binding.albumsRecycler.adapter = albumAdapter
+
+        if (albumAdapter == null) {
+            albumAdapter = AlbumHistoryAdapter(albumHistoryList) {
+                updateEmptyState()
+            }
+            binding.albumsRecycler.adapter = albumAdapter
+        } else {
+            albumAdapter?.updateData(albumHistoryList)
+        }
 
         updateEmptyState()
     }
@@ -85,9 +116,13 @@ class HistoryActivity : AppCompatActivity() {
         val hasSongs = songHistoryList.isNotEmpty()
         val hasAlbums = albumHistoryList.isNotEmpty()
 
-        val isAllChecked = binding.chipAll.isChecked
         val isSongsChecked = binding.chipSongs.isChecked
         val isAlbumsChecked = binding.chipAlbums.isChecked
+        val isAllChecked = binding.chipAll.isChecked || (!isSongsChecked && !isAlbumsChecked)
+
+        if (!isSongsChecked && !isAlbumsChecked && !binding.chipAll.isChecked) {
+            binding.chipAll.isChecked = true
+        }
 
         val showSongs = (isAllChecked || isSongsChecked) && hasSongs
         val showAlbums = (isAllChecked || isAlbumsChecked) && hasAlbums

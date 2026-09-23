@@ -34,12 +34,12 @@ open class BaseApplicationClass : Application() {
         fun updateTheme(context: Context? = null) {
             val ctx = context ?: MusicPlayerManager.appContext ?: return
             val settingsSharedPrefManager = SettingsSharedPrefManager(ctx)
-            val theme = settingsSharedPrefManager.theme
+            val theme = settingsSharedPrefManager.theme ?: "dark"
             AppCompatDelegate.setDefaultNightMode(
                 when (theme) {
-                    "dark" -> AppCompatDelegate.MODE_NIGHT_YES
                     "light" -> AppCompatDelegate.MODE_NIGHT_NO
-                    else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+                    "system" -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+                    else -> AppCompatDelegate.MODE_NIGHT_YES
                 }
             )
         }

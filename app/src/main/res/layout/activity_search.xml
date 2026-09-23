@@ -5,57 +5,70 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/bg_player_gradient"
     android:fitsSystemWindows="true"
-    tools:context=".activities.SearchActivity"
-    android:background="@color/background">
+    tools:context=".activities.SearchActivity">
 
     <LinearLayout
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:gravity="center_vertical"
         android:orientation="horizontal"
         android:padding="@dimen/_8sdp"
-        android:gravity="center_vertical">
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
-            android:layout_width="@dimen/_25sdp"
-            android:layout_height="@dimen/_25sdp"
-            android:src="@drawable/round_arrow_back_24"
+            android:layout_width="@dimen/_28sdp"
+            android:layout_height="@dimen/_28sdp"
+            android:clickable="true"
+            android:contentDescription="back"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackgroundBorderless"
             android:onClick="backPress"
-            android:contentDescription="back" />
+            android:padding="@dimen/_4sdp"
+            android:src="@drawable/round_arrow_back_24"
+            app:tint="@color/text_light" />
 
         <EditText
             android:id="@+id/edittext"
             android:layout_width="0dp"
-            android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:importantForAutofill="no"
+            android:layout_weight="1"
             android:background="@android:color/transparent"
+            android:fontFamily="@font/avenir_next_regular"
             android:hint="@android:string/search_go"
+            android:textColorHint="#B3B3B3"
+            android:imeOptions="actionSearch"
+            android:importantForAutofill="no"
             android:inputType="text"
-            android:paddingVertical="@dimen/_4sdp"
             android:paddingHorizontal="@dimen/_12sdp"
+            android:paddingVertical="@dimen/_4sdp"
             android:singleLine="true"
-            android:imeOptions="actionSearch" />
+            android:textColor="@color/text_light" />
 
         <ImageView
             android:id="@+id/clear_icon"
-            android:layout_width="@dimen/_25sdp"
-            android:layout_height="@dimen/_25sdp"
-            android:src="@drawable/baseline_clear_24"
+            android:layout_width="@dimen/_28sdp"
+            android:layout_height="@dimen/_28sdp"
+            android:clickable="true"
             android:contentDescription="clear"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackgroundBorderless"
+            android:padding="4dp"
+            android:src="@drawable/baseline_clear_24"
             android:visibility="gone"
-            android:padding="4dp" />
+            app:tint="@color/text_light" />
 
     </LinearLayout>
 
-    <com.google.android.material.divider.MaterialDivider
+    <View
         android:id="@+id/__divider"
         android:layout_width="match_parent"
         android:layout_height="0.5dp"
+        android:background="#22FFFFFF"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/toolbar" />
@@ -64,11 +77,11 @@
         android:id="@+id/hscrollview"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:scrollbars="none"
         android:overScrollMode="never"
-        app:layout_constraintTop_toBottomOf="@id/__divider"
+        android:scrollbars="none"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintTop_toBottomOf="@id/__divider">
 
         <com.google.android.material.chip.ChipGroup
             android:id="@+id/chip_group"
@@ -77,44 +90,75 @@
             android:paddingHorizontal="@dimen/_12sdp"
             android:paddingVertical="@dimen/_4sdp"
             app:checkedChip="@id/chip_all"
-            app:singleSelection="true"
+            app:selectionRequired="true"
             app:singleLine="true"
-            app:selectionRequired="true">
+            app:singleSelection="true">
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip_all"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:checkable="true"
+                android:checked="true"
+                android:fontFamily="@font/avenir_next_bold"
                 android:text="All"
-                android:checkable="true" />
+                android:textColor="@color/chip_text_color"
+                app:chipBackgroundColor="@color/chip_background_color"
+                app:chipCornerRadius="999dp"
+                app:chipStrokeColor="@color/chip_stroke_color"
+                app:chipStrokeWidth="1dp" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip_song"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:checkable="true"
+                android:fontFamily="@font/avenir_next_bold"
                 android:text="Songs"
-                android:checkable="true" />
+                android:textColor="@color/chip_text_color"
+                app:chipBackgroundColor="@color/chip_background_color"
+                app:chipCornerRadius="999dp"
+                app:chipStrokeColor="@color/chip_stroke_color"
+                app:chipStrokeWidth="1dp" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip_albums"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:checkable="true"
+                android:fontFamily="@font/avenir_next_bold"
                 android:text="Albums"
-                android:checkable="true" />
+                android:textColor="@color/chip_text_color"
+                app:chipBackgroundColor="@color/chip_background_color"
+                app:chipCornerRadius="999dp"
+                app:chipStrokeColor="@color/chip_stroke_color"
+                app:chipStrokeWidth="1dp" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip_playlists"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:checkable="true"
+                android:fontFamily="@font/avenir_next_bold"
                 android:text="Playlists"
-                android:checkable="true" />
+                android:textColor="@color/chip_text_color"
+                app:chipBackgroundColor="@color/chip_background_color"
+                app:chipCornerRadius="999dp"
+                app:chipStrokeColor="@color/chip_stroke_color"
+                app:chipStrokeWidth="1dp" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip_artists"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:checkable="true"
+                android:fontFamily="@font/avenir_next_bold"
                 android:text="Artists"
-                android:checkable="true" />
+                android:textColor="@color/chip_text_color"
+                app:chipBackgroundColor="@color/chip_background_color"
+                app:chipCornerRadius="999dp"
+                app:chipStrokeColor="@color/chip_stroke_color"
+                app:chipStrokeWidth="1dp" />
 
         </com.google.android.material.chip.ChipGroup>
     </HorizontalScrollView>
@@ -128,35 +172,36 @@
         android:paddingHorizontal="@dimen/_12sdp"
         android:paddingTop="@dimen/_8sdp"
         android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/hscrollview"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintTop_toBottomOf="@id/hscrollview">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:fontFamily="@font/avenir_next_bold"
                 android:text="Recent Searches"
-                android:textStyle="bold"
-                android:textSize="@dimen/_13ssp"
-                android:textColor="@color/textMain" />
+                android:textColor="@color/text_light"
+                android:textSize="@dimen/_13ssp" />
 
             <TextView
                 android:id="@+id/clear_history_btn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Clear"
-                android:textSize="@dimen/_11ssp"
-                android:textColor="@color/textSec"
-                android:padding="@dimen/_4sdp"
                 android:clickable="true"
-                android:focusable="true" />
+                android:focusable="true"
+                android:fontFamily="@font/avenir_next_regular"
+                android:padding="@dimen/_4sdp"
+                android:text="Clear"
+                android:textColor="#B3B3B3"
+                android:textSize="@dimen/_11ssp" />
 
         </LinearLayout>
 
@@ -174,10 +219,10 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:fillViewport="true"
-        app:layout_constraintTop_toBottomOf="@id/search_history_container"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toTopOf="@+id/mini_player"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/search_history_container"
         app:layout_constraintVertical_weight="1">
 
         <LinearLayout
@@ -190,8 +235,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:overScrollMode="never"
-                android:scrollbars="none"
-                android:padding="@dimen/_8sdp" />
+                android:padding="@dimen/_8sdp"
+                android:scrollbars="none" />
 
         </LinearLayout>
 
@@ -203,7 +248,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

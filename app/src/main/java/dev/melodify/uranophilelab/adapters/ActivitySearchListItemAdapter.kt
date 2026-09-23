@@ -1,6 +1,7 @@
 package dev.melodify.uranophilelab.adapters
 
 import android.content.Intent
+import android.graphics.Typeface
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,11 +9,12 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.widget.PopupMenu
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.facebook.shimmer.ShimmerFrameLayout
 import com.google.android.material.card.MaterialCardView
 import com.google.gson.Gson
-import com.squareup.picasso.Picasso
+import com.bumptech.glide.Glide
 import dev.melodify.uranophilelab.R
 import dev.melodify.uranophilelab.activities.ArtistProfileActivity
 import dev.melodify.uranophilelab.activities.ListActivity
@@ -20,7 +22,10 @@ import dev.melodify.uranophilelab.activities.MusicOverviewActivity
 import dev.melodify.uranophilelab.model.AlbumItem
 import dev.melodify.uranophilelab.model.BasicDataRecord
 import dev.melodify.uranophilelab.model.SearchListItem
+import dev.melodify.uranophilelab.model.history.SongHistoryItem
+import dev.melodify.uranophilelab.records.sharedpref.SavedLibraries
 import dev.melodify.uranophilelab.utils.MusicPlayerManager
+import dev.melodify.uranophilelab.utils.SharedPreferenceManager
 
 class ActivitySearchListItemAdapter(private val data: MutableList<SearchListItem>) :
     RecyclerView.Adapter<ActivitySearchListItemAdapter.ViewHolder>() {
@@ -55,7 +60,15 @@ class ActivitySearchListItemAdapter(private val data: MutableList<SearchListItem
         val parsedTitle = item.title()
         val parsedSubtitle = item.subtitle()
 
+        val isCurrentPlaying = item.type == SearchListItem.Type.SONG && !item.id.isNullOrEmpty() && (item.id == MusicPlayerManager.MUSIC_ID)
         holder.titleView?.text = parsedTitle
+        if (isCurrentPlaying) {
+            holder.titleView?.setTextColor(ContextCompat.getColor(holder.itemView.context, R.color.spotify_green))
+            holder.titleView?.setTypeface(null, Typeface.BOLD)
+        } else {
+            holder.titleView?.setTextColor(ContextCompat.getColor(holder.itemView.context, R.color.text_light))
+            holder.titleView?.setTypeface(null, Typeface.NORMAL)
+        }
 
         val typePrefix = when (item.type) {
             SearchListItem.Type.SONG -> "Song"
@@ -75,41 +88,93 @@ class ActivitySearchListItemAdapter(private val data: MutableList<SearchListItem
 
         val coverCard = holder.coverCard
         if (coverCard != null) {
-            val radiusRes = if (item.type == SearchListItem.Type.ARTIST) {
-                com.intuit.sdp.R.dimen._20sdp
-            } else {
-                com.intuit.sdp.R.dimen._4sdp
-            }
-            coverCard.radius = coverCard.context.resources.getDimension(radiusRes)
+            val density = coverCard.context.resources.displayMetrics.density
+            val radiusPx = if (item.type == SearchListItem.Type.ARTIST) (20f * density) else (4f * density)
+            coverCard.radius = radiusPx
+        }
+
+        val favIcon = holder.itemView.findViewById<ImageView>(R.id.favorite_item_icon)
+        val prefs = SharedPreferenceManager.getInstance(holder.itemView.context)
+
+        if (item.type == SearchListItem.Type.SONG) {
+            val isFav = !item.id.isNullOrEmpty() && prefs.isFavorite(item.id)
+            favIcon?.visibility = if (isFav) View.VISIBLE else View.GONE
+            favIcon?.setImageResource(R.drawable.favorite_24px)
+        } else {
+            favIcon?.visibility = View.GONE
         }
 
         val moreIcon = holder.moreIcon
         if (moreIcon != null) {
-            if (item.type == SearchListItem.Type.SONG) {
-                moreIcon.visibility = View.VISIBLE
-                moreIcon.setOnClickListener { v ->
-                    val popup = PopupMenu(v.context, v)
-                    popup.menu.add("Play Next")
-                    popup.menu.add("Add to Queue")
-                    popup.setOnMenuItemClickListener { menuItem ->
-                        when (menuItem.title) {
-                            "Play Next" -> {
-                                MusicPlayerManager.playNext(item.id)
-                                Toast.makeText(v.context, "Song will play next", Toast.LENGTH_SHORT).show()
-                                true
+            when (item.type) {
+                SearchListItem.Type.SONG -> {
+                    moreIcon.visibility = View.VISIBLE
+                    moreIcon.setOnClickListener { v ->
+                        val popup = PopupMenu(v.context, v)
+                        popup.menu.add("Play Next")
+                        popup.menu.add("Add to Queue")
+                        popup.setOnMenuItemClickListener { menuItem ->
+                            when (menuItem.title) {
+                                "Play Next" -> {
+                                    MusicPlayerManager.playNext(item.id)
+                                    Toast.makeText(v.context, "Song will play next", Toast.LENGTH_SHORT).show()
+                                    true
+                                }
+                                "Add to Queue" -> {
+                                    MusicPlayerManager.addToQueue(item.id)
+                                    Toast.makeText(v.context, "Song added to queue", Toast.LENGTH_SHORT).show()
+                                    true
+                                }
+                                else -> false
                             }
-                            "Add to Queue" -> {
-                                MusicPlayerManager.addToQueue(item.id)
-                                Toast.makeText(v.context, "Song added to queue", Toast.LENGTH_SHORT).show()
-                                true
-                            }
-                            else -> false
                         }
+                        popup.show()
                     }
-                    popup.show()
                 }
-            } else {
-                moreIcon.visibility = View.GONE
+
+                SearchListItem.Type.ALBUM, SearchListItem.Type.PLAYLIST -> {
+                    moreIcon.visibility = View.VISIBLE
+                    moreIcon.setOnClickListener { v ->
+                        val popup = PopupMenu(v.context, v)
+                        val isSaved = !item.id.isNullOrEmpty() && isLibrarySaved(item.id, prefs.savedLibrariesData)
+                        popup.menu.add(if (isSaved) "Remove from Library" else "Add to Library")
+                        popup.menu.add("Play")
+                        popup.setOnMenuItemClickListener { menuItem ->
+                            when (menuItem.title) {
+                                "Add to Library", "Remove from Library" -> {
+                                    if (!item.id.isNullOrEmpty()) {
+                                        val isAlbum = item.type == SearchListItem.Type.ALBUM
+                                        val newSavedState = toggleSavedLibrary(
+                                            id = item.id,
+                                            title = parsedTitle,
+                                            subtitle = parsedSubtitle,
+                                            coverUrl = item.coverImage ?: "",
+                                            isAlbum = isAlbum,
+                                            prefs = prefs
+                                        )
+                                        favIcon?.setImageResource(if (newSavedState) R.drawable.favorite_24px else R.drawable.favorite_outline_24px)
+                                        Toast.makeText(
+                                            v.context,
+                                            if (newSavedState) "Added to Library" else "Removed from Library",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                    true
+                                }
+                                "Play" -> {
+                                    holder.itemView.performClick()
+                                    true
+                                }
+                                else -> false
+                            }
+                        }
+                        popup.show()
+                    }
+                }
+
+                else -> {
+                    moreIcon.visibility = View.GONE
+                }
             }
         }
 
@@ -121,13 +186,11 @@ class ActivitySearchListItemAdapter(private val data: MutableList<SearchListItem
             } else rawImageUrl ?: ""
             val isInvalid = imageUrl.isBlank() || imageUrl.contains("default") || imageUrl.contains("artist-default")
             if (!isInvalid) {
-                Picasso.get()
-                    .load(imageUrl)
+                Glide.with(coverImageView.context).load(imageUrl)
                     .placeholder(R.drawable.headphone)
                     .error(R.drawable.headphone)
-                    .fit()
-                    .centerCrop()
-                    .into(coverImageView)
+                    .fitCenter()
+                    .centerCrop().into(coverImageView)
             } else {
                 coverImageView.setImageResource(R.drawable.headphone)
             }
@@ -190,5 +253,40 @@ class ActivitySearchListItemAdapter(private val data: MutableList<SearchListItem
 
     override fun getItemViewType(position: Int): Int {
         return if (data[position].id == "<shimmer>") 1 else 0
+    }
+
+    private fun isLibrarySaved(id: String?, savedLibraries: SavedLibraries?): Boolean {
+        if (id.isNullOrBlank() || savedLibraries?.lists.isNullOrEmpty()) return false
+        return savedLibraries?.lists?.any { it?.id == id } == true
+    }
+
+    private fun toggleSavedLibrary(
+        id: String,
+        title: String,
+        subtitle: String,
+        coverUrl: String,
+        isAlbum: Boolean,
+        prefs: SharedPreferenceManager
+    ): Boolean {
+        val saved = prefs.savedLibrariesData
+        val list = saved?.lists
+        if (list != null) {
+            val index = list.indexOfFirst { it?.id == id }
+            if (index != -1) {
+                prefs.removeLibraryFromSavedLibraries(index)
+                return false
+            }
+        }
+        val library = SavedLibraries.Library(
+            id,
+            false,
+            isAlbum,
+            title,
+            coverUrl,
+            subtitle,
+            ArrayList()
+        )
+        prefs.addLibraryToSavedLibraries(library)
+        return true
     }
 }

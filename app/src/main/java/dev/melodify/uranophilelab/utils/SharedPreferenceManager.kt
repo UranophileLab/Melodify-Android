@@ -29,6 +29,36 @@ import dev.melodify.uranophilelab.model.history.AlbumHistoryItem
 import com.google.gson.reflect.TypeToken
 import androidx.core.content.edit
 
+@Entity(tableName = "key_value")
+class KeyValue(
+    @PrimaryKey var key: String,
+    @ColumnInfo(name = "json") var json: String?,
+    @ColumnInfo(name = "last_updated") var lastUpdated: Long
+)
+
+@Dao
+interface KeyValueDao {
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun upsert(kv: KeyValue)
+
+    @Query("SELECT json FROM key_value WHERE key = :key LIMIT 1")
+    fun getJson(key: String?): String?
+
+    @Query("SELECT COUNT(*) > 0 FROM key_value WHERE key = :key")
+    fun exists(key: String?): Boolean
+
+    @Query("DELETE FROM key_value WHERE key = :key")
+    fun deleteByKey(key: String?)
+
+    @Query("SELECT * FROM key_value")
+    fun getAll(): List<KeyValue>
+}
+
+@Database(entities = [KeyValue::class], version = 1, exportSchema = false)
+abstract class CacheDatabase : RoomDatabase() {
+    abstract fun keyValueDao(): KeyValueDao
+}
+
 /**
  * Drop-in replacement for your old SharedPreferenceManager that uses Room.
  * 
@@ -42,42 +72,11 @@ import androidx.core.content.edit
  * clearOldPrefsAsync(context, onComplete) to free space.
  */
 class SharedPreferenceManager private constructor(context: Context) {
-    // ---------- Room single-table key/value entity & DAO & DB ----------
-    @Entity(tableName = "key_value")
-    internal class KeyValue(
-        @PrimaryKey var key: String,
-        @ColumnInfo(name = "json") var json: String?,
-        @ColumnInfo(name = "last_updated") var lastUpdated: Long
-    )
-
-    @Dao
-    internal interface KeyValueDao {
-        @Insert(onConflict = OnConflictStrategy.REPLACE)
-        fun upsert(kv: KeyValue)
-
-        @Query("SELECT json FROM key_value WHERE key = :key LIMIT 1")
-        fun getJson(key: String?): String?
-
-        @Query("SELECT COUNT(*) > 0 FROM key_value WHERE key = :key")
-        fun exists(key: String?): Boolean
-
-        @Query("DELETE FROM key_value WHERE key = :key")
-        fun deleteByKey(key: String?)
-
-        @Query("SELECT * FROM key_value")
-        fun getAll(): List<KeyValue>
-    }
-
-    @Database(entities = [KeyValue::class], version = 1, exportSchema = false)
-    internal abstract class AppDatabase : RoomDatabase() {
-        abstract fun keyValueDao(): KeyValueDao
-    }
-
     // IMPORTANT: allowMainThreadQueries is enabled here for drop-in sync compatibility.
     // Recommended: remove allowMainThreadQueries() and perform DB operations off the UI thread.
-    private val db: AppDatabase = databaseBuilder<AppDatabase>(
+    private val db: CacheDatabase = databaseBuilder<CacheDatabase>(
         context.applicationContext,
-        AppDatabase::class.java,
+        CacheDatabase::class.java,
         "saavn_cache.db"
     )
         .allowMainThreadQueries()
@@ -335,9 +334,17 @@ class SharedPreferenceManager private constructor(context: Context) {
 
     fun addSongToHistory(item: SongHistoryItem) {
         if (item.id.isNullOrBlank()) return
+        val cleanTitle = TextParserUtil.parseHtmlText(item.title)
+        if (cleanTitle.isBlank() || cleanTitle.equals("loading...", ignoreCase = true)) return
+        val cleanArtist = TextParserUtil.parseHtmlText(item.artist)
+
         val current = songHistory.toMutableList()
-        current.removeAll { it.id == item.id }
-        current.add(0, item)
+        val existing = current.firstOrNull { it.id == item.id || (!it.title.isNullOrBlank() && it.title == cleanTitle) }
+        val finalArtist = if (cleanArtist.isNotBlank()) cleanArtist else (existing?.artist ?: "")
+        val cleanItem = item.copy(title = cleanTitle, artist = finalArtist)
+
+        current.removeAll { it.id == item.id || (!it.title.isNullOrBlank() && it.title == cleanTitle) }
+        current.add(0, cleanItem)
         songHistory = if (current.size > 100) current.subList(0, 100) else current
     }
 
@@ -362,9 +369,17 @@ class SharedPreferenceManager private constructor(context: Context) {
 
     fun addAlbumToHistory(item: AlbumHistoryItem) {
         if (item.id.isNullOrBlank()) return
+        val cleanTitle = TextParserUtil.parseHtmlText(item.title)
+        if (cleanTitle.isBlank() || cleanTitle.equals("loading...", ignoreCase = true)) return
+        val cleanSubtitle = TextParserUtil.parseHtmlText(item.subtitle)
+
         val current = albumHistory.toMutableList()
-        current.removeAll { it.id == item.id }
-        current.add(0, item)
+        val existing = current.firstOrNull { it.id == item.id || (!it.title.isNullOrBlank() && it.title == cleanTitle) }
+        val finalSubtitle = if (cleanSubtitle.isNotBlank()) cleanSubtitle else (existing?.subtitle ?: "")
+        val cleanItem = item.copy(title = cleanTitle, subtitle = finalSubtitle)
+
+        current.removeAll { it.id == item.id || (!it.title.isNullOrBlank() && it.title == cleanTitle) }
+        current.add(0, cleanItem)
         albumHistory = if (current.size > 100) current.subList(0, 100) else current
     }
 
@@ -433,7 +448,7 @@ class SharedPreferenceManager private constructor(context: Context) {
      * Migrate all entries from the old SharedPreferences named "cache" into Room.
      * This runs synchronously (it can be called from Application.onCreate). It iterates all keys
      * in the old prefs and upserts their value (strings/primitives) into Room under the same key.
-     * 
+     *
      * You can pass a Runnable for onComplete which will run after migration (on the caller thread).
      * Recommended: call this once in Application.onCreate and then verify data in Room.
      */

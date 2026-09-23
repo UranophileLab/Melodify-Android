@@ -1,49 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <color name="background">@color/background_light</color>
-    <color name="textMain">@color/text_dark</color>
-    <color name="textSec">@color/text_secondary_dark</color>
-    <color name="buttonBackground">@color/button_light</color>
-    <color name="dividerBackground">@color/divider_dark</color>
-    <color name="green">@color/cyan_accent</color>
+    <color name="background">@color/background_dark</color>
+    <color name="textMain">@color/text_light</color>
+    <color name="textSec">#B3B3B3</color>
+    <color name="buttonBackground">#1DB954</color>
+    <color name="dividerBackground">#222222</color>
+    <color name="green">#1DB954</color>
     <color name="red">#E91E63</color>
 
-    <!-- Ocean Blue / Cyan Theme Primary Colors -->
-    <color name="ocean_blue">#0088FF</color>
-    <color name="cyan_accent">#00D2FF</color>
-    <color name="ocean_dark_blue">#0055CC</color>
-    <color name="spotify_green">#0088FF</color>
-    <color name="spotify_black">#0F172A</color>
+    <!-- Spotify Brand Green & Premium Black Colors -->
+    <color name="ocean_blue">#1DB954</color>
+    <color name="cyan_accent">#1DB954</color>
+    <color name="ocean_dark_blue">#122410</color>
+    <color name="spotify_green">#1DB954</color>
+    <color name="spotify_black">#000000</color>
 
     <!-- Secondary colors -->
-    <color name="spotify_dark_green">#0066CC</color>
-    <color name="spotify_light_green">#00D2FF</color>
+    <color name="spotify_dark_green">#122410</color>
+    <color name="spotify_light_green">#1DB954</color>
 
-    <color name="activity_main_cta_button">@color/textSec</color>
+    <color name="activity_main_cta_button">#1DB954</color>
 
     <!-- Background colors -->
-    <color name="background_dark">#0F172A</color>
-    <color name="background_light">#F8FAFC</color>
+    <color name="background_dark">#000000</color>
+    <color name="background_light">#000000</color>
 
     <!-- Text colors -->
-    <color name="text_light">#F8FAFC</color>
-    <color name="text_dark">#0F172A</color>
-    <color name="text_secondary_light">#94A3B8</color>
-    <color name="text_secondary_dark">#475569</color>
+    <color name="text_light">#FFFFFF</color>
+    <color name="text_dark">#FFFFFF</color>
+    <color name="text_secondary_light">#B3B3B3</color>
+    <color name="text_secondary_dark">#B3B3B3</color>
 
     <!-- Divider and accent colors -->
-    <color name="divider_light">#E2E8F0</color>
-    <color name="divider_dark">#1E293B</color>
+    <color name="divider_light">#222222</color>
+    <color name="divider_dark">#222222</color>
 
     <!-- Button colors -->
-    <color name="button_dark">#0088FF</color>
-    <color name="button_light">#0088FF</color>
-    <color name="light_blue_400">#FF29B6F6</color>
-    <color name="light_blue_600">#FF039BE5</color>
-    <color name="gray_400">#FFBDBDBD</color>
-    <color name="gray_600">#FF757575</color>
+    <color name="button_dark">#1DB954</color>
+    <color name="button_light">#1DB954</color>
+    <color name="light_blue_400">#1DB954</color>
+    <color name="light_blue_600">#1DB954</color>
+    <color name="gray_400">#B3B3B3</color>
+    <color name="gray_600">#757575</color>
 
-    <color name="widget_transparent_75">#BFFFFFFF</color>
+    <color name="widget_transparent_75">#BF0A0A0A</color>
 
 </resources>

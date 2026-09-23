@@ -10,7 +10,7 @@ import android.widget.TextView
 import androidx.appcompat.widget.PopupMenu
 import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
-import com.squareup.picasso.Picasso
+import com.bumptech.glide.Glide
 import dev.melodify.uranophilelab.R
 import dev.melodify.uranophilelab.activities.ListActivity
 import dev.melodify.uranophilelab.model.AlbumItem
@@ -18,9 +18,20 @@ import dev.melodify.uranophilelab.model.history.AlbumHistoryItem
 import dev.melodify.uranophilelab.utils.SharedPreferenceManager
 
 class AlbumHistoryAdapter(
-    private val data: MutableList<AlbumHistoryItem>,
+    private var data: MutableList<AlbumHistoryItem>,
     private val onItemRemovedListener: (() -> Unit)? = null
 ) : RecyclerView.Adapter<AlbumHistoryAdapter.ViewHolder>() {
+
+    fun updateData(newData: List<AlbumHistoryItem>) {
+        if (data === newData) {
+            notifyDataSetChanged()
+            return
+        }
+        val temp = ArrayList(newData)
+        data.clear()
+        data.addAll(temp)
+        notifyDataSetChanged()
+    }
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val coverImage: ImageView? = itemView.findViewById(R.id.coverImage)
@@ -49,10 +60,12 @@ class AlbumHistoryAdapter(
 
         val imageUrl = item.imageUrl
         if (!imageUrl.isNullOrEmpty() && holder.coverImage != null) {
-            Picasso.get().load(imageUrl.toUri()).into(holder.coverImage)
+            Glide.with(holder.coverImage.context).load(imageUrl.toUri()).into(holder.coverImage)
         } else {
             holder.coverImage?.setImageResource(R.drawable.baseline_album_24)
         }
+
+        holder.itemView.findViewById<View>(R.id.favorite_item_icon)?.visibility = View.GONE
 
         holder.itemView.setOnClickListener { v ->
             if (!item.id.isNullOrEmpty()) {
@@ -80,6 +93,7 @@ class AlbumHistoryAdapter(
                     if (currentPos in 0 until data.size) {
                         data.removeAt(currentPos)
                         notifyItemRemoved(currentPos)
+                        notifyItemRangeChanged(currentPos, data.size - currentPos)
                         val prefs = SharedPreferenceManager.getInstance(context)
                         prefs.albumHistory = data
                         onItemRemovedListener?.invoke()

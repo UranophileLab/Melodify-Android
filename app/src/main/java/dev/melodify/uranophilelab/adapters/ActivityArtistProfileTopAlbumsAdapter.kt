@@ -12,7 +12,7 @@ import dev.melodify.uranophilelab.activities.ListActivity
 import dev.melodify.uranophilelab.databinding.ActivityArtistProfileViewTopSongsItemBinding
 import dev.melodify.uranophilelab.model.AlbumItem
 import dev.melodify.uranophilelab.records.AlbumsSearch
-import com.squareup.picasso.Picasso
+import com.bumptech.glide.Glide
 import androidx.core.net.toUri
 
 class ActivityArtistProfileTopAlbumsAdapter(private val data: MutableList<AlbumsSearch.Data.Results?>) :
@@ -44,7 +44,7 @@ class ActivityArtistProfileTopAlbumsAdapter(private val data: MutableList<Albums
         val images = data[position]?.image
         val url = if (images.isNullOrEmpty()) "" else images[images.size - 1]?.url ?: ""
         if (url.isNotEmpty()) {
-            Picasso.get().load(url.toUri()).into(itemView.coverImage)
+            Glide.with(itemView.coverImage.context).load(url.toUri()).into(itemView.coverImage)
         }
 
         holder.itemView.setOnClickListener(View.OnClickListener {

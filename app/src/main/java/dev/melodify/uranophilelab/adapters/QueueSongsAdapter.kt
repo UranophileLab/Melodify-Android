@@ -1,16 +1,18 @@
 package dev.melodify.uranophilelab.adapters
 
+import android.graphics.Typeface
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import dev.melodify.uranophilelab.R
 import dev.melodify.uranophilelab.records.SongResponse.Song
 import dev.melodify.uranophilelab.utils.MusicPlayerManager
-import com.squareup.picasso.Picasso
+import com.bumptech.glide.Glide
 
 class QueueSongsAdapter(
     val data: MutableList<Song>,
@@ -97,11 +99,19 @@ class QueueSongsAdapter(
         val artistText = holder.itemView.findViewById<TextView>(R.id.artist)
         val coverImage = holder.itemView.findViewById<ImageView>(R.id.coverImage)
         val moreIcon   = holder.itemView.findViewById<ImageView>(R.id.more)
-        
+
         titleText.isSelected  = true
         artistText.isSelected = true
-        
+
+        val isCurrentPlaying = !song.id.isNullOrEmpty() && (song.id == MusicPlayerManager.MUSIC_ID)
         titleText.text = song.name()
+        if (isCurrentPlaying) {
+            titleText.setTextColor(ContextCompat.getColor(holder.itemView.context, R.color.spotify_green))
+            titleText.setTypeface(null, Typeface.BOLD)
+        } else {
+            titleText.setTextColor(ContextCompat.getColor(holder.itemView.context, R.color.text_light))
+            titleText.setTypeface(null, Typeface.NORMAL)
+        }
         
         val artistsNames = StringBuilder()
         val artistsList  = song.artists?.all ?: emptyList()
@@ -116,7 +126,7 @@ class QueueSongsAdapter(
         val images = song.image
         val imgUrl = if (images.isNullOrEmpty()) "" else images[images.size - 1]?.url ?: ""
         if (imgUrl.isNotEmpty()) {
-            Picasso.get().load(imgUrl.toUri()).into(coverImage)
+            Glide.with(coverImage.context).load(imgUrl.toUri()).into(coverImage)
         }
         
         // Use the "more" icon as the remove button

@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.squareup.picasso.Picasso
+import com.bumptech.glide.Glide
 import dev.melodify.uranophilelab.R
 import dev.melodify.uranophilelab.activities.MusicOverviewActivity
 import dev.melodify.uranophilelab.records.SongResponse.Song
@@ -54,12 +54,10 @@ class ActivitySeeMoreListAdapter : RecyclerView.Adapter<ActivitySeeMoreListAdapt
         val coverImageView = holder.coverImage
         if (coverImageView != null) {
             if (url.isNotEmpty()) {
-                Picasso.get()
-                    .load(url)
+                Glide.with(coverImageView.context).load(url)
                     .placeholder(R.drawable.headphone)
-                    .fit()
-                    .centerCrop()
-                    .into(coverImageView)
+                    .fitCenter()
+                    .centerCrop().into(coverImageView)
             } else {
                 coverImageView.setImageResource(R.drawable.headphone)
             }

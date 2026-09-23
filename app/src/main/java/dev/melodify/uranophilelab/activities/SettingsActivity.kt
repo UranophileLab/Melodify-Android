@@ -15,6 +15,8 @@ import dev.melodify.uranophilelab.utils.SharedPreferenceManager
 import dev.melodify.uranophilelab.utils.customview.MaterialCustomSwitch.OnCheckChangeListener
 import dev.melodify.uranophilelab.utils.MiniPlayerHelper
 import androidx.core.content.edit
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import dev.melodify.uranophilelab.utils.MusicPlayerManager
 import dev.melodify.uranophilelab.utils.UpdateManager
 
 class SettingsActivity : AppCompatActivity() {
@@ -87,7 +89,35 @@ class SettingsActivity : AppCompatActivity() {
             UpdateManager.checkForUpdates(this, isManualCheck = true)
         }
 
-        binding!!.themeChipGroup.check(if (settingsSharedPrefManager.theme == "dark") R.id.dark else if (settingsSharedPrefManager.theme == "light") R.id.light else R.id.system)
+        val qualities = arrayOf("320kbps", "160kbps", "96kbps", "48kbps", "12kbps")
+        val qualityLabels = arrayOf("320kbps (Very High)", "160kbps (High)", "96kbps (Medium)", "48kbps (Low)", "12kbps (Very Low)")
+
+        fun updateQualityUI() {
+            val currentQuality = MusicPlayerManager.TRACK_QUALITY ?: "320kbps"
+            val index = qualities.indexOfFirst { it.equals(currentQuality, ignoreCase = true) }
+            val label = if (index >= 0) qualityLabels[index] else currentQuality
+            binding?.trackQualityValue?.text = label
+        }
+
+        updateQualityUI()
+
+        binding?.trackQualitySetting?.setOnClickListener {
+            val currentQuality = MusicPlayerManager.TRACK_QUALITY ?: "320kbps"
+            val selectedIndex = qualities.indexOfFirst { it.equals(currentQuality, ignoreCase = true) }.let { if (it < 0) 0 else it }
+
+            MaterialAlertDialogBuilder(this)
+                .setTitle("Audio Streaming Quality")
+                .setSingleChoiceItems(qualityLabels, selectedIndex) { dialog, which ->
+                    val chosenQuality = qualities[which]
+                    MusicPlayerManager.setTrackQuality(chosenQuality, sharedPreferenceManager)
+                    updateQualityUI()
+                    dialog.dismiss()
+                }
+                .setNegativeButton("Cancel", null)
+                .show()
+        }
+
+        binding!!.themeChipGroup.check(if (settingsSharedPrefManager.theme == "light") R.id.light else if (settingsSharedPrefManager.theme == "system") R.id.system else R.id.dark)
     }
 
     override fun onResume() {
@@ -143,7 +173,7 @@ class SettingsActivity : AppCompatActivity() {
             }
 
         var theme: String?
-            get() = sharedPreferences.getString("theme", "system")
+            get() = sharedPreferences.getString("theme", "dark")
             set(theme) {
                 sharedPreferences.edit { putString("theme", theme) }
             }

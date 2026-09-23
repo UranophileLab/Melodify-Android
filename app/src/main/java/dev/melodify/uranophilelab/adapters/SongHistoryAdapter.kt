@@ -9,16 +9,29 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.widget.PopupMenu
 import androidx.recyclerview.widget.RecyclerView
-import com.squareup.picasso.Picasso
+import com.bumptech.glide.Glide
 import dev.melodify.uranophilelab.R
 import dev.melodify.uranophilelab.activities.MusicOverviewActivity
 import dev.melodify.uranophilelab.model.history.SongHistoryItem
 import dev.melodify.uranophilelab.utils.SharedPreferenceManager
 
 class SongHistoryAdapter(
-    private val data: MutableList<SongHistoryItem>,
+    private var data: MutableList<SongHistoryItem>,
+    private val isFavoritesMode: Boolean = false,
     private val onItemRemovedListener: (() -> Unit)? = null
 ) : RecyclerView.Adapter<SongHistoryAdapter.ViewHolder>() {
+
+    fun updateData(newData: List<SongHistoryItem>) {
+        if (data === newData) {
+            notifyDataSetChanged()
+            return
+        }
+        val temp = ArrayList(newData)
+        data.clear()
+        data.addAll(temp)
+        notifyDataSetChanged()
+    }
+
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val coverImage: ImageView? = itemView.findViewById(R.id.coverImage)
@@ -47,9 +60,25 @@ class SongHistoryAdapter(
 
         val imageUrl = item.imageUrl
         if (!imageUrl.isNullOrEmpty() && holder.coverImage != null) {
-            Picasso.get().load(Uri.parse(imageUrl)).into(holder.coverImage)
+            Glide.with(holder.coverImage.context).load(Uri.parse(imageUrl)).into(holder.coverImage)
         } else {
             holder.coverImage?.setImageResource(R.drawable.baseline_album_24)
+        }
+
+        val context = holder.itemView.context
+        val prefs = SharedPreferenceManager.getInstance(context)
+
+        val favIcon: ImageView? = holder.itemView.findViewById(R.id.favorite_item_icon)
+        val songId = item.id
+        if (favIcon != null) {
+            val isFav = !songId.isNullOrEmpty() && prefs.isFavorite(songId)
+            favIcon.visibility = if (isFav) View.VISIBLE else View.GONE
+            favIcon.setImageResource(R.drawable.favorite_24px)
+            favIcon.setOnClickListener {
+                if (songId.isNullOrEmpty()) return@setOnClickListener
+                val newFavState = prefs.toggleFavorite(item)
+                favIcon.visibility = if (newFavState) View.VISIBLE else View.GONE
+            }
         }
 
         holder.itemView.setOnClickListener { v ->
@@ -61,17 +90,20 @@ class SongHistoryAdapter(
         }
 
         holder.moreBtn?.setOnClickListener { v ->
-            val context = v.context
             val popup = PopupMenu(context, v)
             popup.menu.add("Remove from history")
             popup.setOnMenuItemClickListener { menuItem ->
                 if (menuItem.title == "Remove from history") {
                     val currentPos = holder.bindingAdapterPosition
-                    if (currentPos in 0 until data.size) {
+                    if (currentPos in data.indices) {
                         data.removeAt(currentPos)
                         notifyItemRemoved(currentPos)
-                        val prefs = SharedPreferenceManager.getInstance(context)
-                        prefs.songHistory = data
+                        notifyItemRangeChanged(currentPos, data.size - currentPos)
+                        if (isFavoritesMode) {
+                            prefs.favoriteSongs = data
+                        } else {
+                            prefs.songHistory = data
+                        }
                         onItemRemovedListener?.invoke()
                     }
                     true

@@ -58,7 +58,7 @@
                 android:ellipsize="marquee"
                 android:text="@string/app_name"
                 android:fontFamily="@font/avenir_next_bold"
-                android:textColor="@color/textMain"
+                android:textColor="@color/text_light"
                 android:textSize="@dimen/_12ssp" />
 
             <TextView
@@ -69,7 +69,7 @@
                 android:ellipsize="marquee"
                 android:text="@string/app_name"
                 android:fontFamily="@font/avenir_next_regular"
-                android:textColor="@color/textSec"
+                android:textColor="#B3B3B3"
                 android:textSize="@dimen/_10ssp" />
 
         </LinearLayout>
@@ -88,7 +88,7 @@
                 android:src="@drawable/skip_previous_24px"
                 android:clickable="true"
                 android:padding="@dimen/_3sdp"
-                app:tint="@color/textMain"
+                app:tint="@color/text_light"
                 android:contentDescription="Previous" />
 
             <ImageView
@@ -99,7 +99,7 @@
                 android:padding="@dimen/_2sdp"
                 android:focusable="true"
                 android:clickable="true"
-                app:tint="@color/textMain"
+                app:tint="@color/text_light"
                 android:contentDescription="Play/Pause" />
 
             <ImageView
@@ -110,7 +110,7 @@
                 android:src="@drawable/skip_next_24px"
                 android:clickable="true"
                 android:padding="@dimen/_3sdp"
-                app:tint="@color/textMain"
+                app:tint="@color/text_light"
                 android:contentDescription="Next" />
 
             <ImageView
@@ -121,7 +121,7 @@
                 android:src="@drawable/ic_queue_music"
                 android:clickable="true"
                 android:padding="@dimen/_4sdp"
-                app:tint="@color/textMain"
+                app:tint="@color/text_light"
                 android:contentDescription="Queue" />
 
         </LinearLayout>

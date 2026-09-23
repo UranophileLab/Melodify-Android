@@ -3,14 +3,14 @@
 
     <color name="background">@color/background_dark</color>
     <color name="textMain">@color/text_light</color>
-    <color name="textSec">@color/text_secondary_light</color>
-    <color name="buttonBackground">@color/button_dark</color>
-    <color name="dividerBackground">@color/divider_light</color>
-    <color name="green">@color/cyan_accent</color>
+    <color name="textSec">#B3B3B3</color>
+    <color name="buttonBackground">#1DB954</color>
+    <color name="dividerBackground">#222222</color>
+    <color name="green">#1DB954</color>
     <color name="red">#E91E63</color>
 
-    <color name="activity_main_cta_button">@color/textMain</color>
+    <color name="activity_main_cta_button">#1DB954</color>
 
-    <color name="widget_transparent_75">#BF0F172A</color>
+    <color name="widget_transparent_75">#BF0A0A0A</color>
 
 </resources>
