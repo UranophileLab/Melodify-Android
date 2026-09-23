@@ -2,6 +2,7 @@ package dev.melodify.uranophilelab.utils
 
 import android.content.Intent
 import android.content.res.ColorStateList
+import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.os.Handler
 import android.os.Looper
@@ -13,10 +14,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
 import dev.melodify.uranophilelab.R
 import dev.melodify.uranophilelab.activities.MusicOverviewActivity
-import com.squareup.picasso.Picasso
+import com.bumptech.glide.Glide
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import android.widget.Toast
+import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
+import dev.melodify.uranophilelab.activities.ListActivity
 import dev.melodify.uranophilelab.records.SongResponse
 import dev.melodify.uranophilelab.network.ApiManager
 import dev.melodify.uranophilelab.network.utility.RequestNetwork
@@ -25,6 +28,7 @@ import java.lang.ref.WeakReference
 object MiniPlayerHelper {
     private val handler = Handler(Looper.getMainLooper())
     private var activeActivity: WeakReference<AppCompatActivity>? = null
+    private var lastTrackId: String? = null
     
     private val updateRunnable = object : Runnable {
         override fun run() {
@@ -107,12 +111,19 @@ object MiniPlayerHelper {
         val prevIcon = activity.findViewById<ImageView>(R.id.play_bar_prev_icon)
         val nextIcon = activity.findViewById<ImageView>(R.id.play_bar_next_icon)
         
+        if (lastTrackId != MusicPlayerManager.MUSIC_ID) {
+            lastTrackId = MusicPlayerManager.MUSIC_ID
+            val rv = activity.findViewById<RecyclerView>(R.id.recycler_view)
+                ?: activity.findViewById<RecyclerView>(R.id.top_songs_recyclerview)
+            rv?.adapter?.notifyDataSetChanged()
+        }
+
         titleText?.text = MusicPlayerManager.MUSIC_TITLE
         descText?.text = MusicPlayerManager.MUSIC_DESCRIPTION
         
         if (coverImage != null && !MusicPlayerManager.IMAGE_URL.isNullOrBlank()) {
             try {
-                Picasso.get().load(MusicPlayerManager.IMAGE_URL!!.toUri()).into(coverImage)
+                Glide.with(coverImage.context).load(MusicPlayerManager.IMAGE_URL!!.toUri()).into(coverImage)
             } catch (e: Exception) {
                 Log.e("MiniPlayerHelper", "Error loading image: ${e.message}")
             }
@@ -124,16 +135,19 @@ object MiniPlayerHelper {
                 if (p.isPlaying) R.drawable.baseline_pause_24 else R.drawable.play_arrow_24px
             )
         }
+
+        (activity as? ListActivity)?.updatePlayerControlsState()
         
+        val bgCardColor = getDarkenedCardColor(MusicPlayerManager.IMAGE_BG_COLOR)
         val gradientDrawable = GradientDrawable()
-        gradientDrawable.setColor(MusicPlayerManager.IMAGE_BG_COLOR)
-        gradientDrawable.cornerRadius = 18f
+        gradientDrawable.setColor(bgCardColor)
+        gradientDrawable.cornerRadius = 24f
         playBar.background = gradientDrawable
         
-        titleText?.setTextColor(MusicPlayerManager.TEXT_ON_IMAGE_COLOR1)
-        descText?.setTextColor(MusicPlayerManager.TEXT_ON_IMAGE_COLOR1)
+        titleText?.setTextColor(Color.WHITE)
+        descText?.setTextColor(Color.parseColor("#B3B3B3"))
         
-        val tintList = ColorStateList.valueOf(MusicPlayerManager.TEXT_ON_IMAGE_COLOR)
+        val tintList = ColorStateList.valueOf(Color.WHITE)
         playPauseIcon?.imageTintList = tintList
         prevIcon?.imageTintList = tintList
         nextIcon?.imageTintList = tintList
@@ -148,8 +162,8 @@ object MiniPlayerHelper {
             } else {
                 progressBar.progress = 0
             }
-            // Tint the progress bar to match the current album colour
-            progressBar.progressTintList = tintList
+            // Tint the progress bar Spotify green
+            progressBar.progressTintList = ColorStateList.valueOf(Color.parseColor("#1DB954"))
         }
     }
 
@@ -170,7 +184,7 @@ object MiniPlayerHelper {
         nowPlayingArtist.text = MusicPlayerManager.MUSIC_DESCRIPTION
         if (!MusicPlayerManager.IMAGE_URL.isNullOrBlank()) {
             try {
-                Picasso.get().load(MusicPlayerManager.IMAGE_URL!!.toUri()).into(nowPlayingCover)
+                Glide.with(nowPlayingCover.context).load(MusicPlayerManager.IMAGE_URL!!.toUri()).into(nowPlayingCover)
             } catch (e: Exception) {}
         }
 
@@ -260,5 +274,12 @@ object MiniPlayerHelper {
         }
 
         bottomSheetDialog.show()
+    }
+
+    private fun getDarkenedCardColor(color: Int): Int {
+        val hsv = FloatArray(3)
+        Color.colorToHSV(color, hsv)
+        hsv[2] = (hsv[2] * 0.25f).coerceIn(0.12f, 0.22f)
+        return Color.HSVToColor(hsv)
     }
 }

@@ -1,6 +1,7 @@
 package dev.melodify.uranophilelab.adapters
 
 import android.content.Intent
+import android.graphics.Typeface
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,13 +9,16 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.widget.PopupMenu
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.facebook.shimmer.ShimmerFrameLayout
-import com.squareup.picasso.Picasso
+import com.bumptech.glide.Glide
 import dev.melodify.uranophilelab.R
 import dev.melodify.uranophilelab.activities.MusicOverviewActivity
+import dev.melodify.uranophilelab.model.history.SongHistoryItem
 import dev.melodify.uranophilelab.records.SongResponse.Song
 import dev.melodify.uranophilelab.utils.MusicPlayerManager
+import dev.melodify.uranophilelab.utils.SharedPreferenceManager
 
 class ActivityListSongsItemAdapter(private val data: MutableList<Song>) :
     RecyclerView.Adapter<ActivityListSongsItemAdapter.ViewHolder>() {
@@ -46,7 +50,15 @@ class ActivityListSongsItemAdapter(private val data: MutableList<Song>) :
 
         val song = data[position]
 
+        val isCurrentPlaying = !song.id.isNullOrEmpty() && song.id == MusicPlayerManager.MUSIC_ID
         holder.titleView?.text = song.name()
+        if (isCurrentPlaying) {
+            holder.titleView?.setTextColor(ContextCompat.getColor(holder.itemView.context, R.color.spotify_green))
+            holder.titleView?.setTypeface(null, Typeface.BOLD)
+        } else {
+            holder.titleView?.setTextColor(ContextCompat.getColor(holder.itemView.context, R.color.text_light))
+            holder.titleView?.setTypeface(null, Typeface.NORMAL)
+        }
 
         val artistsNames = StringBuilder()
         val artistsList = song.artists?.all.orEmpty()
@@ -57,19 +69,41 @@ class ActivityListSongsItemAdapter(private val data: MutableList<Song>) :
                 artistsNames.append(name)
             }
         }
-        holder.artistView?.text = artistsNames.toString()
+        val artistText = artistsNames.toString()
+        holder.artistView?.text = if (artistText.isNotEmpty()) "• $artistText" else ""
+
+        val favIcon: ImageView? = holder.itemView.findViewById(R.id.favorite_item_icon)
+        val prefs = SharedPreferenceManager.getInstance(holder.itemView.context)
+        val songId = song.id
+        if (favIcon != null) {
+            val isFav = !songId.isNullOrEmpty() && prefs.isFavorite(songId)
+            favIcon.visibility = if (isFav) View.VISIBLE else View.GONE
+            favIcon.setImageResource(R.drawable.favorite_24px)
+            favIcon.setOnClickListener {
+                if (songId.isNullOrEmpty()) return@setOnClickListener
+                val primaryArtist = if (artistsList.isNotEmpty()) artistsList[0]?.name() ?: "" else ""
+                val images = song.image
+                val imgUrl = if (images.isNullOrEmpty()) "" else images[images.size - 1]?.url ?: ""
+                val item = SongHistoryItem(
+                    id = songId,
+                    title = song.name(),
+                    artist = primaryArtist,
+                    imageUrl = imgUrl
+                )
+                val newFavState = prefs.toggleFavorite(item)
+                favIcon.visibility = if (newFavState) View.VISIBLE else View.GONE
+            }
+        }
 
         val images = song.image
         val imgUrl = if (images.isNullOrEmpty()) "" else images[images.size - 1]?.url ?: ""
         val coverImage = holder.coverImage
         if (coverImage != null) {
             if (imgUrl.isNotEmpty()) {
-                Picasso.get()
-                    .load(imgUrl)
+                Glide.with(coverImage.context).load(imgUrl)
                     .placeholder(R.drawable.headphone)
-                    .fit()
-                    .centerCrop()
-                    .into(coverImage)
+                    .fitCenter()
+                    .centerCrop().into(coverImage)
             } else {
                 coverImage.setImageResource(R.drawable.headphone)
             }

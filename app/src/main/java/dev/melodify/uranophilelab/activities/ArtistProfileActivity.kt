@@ -29,7 +29,7 @@ import dev.melodify.uranophilelab.records.SongResponse.Song
 import dev.melodify.uranophilelab.utils.MiniPlayerHelper
 import dev.melodify.uranophilelab.utils.SharedPreferenceManager
 import dev.melodify.uranophilelab.utils.attachSnapHelper
-import com.squareup.picasso.Picasso
+import com.bumptech.glide.Glide
 
 class ArtistProfileActivity : AppCompatActivity() {
     private val TAG = "ArtistProfileActivity"
@@ -159,11 +159,9 @@ class ArtistProfileActivity : AppCompatActivity() {
         val initialImgUrl = if (rawInitialImg.contains("50x50")) rawInitialImg.replace("50x50", "500x500") else rawInitialImg
         val isInitialInvalid = initialImgUrl.isBlank() || initialImgUrl.contains("default") || initialImgUrl.contains("artist-default")
         if (!isInitialInvalid) {
-            Picasso.get()
-                .load(initialImgUrl.toUri())
+            Glide.with(binding!!.artistImg.context).load(initialImgUrl.toUri())
                 .placeholder(R.drawable.headphone)
-                .error(R.drawable.headphone)
-                .into(binding!!.artistImg)
+                .error(R.drawable.headphone).into(binding!!.artistImg)
         } else {
             binding!!.artistImg.setImageResource(R.drawable.headphone)
         }
@@ -181,11 +179,9 @@ class ArtistProfileActivity : AppCompatActivity() {
             val imgUrl = if (rawImg.contains("50x50")) rawImg.replace("50x50", "500x500") else rawImg
             val isInvalid = imgUrl.isBlank() || imgUrl.contains("default") || imgUrl.contains("artist-default")
             if (!isInvalid) {
-                Picasso.get()
-                    .load(imgUrl.toUri())
+                Glide.with(binding!!.artistImg.context).load(imgUrl.toUri())
                     .placeholder(R.drawable.headphone)
-                    .error(R.drawable.headphone)
-                    .into(binding!!.artistImg)
+                    .error(R.drawable.headphone).into(binding!!.artistImg)
             } else {
                 binding!!.artistImg.setImageResource(R.drawable.headphone)
             }

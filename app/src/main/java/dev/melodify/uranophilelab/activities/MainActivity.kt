@@ -44,6 +44,7 @@ import dev.melodify.uranophilelab.utils.SharedPreferenceManager
 import dev.melodify.uranophilelab.utils.attachSnapHelper
 import com.yarolegovich.slidingrootnav.SlidingRootNav
 import com.yarolegovich.slidingrootnav.SlidingRootNavBuilder
+import dev.melodify.uranophilelab.adapters.ActivityMainTrendingAdapter
 import me.everything.android.ui.overscroll.OverScrollDecoratorHelper
 import org.json.JSONException
 import org.json.JSONObject
@@ -108,18 +109,25 @@ class MainActivity : AppCompatActivity() {
         onDrawerItemsClicked()
 
         setupGreeting()
-        setupCategoryFilterChips()
+        setupBottomNavigation()
 
         inflatedBinding.profileIcon.setOnClickListener {
             slidingRootNavBuilder?.openMenu(true)
         }
 
+        inflatedBinding.historyButton?.setOnClickListener {
+            startActivity(Intent(this, HistoryActivity::class.java))
+        }
+
+        inflatedBinding.settingsButton?.setOnClickListener {
+            startActivity(Intent(this, SettingsActivity::class.java))
+        }
+
         val span: Int = calculateNoOfColumns(this, 200f)
         inflatedBinding.playlistRecyclerView.layoutManager = GridLayoutManager(this, span)
+        inflatedBinding.trendingRecyclerView?.layoutManager = GridLayoutManager(this, 2)
 
         inflatedBinding.popularSongsRecyclerView.layoutManager =
-            LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-        inflatedBinding.popularArtistsRecyclerView.layoutManager =
             LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         inflatedBinding.popularAlbumsRecyclerView.layoutManager =
             LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
@@ -128,16 +136,11 @@ class MainActivity : AppCompatActivity() {
 
         // Snap helpers — smooth magnetic scroll on all horizontal lists
         inflatedBinding.popularSongsRecyclerView.attachSnapHelper()
-        inflatedBinding.popularArtistsRecyclerView.attachSnapHelper()
         inflatedBinding.popularAlbumsRecyclerView.attachSnapHelper()
         inflatedBinding.savedRecyclerView.attachSnapHelper()
 
         OverScrollDecoratorHelper.setUpOverScroll(
             inflatedBinding.popularSongsRecyclerView,
-            OverScrollDecoratorHelper.ORIENTATION_HORIZONTAL
-        )
-        OverScrollDecoratorHelper.setUpOverScroll(
-            inflatedBinding.popularArtistsRecyclerView,
             OverScrollDecoratorHelper.ORIENTATION_HORIZONTAL
         )
         OverScrollDecoratorHelper.setUpOverScroll(
@@ -278,6 +281,7 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         NetworkChangeReceiver.registerReceiver(this, networkChangeReceiver)
         showSavedLibrariesData()
+        binding?.bottomNavigation?.selectedItemId = R.id.nav_home
         MiniPlayerHelper.onActivityResume(this)
     }
 
@@ -337,6 +341,7 @@ class MainActivity : AppCompatActivity() {
                         val adapter = ActivityMainPopularSongs(songs)
                         currentBinding.popularSongsRecyclerView.adapter = adapter
                         adapter.notifyDataSetChanged()
+                        updateTrendingGrid()
                         BaseApplicationClass.sharedPreferenceManager?.homeSongsRecommended = songSearch
                     } else {
                         showOfflineData()
@@ -369,7 +374,7 @@ class MainActivity : AppCompatActivity() {
                             artists.add(results)
                         }
                         val adapter = ActivityMainArtistsItemAdapter(artists)
-                        currentBinding.popularArtistsRecyclerView.adapter = adapter
+                        currentBinding.popularArtistsRecyclerView?.adapter = adapter
                         adapter.notifyDataSetChanged()
                         BaseApplicationClass.sharedPreferenceManager?.homeArtistsRecommended = artistSearch
                     } else {
@@ -413,6 +418,7 @@ class MainActivity : AppCompatActivity() {
                         val adapter = ActivityMainAlbumItemAdapter(albums)
                         currentBinding.popularAlbumsRecyclerView.adapter = adapter
                         adapter.notifyDataSetChanged()
+                        updateTrendingGrid()
                         BaseApplicationClass.sharedPreferenceManager?.homeAlbumsRecommended = albumsSearch
                     } else {
                         showOfflineData()
@@ -492,7 +498,7 @@ class MainActivity : AppCompatActivity() {
         }
         currentBinding.popularSongsRecyclerView.adapter = ActivityMainAlbumItemAdapter(dataShimmer)
         currentBinding.popularAlbumsRecyclerView.adapter = ActivityMainAlbumItemAdapter(dataShimmer)
-        currentBinding.popularArtistsRecyclerView.adapter = ActivityMainArtistsItemAdapter(artistsShimmer)
+        currentBinding.popularArtistsRecyclerView?.adapter = ActivityMainArtistsItemAdapter(artistsShimmer)
         currentBinding.playlistRecyclerView.adapter = ActivityMainPlaylistAdapter(dataShimmer)
     }
 
@@ -527,7 +533,7 @@ class MainActivity : AppCompatActivity() {
                 artists.add(results)
             }
             val adapter = ActivityMainArtistsItemAdapter(artists)
-            currentBinding.popularArtistsRecyclerView.adapter = adapter
+            currentBinding.popularArtistsRecyclerView?.adapter = adapter
             adapter.notifyDataSetChanged()
         }
 
@@ -549,6 +555,7 @@ class MainActivity : AppCompatActivity() {
             val adapter = ActivityMainAlbumItemAdapter(albums)
             currentBinding.popularAlbumsRecyclerView.adapter = adapter
             adapter.notifyDataSetChanged()
+            updateTrendingGrid()
         }
 
         val playlistsSearch: PlaylistsSearch? = prefManager.homePlaylistRecommended
@@ -601,6 +608,44 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun updateTrendingGrid() {
+        val currentBinding = binding ?: return
+        val trendingItems = mutableListOf<AlbumItem?>()
+        val combined = ArrayList<AlbumItem?>()
+        combined.addAll(albums.filterNotNull())
+        combined.addAll(songs.filterNotNull())
+        combined.shuffle()
+        for (item in combined) {
+            if (item != null && item.id != "<shimmer>" && trendingItems.size < 6) {
+                trendingItems.add(item)
+            }
+        }
+        if (trendingItems.isNotEmpty()) {
+            currentBinding.trendingRecyclerView?.adapter =
+                ActivityMainTrendingAdapter(trendingItems)
+        }
+    }
+
+    private fun setupBottomNavigation() {
+        binding?.bottomNavigation?.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_home -> {
+                    binding?.nestedScrollView?.smoothScrollTo(0, 0)
+                    true
+                }
+                R.id.nav_search -> {
+                    startActivity(Intent(this, SearchActivity::class.java))
+                    true
+                }
+                R.id.nav_library -> {
+                    startActivity(Intent(this, SavedLibrariesActivity::class.java))
+                    true
+                }
+                else -> false
+            }
+        }
+    }
+
     private fun setupGreeting() {
         val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
         val greeting = when (hour) {
@@ -612,46 +657,5 @@ class MainActivity : AppCompatActivity() {
         binding?.greetingText?.text = greeting
     }
 
-    private fun setupCategoryFilterChips() {
-        binding?.categoryChipGroup?.setOnCheckedStateChangeListener { _, checkedIds ->
-            val checkedId = checkedIds.firstOrNull() ?: R.id.chip_all
-            when (checkedId) {
-                R.id.chip_songs -> {
-                    binding?.popularSongsSection?.visibility = View.VISIBLE
-                    binding?.popularArtistsSection?.visibility = View.GONE
-                    binding?.popularAlbumsSection?.visibility = View.GONE
-                    binding?.savedLibrariesSection?.visibility = View.GONE
-                    binding?.popularPlaylistsSection?.visibility = View.GONE
-                }
-                R.id.chip_albums -> {
-                    binding?.popularSongsSection?.visibility = View.GONE
-                    binding?.popularArtistsSection?.visibility = View.GONE
-                    binding?.popularAlbumsSection?.visibility = View.VISIBLE
-                    binding?.savedLibrariesSection?.visibility = View.GONE
-                    binding?.popularPlaylistsSection?.visibility = View.GONE
-                }
-                R.id.chip_artists -> {
-                    binding?.popularSongsSection?.visibility = View.GONE
-                    binding?.popularArtistsSection?.visibility = View.VISIBLE
-                    binding?.popularAlbumsSection?.visibility = View.GONE
-                    binding?.savedLibrariesSection?.visibility = View.GONE
-                    binding?.popularPlaylistsSection?.visibility = View.GONE
-                }
-                R.id.chip_playlists -> {
-                    binding?.popularSongsSection?.visibility = View.GONE
-                    binding?.popularArtistsSection?.visibility = View.GONE
-                    binding?.popularAlbumsSection?.visibility = View.GONE
-                    binding?.savedLibrariesSection?.visibility = View.GONE
-                    binding?.popularPlaylistsSection?.visibility = View.VISIBLE
-                }
-                else -> { // R.id.chip_all
-                    binding?.popularSongsSection?.visibility = View.VISIBLE
-                    binding?.popularArtistsSection?.visibility = View.VISIBLE
-                    binding?.popularAlbumsSection?.visibility = View.VISIBLE
-                    binding?.savedLibrariesSection?.visibility = View.VISIBLE
-                    binding?.popularPlaylistsSection?.visibility = View.VISIBLE
-                }
-            }
-        }
-    }
+
 }

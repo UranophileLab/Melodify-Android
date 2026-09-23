@@ -1,18 +1,20 @@
 package dev.melodify.uranophilelab.adapters
 
 import android.content.Intent
+import android.graphics.Typeface
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import dev.melodify.uranophilelab.R
 import dev.melodify.uranophilelab.activities.MusicOverviewActivity
 import dev.melodify.uranophilelab.databinding.ActivityListSongItemBinding
 import dev.melodify.uranophilelab.records.sharedpref.SavedLibraries.Library
 import dev.melodify.uranophilelab.utils.MusicPlayerManager
-import com.squareup.picasso.Picasso
+import com.bumptech.glide.Glide
 import androidx.core.net.toUri
 
 class UserCreatedSongsListAdapter(private val data: MutableList<Library.Songs?>) :
@@ -31,11 +33,21 @@ class UserCreatedSongsListAdapter(private val data: MutableList<Library.Songs?>)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.binding.title.text = data[position]!!.title
-        holder.binding.artist.text = data[position]!!.description
-        val imageUrl = data[position]?.image
-        if (imageUrl?.isNotBlank() == true) Picasso.get()
-            .load(imageUrl.toUri()).into(holder.binding.coverImage)
+        val songItem = data[position]
+        holder.binding.title.text = songItem?.title
+
+        val isCurrentPlaying = songItem != null && !songItem.id.isNullOrEmpty() && (songItem.id == MusicPlayerManager.MUSIC_ID)
+        if (isCurrentPlaying) {
+            holder.binding.title.setTextColor(ContextCompat.getColor(holder.itemView.context, R.color.spotify_green))
+            holder.binding.title.setTypeface(null, Typeface.BOLD)
+        } else {
+            holder.binding.title.setTextColor(ContextCompat.getColor(holder.itemView.context, R.color.text_light))
+            holder.binding.title.setTypeface(null, Typeface.NORMAL)
+        }
+
+        holder.binding.artist.text = songItem?.description
+        val imageUrl = songItem?.image
+        if (imageUrl?.isNotBlank() == true) Glide.with(holder.binding.coverImage.context).load(imageUrl.toUri()).into(holder.binding.coverImage)
 
         // Wire up the 3-dots menu
         val moreIcon = holder.itemView.findViewById<ImageView>(R.id.more)

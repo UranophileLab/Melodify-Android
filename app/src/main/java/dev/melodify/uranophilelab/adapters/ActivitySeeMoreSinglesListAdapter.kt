@@ -13,7 +13,7 @@ import dev.melodify.uranophilelab.R
 import dev.melodify.uranophilelab.activities.ListActivity
 import dev.melodify.uranophilelab.model.AlbumItem
 import dev.melodify.uranophilelab.records.AlbumsSearch
-import com.squareup.picasso.Picasso
+import com.bumptech.glide.Glide
 import androidx.core.net.toUri
 
 class ActivitySeeMoreSinglesListAdapter :
@@ -59,7 +59,7 @@ class ActivitySeeMoreSinglesListAdapter :
         val images = data[position]?.image
         val url = if (images.isNullOrEmpty()) "" else images[images.size - 1]?.url ?: ""
         if (url.isNotEmpty()) {
-            Picasso.get().load(url.toUri()).into(coverImage)
+            Glide.with(coverImage.context).load(url.toUri()).into(coverImage)
         }
 
         holder.itemView.setOnClickListener(View.OnClickListener {

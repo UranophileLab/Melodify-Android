@@ -11,7 +11,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.facebook.shimmer.ShimmerFrameLayout
 import com.google.gson.Gson
-import com.squareup.picasso.Picasso
+import com.bumptech.glide.Glide
 import dev.melodify.uranophilelab.R
 import dev.melodify.uranophilelab.activities.ListActivity
 import dev.melodify.uranophilelab.adapters.ActivityMainPlaylistAdapter.PlaylistAdapterViewHolder
@@ -48,7 +48,7 @@ class ActivityMainPlaylistAdapter(private val data: MutableList<AlbumItem?>) :
         val imageView = holder.itemView.findViewById<ImageView?>(R.id.imageView)
         val coverUrl: String? = item.albumCover
         if (coverUrl != null && coverUrl.isNotEmpty() && imageView != null) {
-            Picasso.get().load(Uri.parse(coverUrl)).into(imageView)
+            Glide.with(imageView.context).load(Uri.parse(coverUrl)).into(imageView)
         }
 
         holder.itemView.setOnClickListener { v: View? ->

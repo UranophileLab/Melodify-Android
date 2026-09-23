@@ -11,6 +11,8 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.transition.Fade
+import android.transition.TransitionManager
 import android.util.Log
 import android.view.MenuItem
 import android.view.View
@@ -42,6 +44,15 @@ import dev.melodify.uranophilelab.network.utility.RequestNetwork
 import dev.melodify.uranophilelab.records.SongResponse
 import dev.melodify.uranophilelab.records.sharedpref.SavedLibraries
 import dev.melodify.uranophilelab.records.sharedpref.SavedLibraries.Library
+import android.graphics.Bitmap
+import android.graphics.Color
+import android.graphics.drawable.Drawable
+import android.graphics.drawable.GradientDrawable
+import android.transition.ChangeBounds
+import android.view.ViewGroup
+import androidx.palette.graphics.Palette
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
 import dev.melodify.uranophilelab.services.ActionPlaying
 import dev.melodify.uranophilelab.services.MusicService
 import dev.melodify.uranophilelab.services.MusicService.MyBinder
@@ -50,7 +61,7 @@ import dev.melodify.uranophilelab.utils.SharedPreferenceManager
 import dev.melodify.uranophilelab.utils.TrackDownloader
 import dev.melodify.uranophilelab.utils.TrackDownloader.TrackDownloadListener
 import dev.melodify.uranophilelab.utils.customview.BottomSheetItemView
-import com.squareup.picasso.Picasso
+import com.bumptech.glide.Glide
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -169,11 +180,10 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
             if (binding!!.lyricsRecycler.isVisible) {
                 binding!!.lyricsRecycler.visibility = View.GONE
                 binding!!.coverImageCard.visibility = View.VISIBLE
-                binding!!.lyricsIcon.setColorFilter(resources.getColor(R.color.textSec, null))
             } else {
-                binding!!.lyricsRecycler.visibility = View.VISIBLE
+                binding!!.lyricsRecycler.visibility = View.GONE
                 binding!!.coverImageCard.visibility = View.GONE
-                binding!!.lyricsIcon.setColorFilter(resources.getColor(R.color.textMain, null))
+                binding!!.lyricsRecycler.visibility = View.VISIBLE
 
                 val p = MusicPlayerManager.player
                 if (p != null) {
@@ -182,7 +192,7 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
             }
         }
 
-        binding!!.lyricsIcon.setOnClickListener {
+        binding?.lyricsIndicatorButton?.setOnClickListener {
             if (currentLyricsList.isNullOrEmpty()) return@setOnClickListener
             toggleLyrics()
         }
@@ -506,7 +516,7 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
                 .inflate(layoutInflater)
             _binding.albumTitle.text = binding!!.title.text.toString()
             _binding.albumSubTitle.text = binding!!.description.text.toString()
-            Picasso.get().load(IMAGE_URL?.toUri()).into(_binding.coverImage)
+            Glide.with(_binding.coverImage.context).load(IMAGE_URL?.toUri()).into(_binding.coverImage)
             val linearLayout = _binding.main
 
             _binding.goToAlbum.setOnClickListener(View.OnClickListener {
@@ -634,31 +644,6 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
             bottomSheetDialog.create()
             bottomSheetDialog.show()
         })
-
-        binding!!.trackQuality.setOnClickListener { view: View? ->
-            val v = view ?: return@setOnClickListener
-            val popupMenu = PopupMenu(this@MusicOverviewActivity, v)
-            popupMenu.menuInflater.inflate(R.menu.track_quality_menu, popupMenu.menu)
-            popupMenu.setOnMenuItemClickListener { menuItem: MenuItem? ->
-                val item = menuItem ?: return@setOnMenuItemClickListener false
-                Toast.makeText(
-                    this@MusicOverviewActivity,
-                    item.title,
-                    Toast.LENGTH_SHORT
-                ).show()
-                MusicPlayerManager.setTrackQuality(item.title.toString())
-                val songResp = mSongResponse
-                if (songResp != null) {
-                    onSongFetched(songResp, true)
-                }
-                prepareMediaPLayer()
-                binding!!.trackQuality.text = MusicPlayerManager.TRACK_QUALITY
-                true
-            }
-            popupMenu.show()
-        }
-
-        binding!!.trackQuality.text = MusicPlayerManager.TRACK_QUALITY
 
         showData()
 
@@ -838,18 +823,19 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
         mSongResponse = songResponse
         MusicPlayerManager.CURRENT_TRACK = mSongResponse
         val song = songResponse.data?.getOrNull(0) ?: return
+        
+        val primaryArtistName = song.artists?.primary?.firstOrNull()?.name()
+        val albumName = song.album?.name()
+        val headerText = if (!albumName.isNullOrEmpty()) albumName else if (!primaryArtistName.isNullOrEmpty()) primaryArtistName else "MELODIFY"
+        binding!!.headerTitle.text = headerText.uppercase()
+
         binding!!.title.text = song.name()
-        binding!!.description.text = String.format(
-            "%s plays | %s | %s",
-            convertPlayCount(song.playCount ?: 0),
-            song.year,
-            song.copyright
-        )
+        binding!!.description.text = if (!primaryArtistName.isNullOrEmpty()) primaryArtistName else song.copyright ?: ""
         val image = song.image
         IMAGE_URL = if (!image.isNullOrEmpty()) image[image.size - 1]?.url ?: "" else ""
         SHARE_URL = song.url ?: ""
         if (!IMAGE_URL.isNullOrEmpty()) {
-            Picasso.get().load(IMAGE_URL?.toUri()).into(binding!!.coverImage)
+            loadArtworkAndApplyDynamicTheme(IMAGE_URL)
         }
         val downloadUrls = song.downloadUrl
 
@@ -884,10 +870,6 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
         if (isFinishing || isDestroyed || binding == null) return
         val wasVisible = binding?.lyricsRecycler?.isVisible == true
 
-        binding!!.lyricsIcon.visibility = View.GONE
-        binding!!.lyricsIcon.setColorFilter(resources.getColor(R.color.textSec, null))
-        
-        // Handle both possible IDs if naming was inconsistent, but we've standardized to lyrics_recycler
         val recView = binding!!.lyricsRecycler
         recView.visibility = View.GONE
         binding!!.coverImageCard.visibility = View.VISIBLE
@@ -921,10 +903,8 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
                                 rv.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this@MusicOverviewActivity)
                                 rv.adapter = lyricsAdapter
                                 currentLyricsRecyclerView = rv
-                                binding!!.lyricsIcon.visibility = View.VISIBLE
 
                                 if (wasVisible) {
-                                    binding!!.lyricsIcon.setColorFilter(resources.getColor(R.color.textMain, null))
                                     rv.visibility = View.VISIBLE
                                     binding!!.coverImageCard.visibility = View.GONE
                                 }
@@ -941,6 +921,72 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
     }
 
 
+
+    private var currentLoadedImageUrl: String? = null
+
+    private fun loadArtworkAndApplyDynamicTheme(imageUrl: String?) {
+        val b = binding ?: return
+        if (imageUrl.isNullOrBlank()) return
+        if (imageUrl == currentLoadedImageUrl) return
+        currentLoadedImageUrl = imageUrl
+
+        Glide.with(this)
+            .asBitmap()
+            .load(imageUrl.toUri())
+            .into(object : CustomTarget<Bitmap>() {
+                override fun onResourceReady(
+                    resource: Bitmap,
+                    transition: Transition<in Bitmap>?
+                ) {
+                    if (isFinishing || isDestroyed || binding == null) return
+                    b.coverImage.setImageBitmap(resource)
+
+                    Palette.from(resource).generate { palette ->
+                        if (isFinishing || isDestroyed || binding == null || palette == null) return@generate
+
+                        val vibrant = palette.getVibrantColor(0)
+                        val darkVibrant = palette.getDarkVibrantColor(0)
+                        val muted = palette.getMutedColor(0)
+                        val darkMuted = palette.getDarkMutedColor(0)
+                        val dominant = palette.getDominantColor(0)
+
+                        val primaryColor = when {
+                            vibrant != 0 -> vibrant
+                            darkVibrant != 0 -> darkVibrant
+                            muted != 0 -> muted
+                            darkMuted != 0 -> darkMuted
+                            dominant != 0 -> dominant
+                            else -> 0xFF2A150D.toInt()
+                        }
+
+                        val topColor = adjustColorDarkness(primaryColor, 0.65f)
+                        val centerColor = adjustColorDarkness(primaryColor, 0.20f)
+                        val bottomColor = Color.parseColor("#121212")
+
+                        val dynamicGradient = GradientDrawable(
+                            GradientDrawable.Orientation.TOP_BOTTOM,
+                            intArrayOf(topColor, centerColor, bottomColor)
+                        )
+
+                        val parentGroup = b.root as? ViewGroup
+                        if (parentGroup != null) {
+                            val changeBounds = ChangeBounds().apply { duration = 400 }
+                            TransitionManager.beginDelayedTransition(parentGroup, changeBounds)
+                        }
+                        b.main.background = dynamicGradient
+                    }
+                }
+
+                override fun onLoadCleared(placeholder: Drawable?) {}
+            })
+    }
+
+    private fun adjustColorDarkness(color: Int, factor: Float): Int {
+        val hsv = FloatArray(3)
+        Color.colorToHSV(color, hsv)
+        hsv[2] = (hsv[2] * factor).coerceIn(0f, 1f)
+        return Color.HSVToColor(hsv)
+    }
 
     fun backPress(view: View?) {
         finish()
@@ -1040,8 +1086,7 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
             binding?.description?.text = MusicPlayerManager.MUSIC_DESCRIPTION
         }
         if (!isFinishing && !isDestroyed && binding != null) {
-            Picasso.get().load(MusicPlayerManager.IMAGE_URL?.toUri())
-                .into(binding!!.coverImage)
+            loadArtworkAndApplyDynamicTheme(MusicPlayerManager.IMAGE_URL)
         }
         val p = MusicPlayerManager.player ?: return
         binding?.seekbar?.progress = ((p.currentPosition.toFloat() / p.duration) * 100).toInt()
@@ -1192,8 +1237,8 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
             binding?.favoriteIcon?.setImageResource(R.drawable.favorite_24px)
             binding?.favoriteIcon?.imageTintList = ColorStateList.valueOf(resources.getColor(R.color.red, theme))
         } else {
-            binding?.favoriteIcon?.setImageResource(R.drawable.favorite_outline_24px)
-            binding?.favoriteIcon?.imageTintList = ColorStateList.valueOf(resources.getColor(R.color.textSec, theme))
+            binding?.favoriteIcon?.setImageResource(R.drawable.ic_circle_add)
+            binding?.favoriteIcon?.imageTintList = ColorStateList.valueOf(resources.getColor(R.color.text_light, theme))
         }
     }
 

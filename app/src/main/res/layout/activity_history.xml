@@ -5,7 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background"
+    android:background="@drawable/bg_player_gradient"
     android:fitsSystemWindows="true"
     tools:context=".activities.HistoryActivity">
 
@@ -22,15 +22,16 @@
 
         <ImageView
             android:id="@+id/back_btn"
-            android:layout_width="@dimen/_35sdp"
-            android:layout_height="@dimen/_35sdp"
+            android:layout_width="@dimen/_32sdp"
+            android:layout_height="@dimen/_32sdp"
             android:clickable="true"
             android:contentDescription="Back"
             android:focusable="true"
-            android:foreground="?attr/selectableItemBackground"
+            android:foreground="?attr/selectableItemBackgroundBorderless"
             android:onClick="backPress"
-            android:padding="@dimen/_6sdp"
+            android:padding="@dimen/_4sdp"
             android:src="@drawable/round_arrow_back_24"
+            app:tint="@color/text_light"
             tools:ignore="UsingOnClickInXml" />
 
         <TextView
@@ -39,21 +40,22 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="@dimen/_8sdp"
             android:layout_weight="1"
+            android:fontFamily="@font/avenir_next_bold"
             android:text="History"
-            android:textColor="@color/textMain"
-            android:textSize="@dimen/_16ssp"
-            android:textStyle="bold" />
+            android:textColor="@color/text_light"
+            android:textSize="@dimen/_16ssp" />
 
         <ImageView
             android:id="@+id/clear_history_btn"
-            android:layout_width="@dimen/_35sdp"
-            android:layout_height="@dimen/_35sdp"
+            android:layout_width="@dimen/_32sdp"
+            android:layout_height="@dimen/_32sdp"
             android:clickable="true"
             android:contentDescription="Clear history"
             android:focusable="true"
-            android:foreground="?attr/selectableItemBackground"
-            android:padding="@dimen/_6sdp"
-            android:src="@drawable/baseline_clear_24" />
+            android:foreground="?attr/selectableItemBackgroundBorderless"
+            android:padding="@dimen/_4sdp"
+            android:src="@drawable/baseline_clear_24"
+            app:tint="@color/text_light" />
 
     </LinearLayout>
 
@@ -61,7 +63,7 @@
         android:id="@+id/divider"
         android:layout_width="match_parent"
         android:layout_height="0.5dp"
-        android:background="@color/textSec"
+        android:background="#22FFFFFF"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/toolbar" />
@@ -82,30 +84,46 @@
             android:id="@+id/chip_group"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            app:selectionRequired="true"
             app:singleLine="true"
             app:singleSelection="true">
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip_all"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:checked="true"
-                android:text="All" />
+                android:fontFamily="@font/avenir_next_bold"
+                android:text="All"
+                android:textColor="@color/chip_text_color"
+                app:chipBackgroundColor="@color/chip_background_color"
+                app:chipCornerRadius="999dp"
+                app:chipStrokeColor="@color/chip_stroke_color"
+                app:chipStrokeWidth="1dp" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip_songs"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Songs" />
+                android:fontFamily="@font/avenir_next_bold"
+                android:text="Songs"
+                android:textColor="@color/chip_text_color"
+                app:chipBackgroundColor="@color/chip_background_color"
+                app:chipCornerRadius="999dp"
+                app:chipStrokeColor="@color/chip_stroke_color"
+                app:chipStrokeWidth="1dp" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip_albums"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Albums" />
+                android:fontFamily="@font/avenir_next_bold"
+                android:text="Albums"
+                android:textColor="@color/chip_text_color"
+                app:chipBackgroundColor="@color/chip_background_color"
+                app:chipCornerRadius="999dp"
+                app:chipStrokeColor="@color/chip_stroke_color"
+                app:chipStrokeWidth="1dp" />
 
         </com.google.android.material.chip.ChipGroup>
 
@@ -140,13 +158,13 @@
                     android:id="@+id/song_section_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:fontFamily="@font/avenir_next_bold"
                     android:paddingHorizontal="@dimen/_12sdp"
                     android:paddingTop="@dimen/_8sdp"
                     android:paddingBottom="@dimen/_4sdp"
                     android:text="Song History"
-                    android:textColor="@color/textMain"
-                    android:textSize="@dimen/_14ssp"
-                    android:textStyle="bold" />
+                    android:textColor="@color/text_light"
+                    android:textSize="@dimen/_14ssp" />
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/songs_recycler"
@@ -168,13 +186,13 @@
                     android:id="@+id/album_section_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:fontFamily="@font/avenir_next_bold"
                     android:paddingHorizontal="@dimen/_12sdp"
                     android:paddingTop="@dimen/_12sdp"
                     android:paddingBottom="@dimen/_4sdp"
                     android:text="Album History"
-                    android:textColor="@color/textMain"
-                    android:textSize="@dimen/_14ssp"
-                    android:textStyle="bold" />
+                    android:textColor="@color/text_light"
+                    android:textSize="@dimen/_14ssp" />
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/albums_recycler"
@@ -194,13 +212,14 @@
         android:id="@+id/empty_history_tv"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:fontFamily="@font/avenir_next_bold"
         android:gravity="center"
         android:padding="@dimen/_16sdp"
         android:text="No listening history found.\nPlayed songs and viewed albums will appear here."
-        android:textColor="@color/textSec"
-        android:textSize="@dimen/_16ssp"
-        android:textStyle="bold"
+        android:textColor="@color/text_light"
+        android:textSize="@dimen/_15ssp"
         android:visibility="gone"
+        app:layout_constraintVertical_bias="0.4"
         app:layout_constraintBottom_toTopOf="@+id/mini_player"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

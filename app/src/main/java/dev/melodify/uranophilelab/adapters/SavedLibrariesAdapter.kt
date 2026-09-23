@@ -12,7 +12,7 @@ import dev.melodify.uranophilelab.R
 import dev.melodify.uranophilelab.activities.ListActivity
 import dev.melodify.uranophilelab.model.AlbumItem
 import dev.melodify.uranophilelab.records.sharedpref.SavedLibraries.Library
-import com.squareup.picasso.Picasso
+import com.bumptech.glide.Glide
 import androidx.core.net.toUri
 import dev.melodify.uranophilelab.utils.MusicPlayerManager
 import android.widget.Toast
@@ -37,7 +37,7 @@ class SavedLibrariesAdapter(private val data: MutableList<Library?>) :
         val coverUrl = library.image?.takeIf { it.isNotBlank() }
             ?: library.songs?.firstOrNull { it?.image?.isNotBlank() == true }?.image
         if (!coverUrl.isNullOrBlank()) {
-            Picasso.get().load(coverUrl.toUri()).into(holder.coverImage)
+            holder.coverImage?.let { Glide.with(it.context).load(coverUrl.toUri()).into(it) }
         }
 
         // 3-dots more menu

@@ -3,6 +3,7 @@ package dev.melodify.uranophilelab.activities
 import android.annotation.SuppressLint
 import android.content.DialogInterface
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -27,6 +28,7 @@ import dev.melodify.uranophilelab.network.ApiManager
 import dev.melodify.uranophilelab.network.utility.RequestNetwork
 import dev.melodify.uranophilelab.records.AlbumSearch
 import dev.melodify.uranophilelab.records.PlaylistSearch
+import dev.melodify.uranophilelab.records.SongResponse
 import dev.melodify.uranophilelab.records.SongResponse.Song
 import dev.melodify.uranophilelab.records.sharedpref.SavedLibraries
 import dev.melodify.uranophilelab.records.sharedpref.SavedLibraries.Library
@@ -35,7 +37,20 @@ import dev.melodify.uranophilelab.utils.MusicPlayerManager
 import dev.melodify.uranophilelab.utils.SharedPreferenceManager
 import dev.melodify.uranophilelab.utils.attachSnapHelper
 import dev.melodify.uranophilelab.utils.customview.BottomSheetItemView
-import com.squareup.picasso.Picasso
+import com.bumptech.glide.Glide
+import android.graphics.Bitmap
+import android.graphics.Color
+import android.graphics.drawable.Drawable
+import android.graphics.drawable.GradientDrawable
+import android.view.ViewGroup
+import android.widget.Button
+import android.widget.ImageView
+import androidx.palette.graphics.Palette
+import androidx.transition.ChangeBounds
+import androidx.transition.TransitionManager
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
+import dev.melodify.uranophilelab.utils.TrackDownloader
 
 class ListActivity : AppCompatActivity() {
     var binding: ActivityListBinding? = null
@@ -50,27 +65,137 @@ class ListActivity : AppCompatActivity() {
 
         binding!!.recyclerView.setLayoutManager(LinearLayoutManager(this))
         binding!!.recyclerView.attachSnapHelper()
-        binding!!.addMoreSongs.visibility = View.GONE
+        binding?.addMoreSongs?.visibility = View.GONE
 
         Log.i("ListActivity", "onCreate: reached ListActivity")
 
         showShimmerData()
 
-        binding!!.playAllBtn.setOnClickListener {
-            if (!trackQueue.isEmpty()) {
-                MusicPlayerManager.trackQueue = ArrayList(trackQueue)
+        val playAction = View.OnClickListener {
+            val validQueue = trackQueue.filterNotNull().filter { it.isNotBlank() && it != "<shimmer>" }
+            if (validQueue.isEmpty()) {
+                Toast.makeText(this@ListActivity, "Loading songs...", Toast.LENGTH_SHORT).show()
+                return@OnClickListener
+            }
+
+            val player = MusicPlayerManager.player
+            val currentMusicId = MusicPlayerManager.MUSIC_ID
+            val isAlbumPlaying = !currentMusicId.isNullOrBlank() && validQueue.contains(currentMusicId)
+
+            if (isAlbumPlaying && player != null) {
+                MusicPlayerManager.togglePlayPause()
+                updatePlayerControlsState()
+            } else {
+                MusicPlayerManager.trackQueue = ArrayList(validQueue)
                 MusicPlayerManager.track_position = 0
-                Log.i(
-                    TAG,
-                    "trackQueueSet:  ${MusicPlayerManager.trackQueue}"
-                )
+                Log.i(TAG, "trackQueueSet: ${MusicPlayerManager.trackQueue}")
                 startActivity(
                     Intent(this@ListActivity, MusicOverviewActivity::class.java).putExtra(
                         "id",
-                        trackQueue[0]
+                        validQueue[0]
                     )
                 )
             }
+        }
+
+        binding?.playAllBtn?.setOnClickListener(playAction)
+        binding?.playAllCard?.setOnClickListener(playAction)
+
+        binding?.shuffleBtn?.setOnClickListener {
+            val validQueue = trackQueue.filterNotNull().filter { it.isNotBlank() && it != "<shimmer>" }
+            if (validQueue.isEmpty()) {
+                Toast.makeText(this@ListActivity, "Loading songs...", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val player = MusicPlayerManager.player
+            if (player != null) {
+                val newShuffleState = !player.shuffleModeEnabled
+                player.shuffleModeEnabled = newShuffleState
+                if (newShuffleState) {
+                    val shuffledQueue = ArrayList(validQueue).apply { shuffle() }
+                    MusicPlayerManager.trackQueue = shuffledQueue
+                    MusicPlayerManager.track_position = 0
+                    if (player.isPlaying) {
+                        Toast.makeText(this@ListActivity, "Shuffle enabled", Toast.LENGTH_SHORT).show()
+                    } else {
+                        startActivity(
+                            Intent(this@ListActivity, MusicOverviewActivity::class.java).putExtra(
+                                "id",
+                                shuffledQueue[0]
+                            )
+                        )
+                    }
+                } else {
+                    MusicPlayerManager.trackQueue = ArrayList(validQueue)
+                    Toast.makeText(this@ListActivity, "Shuffle disabled", Toast.LENGTH_SHORT).show()
+                }
+                updatePlayerControlsState()
+            } else {
+                val shuffledQueue = ArrayList(validQueue).apply { shuffle() }
+                MusicPlayerManager.trackQueue = shuffledQueue
+                MusicPlayerManager.track_position = 0
+                startActivity(
+                    Intent(this@ListActivity, MusicOverviewActivity::class.java).putExtra(
+                        "id",
+                        shuffledQueue[0]
+                    )
+                )
+            }
+        }
+
+        val shareAction = View.OnClickListener {
+            val title = binding?.albumTitle?.text?.toString() ?: ""
+            val subTitle = binding?.albumSubTitle?.text?.toString() ?: ""
+            val shareText = "Check out $title ($subTitle) on Melodify!"
+            val sendIntent = Intent().apply {
+                action = Intent.ACTION_SEND
+                putExtra(Intent.EXTRA_TEXT, shareText)
+                type = "text/plain"
+            }
+            startActivity(Intent.createChooser(sendIntent, "Share"))
+        }
+        binding?.shareBtn?.setOnClickListener(shareAction)
+        binding?.shareIcon?.setOnClickListener(shareAction)
+
+        binding?.downloadBtn?.setOnClickListener {
+            val validQueue = trackQueue.filterNotNull().filter { it.isNotBlank() && it != "<shimmer>" }
+            if (validQueue.isEmpty()) {
+                Toast.makeText(this@ListActivity, "Loading songs...", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            Toast.makeText(this@ListActivity, "Starting download for ${validQueue.size} tracks...", Toast.LENGTH_SHORT).show()
+            val idsString = validQueue.joinToString(",")
+            ApiManager(this@ListActivity).retrieveSongsByIds(idsString, object : RequestNetwork.RequestListener {
+                override fun onResponse(tag: String?, response: String?, responseHeaders: HashMap<String?, Any?>?) {
+                    try {
+                        val songResponse = Gson().fromJson(response, SongResponse::class.java)
+                        if (songResponse.success && !songResponse.data.isNullOrEmpty()) {
+                            var downloadedCount = 0
+                            val totalCount = songResponse.data.size
+                            for (song in songResponse.data) {
+                                if (song != null) {
+                                    TrackDownloader.downloadAndEmbedMetadata(
+                                        this@ListActivity, song, object : TrackDownloader.TrackDownloadListener {
+                                            override fun onStarted() {}
+                                            override fun onFinished() {
+                                                downloadedCount++
+                                                if (downloadedCount == totalCount) {
+                                                    Toast.makeText(this@ListActivity, "Downloaded $totalCount tracks!", Toast.LENGTH_SHORT).show()
+                                                }
+                                            }
+                                            override fun onError(errorMessage: String?) {}
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Download error", e)
+                    }
+                }
+                override fun onErrorResponse(tag: String?, message: String?) {}
+            })
         }
         val sharedPreferenceManager: SharedPreferenceManager =
             SharedPreferenceManager.getInstance(this@ListActivity)
@@ -118,13 +243,32 @@ class ListActivity : AppCompatActivity() {
             updateAlbumInLibraryStatus()
         })
 
-        binding!!.addMoreSongs.setOnClickListener {
+        binding?.addMoreSongs?.setOnClickListener {
             startActivity(Intent(this@ListActivity, SearchActivity::class.java))
         }
 
         binding!!.moreIcon.setOnClickListener { onMoreIconClicked() }
 
         showData()
+    }
+
+    fun updatePlayerControlsState() {
+        val b = binding ?: return
+        val player = MusicPlayerManager.player
+        val isPlaying = player != null && player.isPlaying
+        val currentMusicId = MusicPlayerManager.MUSIC_ID
+        val isAlbumPlaying = !currentMusicId.isNullOrBlank() && trackQueue.contains(currentMusicId)
+
+        val btn = b.playAllBtn
+        if (btn is ImageView) {
+            btn.setImageResource(if (isAlbumPlaying && isPlaying) R.drawable.baseline_pause_24 else R.drawable.play_arrow_24px)
+        } else if (btn is Button) {
+            btn.text = if (isAlbumPlaying && isPlaying) "Pause" else "Play"
+        }
+
+        val isShuffle = player?.shuffleModeEnabled ?: false
+        val tintColor = if (isShuffle) Color.parseColor("#1DB954") else Color.WHITE
+        b.shuffleBtn?.imageTintList = ColorStateList.valueOf(tintColor)
     }
 
     override fun onResume() {
@@ -134,6 +278,8 @@ class ListActivity : AppCompatActivity() {
         ) {
             onUserCreatedFetch()
         }
+        updatePlayerControlsState()
+        binding?.recyclerView?.adapter?.notifyDataSetChanged()
         MiniPlayerHelper.onActivityResume(this)
     }
 
@@ -156,7 +302,7 @@ class ListActivity : AppCompatActivity() {
 
         _binding.albumTitle.text = binding!!.albumTitle.text.toString()
         _binding.albumSubTitle.text = binding!!.albumSubTitle.text.toString()
-        Picasso.get().load(albumItem!!.albumCover?.toUri()).into(_binding.coverImage)
+        Glide.with(_binding.coverImage.context).load(albumItem!!.albumCover?.toUri()).into(_binding.coverImage)
 
         val sharedPreferenceManager: SharedPreferenceManager =
             SharedPreferenceManager.getInstance(this@ListActivity)
@@ -214,7 +360,7 @@ class ListActivity : AppCompatActivity() {
 
         _binding.albumTitle.text = binding!!.albumTitle.text.toString()
         _binding.albumSubTitle.text = binding!!.albumSubTitle.text.toString()
-        Picasso.get().load(albumItem!!.albumCover?.toUri()).into(_binding.coverImage)
+        Glide.with(_binding.coverImage.context).load(albumItem!!.albumCover?.toUri()).into(_binding.coverImage)
 
         _binding.removeLibrary.setOnClickListener {
             bottomSheetDialog.dismiss()
@@ -309,6 +455,72 @@ class ListActivity : AppCompatActivity() {
     private var albumItem: AlbumItem? = null
     private var isAlbum = false
 
+    private var currentLoadedImageUrl: String? = null
+
+    private fun loadArtworkAndApplyDynamicTheme(imageUrl: String?) {
+        val b = binding ?: return
+        if (imageUrl.isNullOrBlank()) return
+        if (imageUrl == currentLoadedImageUrl) return
+        currentLoadedImageUrl = imageUrl
+
+        Glide.with(this)
+            .asBitmap()
+            .load(imageUrl.toUri())
+            .into(object : CustomTarget<Bitmap>() {
+                override fun onResourceReady(
+                    resource: Bitmap,
+                    transition: Transition<in Bitmap>?
+                ) {
+                    if (isFinishing || isDestroyed || binding == null) return
+                    b.albumCover.setImageBitmap(resource)
+
+                    Palette.from(resource).generate { palette ->
+                        if (isFinishing || isDestroyed || binding == null || palette == null) return@generate
+
+                        val vibrant = palette.getVibrantColor(0)
+                        val darkVibrant = palette.getDarkVibrantColor(0)
+                        val muted = palette.getMutedColor(0)
+                        val darkMuted = palette.getDarkMutedColor(0)
+                        val dominant = palette.getDominantColor(0)
+
+                        val primaryColor = when {
+                            vibrant != 0 -> vibrant
+                            darkVibrant != 0 -> darkVibrant
+                            muted != 0 -> muted
+                            darkMuted != 0 -> darkMuted
+                            dominant != 0 -> dominant
+                            else -> 0xFF2A150D.toInt()
+                        }
+
+                        val topColor = adjustColorDarkness(primaryColor, 0.65f)
+                        val centerColor = adjustColorDarkness(primaryColor, 0.20f)
+                        val bottomColor = Color.parseColor("#121212")
+
+                        val dynamicGradient = GradientDrawable(
+                            GradientDrawable.Orientation.TOP_BOTTOM,
+                            intArrayOf(topColor, centerColor, bottomColor)
+                        )
+
+                        val parentGroup = b.root as? ViewGroup
+                        if (parentGroup != null) {
+                            val changeBounds = ChangeBounds().apply { duration = 400 }
+                            TransitionManager.beginDelayedTransition(parentGroup, changeBounds)
+                        }
+                        b.main.background = dynamicGradient
+                    }
+                }
+
+                override fun onLoadCleared(placeholder: Drawable?) {}
+            })
+    }
+
+    private fun adjustColorDarkness(color: Int, factor: Float): Int {
+        val hsv = FloatArray(3)
+        Color.colorToHSV(color, hsv)
+        hsv[2] = (hsv[2] * factor).coerceIn(0f, 1f)
+        return Color.HSVToColor(hsv)
+    }
+
     private fun showData() {
         if (intent.extras == null) return
         albumItem = Gson().fromJson(
@@ -319,8 +531,7 @@ class ListActivity : AppCompatActivity() {
         if (albumItem != null) {
             binding!!.albumTitle.text = albumItem!!.albumTitle()
             binding!!.albumSubTitle.text = albumItem!!.albumSubTitle()
-            if (albumItem!!.albumCover?.isNotBlank() == true) Picasso.get()
-                .load(albumItem!!.albumCover!!.toUri()).into(binding!!.albumCover)
+            if (albumItem!!.albumCover?.isNotBlank() == true) loadArtworkAndApplyDynamicTheme(albumItem!!.albumCover)
         }
 
         val apiManager = ApiManager(this)
@@ -409,7 +620,7 @@ class ListActivity : AppCompatActivity() {
             apiManager.retrievePlaylistByLink(intentId, null, null, responseListener)
         } else {
             val cached = sharedPreferenceManager.getPlaylistResponseById(albumItem!!.id ?: "")
-            if (cached != null) {
+            if (cached != null && !cached.data?.songs.isNullOrEmpty()) {
                 onPlaylistFetched(cached)
             }
             apiManager.retrievePlaylistById(albumItem!!.id ?: "", null, null, responseListener)
@@ -424,7 +635,7 @@ class ListActivity : AppCompatActivity() {
         binding!!.shareIcon.visibility = View.INVISIBLE
         // binding.moreIcon.setVisibility(View.INVISIBLE);
         binding!!.addToLibrary.visibility = View.INVISIBLE
-        binding!!.addMoreSongs.visibility = View.VISIBLE
+        binding?.addMoreSongs?.visibility = View.VISIBLE
 
         val sharedPreferenceManager: SharedPreferenceManager =
             SharedPreferenceManager.getInstance(this)
@@ -441,7 +652,7 @@ class ListActivity : AppCompatActivity() {
         if (library != null) {
             binding!!.albumTitle.text = library.name
             binding!!.albumSubTitle.text = library.description
-            Picasso.get().load(library.image?.toUri()).into(binding!!.albumCover)
+            if (library.image?.isNotBlank() == true) loadArtworkAndApplyDynamicTheme(library.image)
 
             val songs = library.songs ?: mutableListOf()
             binding!!.recyclerView.setAdapter(
@@ -449,8 +660,9 @@ class ListActivity : AppCompatActivity() {
                     songs.filterNotNull().toMutableList()
                 )
             )
+            trackQueue.clear()
             for (song in songs) {
-                if (song != null) trackQueue.add(song.id)
+                if (song != null && !song.id.isNullOrBlank()) trackQueue.add(song.id)
             }
         }
     }
@@ -463,9 +675,7 @@ class ListActivity : AppCompatActivity() {
         val imageList = data.image
         val coverUrl = if (!imageList.isNullOrEmpty()) imageList[imageList.size - 1]?.url ?: "" else albumItem?.albumCover ?: ""
         if (coverUrl.isNotEmpty()) {
-            Picasso.get()
-                .load(coverUrl.toUri())
-                .into(binding!!.albumCover)
+            loadArtworkAndApplyDynamicTheme(coverUrl)
         }
         SharedPreferenceManager.getInstance(this).addAlbumToHistory(
             AlbumHistoryItem(
@@ -481,8 +691,9 @@ class ListActivity : AppCompatActivity() {
                 songs.filterNotNull().toMutableList()
             )
         )
+        trackQueue.clear()
         for (song in songs) {
-            if (song != null) trackQueue.add(song.id)
+            if (song != null && !song.id.isNullOrBlank()) trackQueue.add(song.id)
         }
 
         // ((ApplicationClass)getApplicationContext()).setTrackQueue(trackQueue);
@@ -516,10 +727,9 @@ class ListActivity : AppCompatActivity() {
         binding!!.albumTitle.text = data.name()
         binding!!.albumSubTitle.text = data.description()
         val imageList = data.image
-        if (!imageList.isNullOrEmpty()) {
-            Picasso.get()
-                .load((imageList[imageList.size - 1]?.url ?: "").toUri())
-                .into(binding!!.albumCover)
+        val coverUrl = if (!imageList.isNullOrEmpty()) imageList[imageList.size - 1]?.url ?: "" else albumItem?.albumCover ?: ""
+        if (coverUrl.isNotEmpty()) {
+            loadArtworkAndApplyDynamicTheme(coverUrl)
         }
         val songs = data.songs ?: mutableListOf()
         binding!!.recyclerView.setAdapter(
@@ -527,8 +737,9 @@ class ListActivity : AppCompatActivity() {
                 songs.filterNotNull().toMutableList()
             )
         )
+        trackQueue.clear()
         for (song in songs) {
-            if (song != null) trackQueue.add(song.id)
+            if (song != null && !song.id.isNullOrBlank()) trackQueue.add(song.id)
         }
 
         // ((ApplicationClass)getApplicationContext()).setTrackQueue(trackQueue);
@@ -569,7 +780,7 @@ class ListActivity : AppCompatActivity() {
     }
 
 
-    private data class ArtistData(
+    internal data class ArtistData(
         val name: String?,
         val id: String?,
         val image: String?

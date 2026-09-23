@@ -9,7 +9,7 @@ import android.widget.TextView
 import androidx.core.net.toUri
 import androidx.recyclerview.widget.RecyclerView
 import com.facebook.shimmer.ShimmerFrameLayout
-import com.squareup.picasso.Picasso
+import com.bumptech.glide.Glide
 import dev.melodify.uranophilelab.R
 import dev.melodify.uranophilelab.activities.MusicOverviewActivity
 import dev.melodify.uranophilelab.model.AlbumItem
@@ -48,7 +48,7 @@ class ActivityMainPopularSongs(private val data: MutableList<AlbumItem?>) :
         val coverImage = holder.itemView.findViewById<ImageView?>(R.id.coverImage)
         val coverUrl = item.albumCover
         if (!coverUrl.isNullOrEmpty() && coverImage != null) {
-            Picasso.get().load(coverUrl.toUri()).into(coverImage)
+            Glide.with(coverImage.context).load(coverUrl.toUri()).into(coverImage)
         }
 
         holder.itemView.setOnClickListener { v: View? ->

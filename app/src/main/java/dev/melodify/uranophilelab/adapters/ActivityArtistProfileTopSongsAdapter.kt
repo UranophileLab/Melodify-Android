@@ -1,6 +1,7 @@
 package dev.melodify.uranophilelab.adapters
 
 import android.content.Intent
+import android.graphics.Typeface
 import android.net.Uri
 import android.view.View
 import android.view.ViewGroup
@@ -11,9 +12,10 @@ import dev.melodify.uranophilelab.activities.MusicOverviewActivity
 import dev.melodify.uranophilelab.databinding.ActivityArtistProfileViewTopSongsItemBinding
 import dev.melodify.uranophilelab.records.SongResponse.Song
 import dev.melodify.uranophilelab.utils.MusicPlayerManager
-import com.squareup.picasso.Picasso
+import com.bumptech.glide.Glide
 import androidx.core.net.toUri
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 
 class ActivityArtistProfileTopSongsAdapter(private val data: MutableList<Song?>) :
     RecyclerView.Adapter<ActivityArtistProfileTopSongsAdapter.ViewHolder?>() {
@@ -38,13 +40,24 @@ class ActivityArtistProfileTopSongsAdapter(private val data: MutableList<Song?>)
 
         val itemView = ActivityArtistProfileViewTopSongsItemBinding.bind(holder.itemView)
 
+        val songData = data[position]
+        val isCurrentPlaying = songData != null && !songData.id.isNullOrEmpty() && (songData.id == MusicPlayerManager.MUSIC_ID)
+
         itemView.position.text = (position + 1).toString()
-        itemView.coverTitle.text = data.get(position)!!.name()
+        itemView.coverTitle.text = songData?.name()
+        if (isCurrentPlaying) {
+            itemView.coverTitle.setTextColor(ContextCompat.getColor(holder.itemView.context, R.color.spotify_green))
+            itemView.coverTitle.setTypeface(null, Typeface.BOLD)
+        } else {
+            itemView.coverTitle.setTextColor(ContextCompat.getColor(holder.itemView.context, R.color.text_light))
+            itemView.coverTitle.setTypeface(null, Typeface.NORMAL)
+        }
+
         itemView.coverPlayed.text = String.format("%s | %s", data[position]!!.year, data[position]!!.label)
         val images = data[position]?.image
         val url = if (images.isNullOrEmpty()) "" else images[images.size - 1]?.url ?: ""
         if (url.isNotEmpty()) {
-            Picasso.get().load(url.toUri()).into(itemView.coverImage)
+            Glide.with(itemView.coverImage.context).load(url.toUri()).into(itemView.coverImage)
         }
 
         itemView.more.setOnClickListener { v ->

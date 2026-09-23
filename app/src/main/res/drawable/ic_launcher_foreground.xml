@@ -5,9 +5,9 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- Cyan Ambient Circle Glow -->
+    <!-- Green Ambient Circle Glow -->
     <path
-        android:fillColor="#00D2FF"
+        android:fillColor="#1DB954"
         android:pathData="M 54,20 C 72.77,20 88,35.23 88,54 C 88,72.77 72.77,88 54,88 C 35.23,88 20,72.77 20,54 C 20,35.23 35.23,20 54,20 Z"
         android:fillAlpha="0.35" />
 
@@ -21,7 +21,7 @@
         android:pathData="M 36,32 H 41 V 76 H 36 Z" />
 
     <path
-        android:fillColor="#00D2FF"
+        android:fillColor="#1DB954"
         android:pathData="M 44,24 L 84,12 V 21 L 44,32 Z" />
 
     <path

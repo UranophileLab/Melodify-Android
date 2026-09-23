@@ -43,8 +43,9 @@ import dev.melodify.uranophilelab.records.SongResponse
 import dev.melodify.uranophilelab.model.history.SongHistoryItem
 import dev.melodify.uranophilelab.services.NotificationReceiver
 import dev.melodify.uranophilelab.widgets.WidgetPlayerProvider
-import com.squareup.picasso.Picasso
-import com.squareup.picasso.Target
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
 import java.io.File
 
 @OptIn(UnstableApi::class)
@@ -80,7 +81,7 @@ object MusicPlayerManager {
     var appContext: Context? = null
     private var simpleCache: SimpleCache? = null
     private var sharedPreferenceManager: SharedPreferenceManager? = null
-    private var notificationTarget: Target? = null
+    private var notificationTarget: CustomTarget<Bitmap>? = null
 
     @OptIn(UnstableApi::class)
     fun init(context: Context) {
@@ -184,9 +185,12 @@ object MusicPlayerManager {
         }
     }
 
-    fun setTrackQuality(quality: String?, prefs: SharedPreferenceManager? = sharedPreferenceManager) {
+    private val prefs: SharedPreferenceManager?
+        get() = sharedPreferenceManager ?: appContext?.let { SharedPreferenceManager.getInstance(it) }
+
+    fun setTrackQuality(quality: String?, preferences: SharedPreferenceManager? = prefs) {
         TRACK_QUALITY = quality
-        prefs?.trackQuality = quality
+        preferences?.trackQuality = quality
     }
 
     fun setMusicDetails(image: String?, title: String?, description: String?, id: String?) {
@@ -195,6 +199,20 @@ object MusicPlayerManager {
         description?.let { MUSIC_DESCRIPTION = it }
         MUSIC_ID = id
         Log.i(TAG, "setMusicDetails: $MUSIC_TITLE - ID: $MUSIC_ID")
+
+        if (!id.isNullOrBlank() && !title.isNullOrBlank() && !title.equals("loading...", ignoreCase = true)) {
+            val rawArtist = description?.split("|")?.firstOrNull()?.trim() ?: description ?: ""
+            val artistName = if (rawArtist.contains("plays", ignoreCase = true)) "" else rawArtist
+            prefs?.addSongToHistory(
+                SongHistoryItem(
+                    id = id,
+                    title = title,
+                    artist = artistName,
+                    imageUrl = image
+                )
+            )
+        }
+
         updateWidget()
     }
 
@@ -274,8 +292,8 @@ object MusicPlayerManager {
             .setOnlyAlertOnce(true)
 
         try {
-            val target = object : Target {
-                override fun onBitmapLoaded(bitmap: Bitmap, from: Picasso.LoadedFrom?) {
+            val target = object : CustomTarget<Bitmap>() {
+                override fun onResourceReady(bitmap: Bitmap, transition: Transition<in Bitmap>?) {
                     try {
                         Palette.from(bitmap).generate { palette ->
                             val textSwatch = palette?.dominantSwatch
@@ -300,11 +318,11 @@ object MusicPlayerManager {
                         showBasicNotification(builder, playPauseButton != R.drawable.play_arrow_24px)
                     }
                 }
-                override fun onBitmapFailed(e: Exception?, errorDrawable: Drawable?) { showBasicNotification(builder, playPauseButton != R.drawable.play_arrow_24px) }
-                override fun onPrepareLoad(placeHolderDrawable: Drawable?) {}
+                override fun onLoadFailed(errorDrawable: Drawable?) { showBasicNotification(builder, playPauseButton != R.drawable.play_arrow_24px) }
+                override fun onLoadCleared(placeholder: Drawable?) {}
             }
             notificationTarget = target
-            Picasso.get().load(IMAGE_URL).into(target)
+            Glide.with(ctx).asBitmap().load(IMAGE_URL).into(target)
         } catch (e: Exception) {
             showBasicNotification(builder, playPauseButton != R.drawable.play_arrow_24px)
         }
@@ -422,7 +440,7 @@ object MusicPlayerManager {
                     setMusicDetails(IMAGE_URL, MUSIC_TITLE, MUSIC_DESCRIPTION, MUSIC_ID)
 
                     val artistName = firstSong.artists?.primary?.filterNotNull()?.firstOrNull()?.name() ?: ""
-                    sharedPreferenceManager?.addSongToHistory(
+                    prefs?.addSongToHistory(
                         SongHistoryItem(
                             id = MUSIC_ID,
                             title = MUSIC_TITLE,

@@ -15,6 +15,7 @@ import android.os.Handler
 import android.os.Looper
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
@@ -102,6 +103,10 @@ class SearchActivity : AppCompatActivity() {
             val chip = Chip(this)
             chip.text = query
             chip.isCheckable = false
+            chip.chipBackgroundColor = ContextCompat.getColorStateList(this, R.color.chip_background_color)
+            chip.setTextColor(ContextCompat.getColorStateList(this, R.color.chip_text_color))
+            chip.chipStrokeColor = ContextCompat.getColorStateList(this, R.color.chip_stroke_color)
+            chip.chipStrokeWidth = 1f
             chip.setOnClickListener {
                 binding!!.edittext.setText(query)
                 binding!!.edittext.setSelection(query.length)

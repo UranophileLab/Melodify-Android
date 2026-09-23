@@ -24,9 +24,8 @@
             android:layout_width="@dimen/_95sdp"
             android:layout_height="@dimen/_95sdp"
             app:cardCornerRadius="@dimen/_12sdp"
-            app:cardElevation="@dimen/_3sdp"
-            app:strokeWidth="0.5dp"
-            app:strokeColor="@color/textSec"
+            app:cardElevation="@dimen/_2sdp"
+            app:strokeWidth="0dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
@@ -36,7 +35,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"
-                android:background="@color/textSec"
+                android:background="@color/spotify_dark_green"
                 tools:srcCompat="@drawable/ic_launcher_foreground" />
 
         </com.google.android.material.card.MaterialCardView>
@@ -49,7 +48,7 @@
             android:fontFamily="@font/avenir_next_bold"
             android:gravity="center"
             android:text="Album Name"
-            android:textColor="@color/textMain"
+            android:textColor="@color/text_light"
             android:textSize="@dimen/_12ssp"
             android:scrollHorizontally="true"
             android:ellipsize="marquee"
@@ -66,7 +65,7 @@
             android:gravity="center"
             android:text="Album Description"
             android:fontFamily="@font/avenir_next_regular"
-            android:textColor="@color/textSec"
+            android:textColor="#B3B3B3"
             android:textSize="@dimen/_10ssp"
             android:scrollHorizontally="true"
             android:ellipsize="marquee"

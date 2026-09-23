@@ -12,17 +12,17 @@ class WidgetControlReceiver : BroadcastReceiver() {
 
         when (action) {
             "ACTION_TOGGLE_PLAY" -> {
-                Log.d("MelotuneWidget", "Play/Pause pressed")
+                Log.d("MelodifyWidget", "Play/Pause pressed")
                 MusicPlayerManager.togglePlayPause()
             }
 
             "ACTION_NEXT" -> {
-                Log.d("MelotuneWidget", "Next pressed")
+                Log.d("MelodifyWidget", "Next pressed")
                 MusicPlayerManager.nextTrack()
             }
 
             "ACTION_PREV" -> {
-                Log.d("MelotuneWidget", "Previous pressed")
+                Log.d("MelodifyWidget", "Previous pressed")
                 MusicPlayerManager.prevTrack()
             }
         }

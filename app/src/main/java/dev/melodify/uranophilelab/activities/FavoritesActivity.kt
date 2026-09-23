@@ -55,13 +55,19 @@ class FavoritesActivity : AppCompatActivity() {
 
     private fun loadFavoritesData() {
         val prefs = SharedPreferenceManager.getInstance(this)
-        favoriteList = prefs.favoriteSongs.toMutableList()
+        val newFavorites = prefs.favoriteSongs
 
-        adapter = SongHistoryAdapter(favoriteList) {
-            prefs.favoriteSongs = favoriteList
-            updateEmptyState()
+        favoriteList.clear()
+        favoriteList.addAll(newFavorites)
+
+        if (adapter == null) {
+            adapter = SongHistoryAdapter(favoriteList, isFavoritesMode = true) {
+                updateEmptyState()
+            }
+            binding.recyclerView.adapter = adapter
+        } else {
+            adapter?.notifyDataSetChanged()
         }
-        binding.recyclerView.adapter = adapter
 
         updateEmptyState()
     }
