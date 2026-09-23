@@ -1,0 +1,66 @@
+package dev.melodify.uranophilelab.adapters
+
+import android.content.Intent
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.facebook.shimmer.ShimmerFrameLayout
+import com.google.gson.Gson
+import dev.melodify.uranophilelab.R
+import dev.melodify.uranophilelab.activities.ListActivity
+import dev.melodify.uranophilelab.activities.MusicOverviewActivity
+import dev.melodify.uranophilelab.model.AlbumItem
+
+class ActivityMainTrendingAdapter(private val data: List<AlbumItem?>) :
+    RecyclerView.Adapter<ActivityMainTrendingAdapter.ViewHolder>() {
+
+    class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val title: TextView? = itemView.findViewById(R.id.trending_title)
+        val cover: ImageView? = itemView.findViewById(R.id.trending_cover)
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.activity_main_trending_item, parent, false)
+        return ViewHolder(view)
+    }
+
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        val item = data[position] ?: return
+
+        holder.title?.text = item.albumTitle() ?: ""
+
+        val imageUrl = item.albumCover
+        if (!imageUrl.isNullOrBlank() && imageUrl != "<shimmer>") {
+            holder.cover?.let {
+                Glide.with(it.context)
+                    .load(imageUrl)
+                    .placeholder(R.drawable.baseline_album_24)
+                    .centerCrop()
+                    .into(it)
+            }
+        } else {
+            holder.cover?.setImageResource(R.drawable.baseline_album_24)
+        }
+
+        holder.itemView.setOnClickListener { view ->
+            val context = view.context
+            if (item.id != null && item.id.isNotBlank()) {
+                val intent = Intent(context, ListActivity::class.java).apply {
+                    putExtra("data", Gson().toJson(item))
+                    putExtra("id", item.id)
+                    putExtra("type", "album")
+                }
+                context.startActivity(intent)
+            }
+        }
+    }
+
+    override fun getItemCount(): Int {
+        return data.size
+    }
+}
