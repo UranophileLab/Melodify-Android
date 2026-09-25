@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dev.melodify.uranophilelab.BaseApplicationClass
+import dev.melodify.uranophilelab.R
 import dev.melodify.uranophilelab.adapters.AlbumHistoryAdapter
 import dev.melodify.uranophilelab.adapters.SongHistoryAdapter
 import dev.melodify.uranophilelab.databinding.ActivityHistoryBinding
@@ -116,23 +117,22 @@ class HistoryActivity : AppCompatActivity() {
         val hasSongs = songHistoryList.isNotEmpty()
         val hasAlbums = albumHistoryList.isNotEmpty()
 
-        val isSongsChecked = binding.chipSongs.isChecked
-        val isAlbumsChecked = binding.chipAlbums.isChecked
-        val isAllChecked = binding.chipAll.isChecked || (!isSongsChecked && !isAlbumsChecked)
-
-        if (!isSongsChecked && !isAlbumsChecked && !binding.chipAll.isChecked) {
+        val checkedChipId = binding.chipGroup.checkedChipId
+        if (checkedChipId == View.NO_ID) {
             binding.chipAll.isChecked = true
         }
 
-        val showSongs = (isAllChecked || isSongsChecked) && hasSongs
-        val showAlbums = (isAllChecked || isAlbumsChecked) && hasAlbums
+        val effectiveChipId = if (checkedChipId == View.NO_ID) R.id.chip_all else checkedChipId
+
+        val showSongs = (effectiveChipId == R.id.chip_all || effectiveChipId == R.id.chip_songs) && hasSongs
+        val showAlbums = (effectiveChipId == R.id.chip_all || effectiveChipId == R.id.chip_albums) && hasAlbums
 
         binding.songSection.visibility = if (showSongs) View.VISIBLE else View.GONE
         binding.albumSection.visibility = if (showAlbums) View.VISIBLE else View.GONE
 
-        val isFilterEmpty = when {
-            isSongsChecked -> !hasSongs
-            isAlbumsChecked -> !hasAlbums
+        val isFilterEmpty = when (effectiveChipId) {
+            R.id.chip_songs -> !hasSongs
+            R.id.chip_albums -> !hasAlbums
             else -> !hasSongs && !hasAlbums
         }
 
@@ -149,7 +149,6 @@ class HistoryActivity : AppCompatActivity() {
         binding.chipGroup.setOnCheckedStateChangeListener { _, checkedIds ->
             if (checkedIds.isEmpty()) {
                 binding.chipAll.isChecked = true
-                return@setOnCheckedStateChangeListener
             }
             updateEmptyState()
         }

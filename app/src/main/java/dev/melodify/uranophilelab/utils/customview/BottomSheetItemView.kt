@@ -42,7 +42,7 @@ class BottomSheetItemView : LinearLayout {
     ) : super(context) {
         init(null, 0)
         this.titleTextView?.text = string
-        if (!imageUrl.isBlank()) {
+        if (!imageUrl.isBlank() && imageUrl != "<shimmer>") {
             this.iconImageView?.let { imgView ->
                 imgView.colorFilter = null
                 imgView.imageTintList = null

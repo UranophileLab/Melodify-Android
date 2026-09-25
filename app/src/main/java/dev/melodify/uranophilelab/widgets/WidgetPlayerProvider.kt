@@ -81,7 +81,7 @@ class WidgetPlayerProvider : AppWidgetProvider() {
             views.setOnClickPendingIntent(R.id.button_prev, getPendingSelfIntent(context, "ACTION_PREV"))
 
             val imageUrl = MusicPlayerManager.IMAGE_URL
-            if (!imageUrl.isNullOrEmpty()) {
+            if (!imageUrl.isNullOrEmpty() && imageUrl != "<shimmer>") {
                 val oldTarget = widgetTargets.remove(appWidgetId)
                 if (oldTarget != null) {
                     try { Glide.with(context.applicationContext).clear(oldTarget) } catch (_: Exception) {}

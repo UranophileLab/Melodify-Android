@@ -47,7 +47,7 @@ class ActivityMainPlaylistAdapter(private val data: MutableList<AlbumItem?>) :
         holder.itemView.findViewById<TextView?>(R.id.title)?.text = item.albumTitle()
         val imageView = holder.itemView.findViewById<ImageView?>(R.id.imageView)
         val coverUrl: String? = item.albumCover
-        if (coverUrl != null && coverUrl.isNotEmpty() && imageView != null) {
+        if (coverUrl != null && coverUrl.isNotEmpty() && coverUrl != "<shimmer>" && imageView != null) {
             Glide.with(imageView.context).load(Uri.parse(coverUrl)).into(imageView)
         }
 

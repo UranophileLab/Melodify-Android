@@ -302,7 +302,10 @@ class ListActivity : AppCompatActivity() {
 
         _binding.albumTitle.text = binding!!.albumTitle.text.toString()
         _binding.albumSubTitle.text = binding!!.albumSubTitle.text.toString()
-        Glide.with(_binding.coverImage.context).load(albumItem!!.albumCover?.toUri()).into(_binding.coverImage)
+        val coverUrl = albumItem?.albumCover
+        if (!coverUrl.isNullOrBlank() && coverUrl != "<shimmer>") {
+            Glide.with(_binding.coverImage.context).load(coverUrl.toUri()).into(_binding.coverImage)
+        }
 
         val sharedPreferenceManager: SharedPreferenceManager =
             SharedPreferenceManager.getInstance(this@ListActivity)
@@ -360,7 +363,10 @@ class ListActivity : AppCompatActivity() {
 
         _binding.albumTitle.text = binding!!.albumTitle.text.toString()
         _binding.albumSubTitle.text = binding!!.albumSubTitle.text.toString()
-        Glide.with(_binding.coverImage.context).load(albumItem!!.albumCover?.toUri()).into(_binding.coverImage)
+        val userCoverUrl = albumItem?.albumCover
+        if (!userCoverUrl.isNullOrBlank() && userCoverUrl != "<shimmer>") {
+            Glide.with(_binding.coverImage.context).load(userCoverUrl.toUri()).into(_binding.coverImage)
+        }
 
         _binding.removeLibrary.setOnClickListener {
             bottomSheetDialog.dismiss()
@@ -459,7 +465,7 @@ class ListActivity : AppCompatActivity() {
 
     private fun loadArtworkAndApplyDynamicTheme(imageUrl: String?) {
         val b = binding ?: return
-        if (imageUrl.isNullOrBlank()) return
+        if (imageUrl.isNullOrBlank() || imageUrl == "<shimmer>") return
         if (imageUrl == currentLoadedImageUrl) return
         currentLoadedImageUrl = imageUrl
 
@@ -670,33 +676,36 @@ class ListActivity : AppCompatActivity() {
     private fun onAlbumFetched(albumSearch: AlbumSearch) {
         val data = albumSearch.data ?: return
 
-        binding!!.albumTitle.text = data.name()
-        binding!!.albumSubTitle.text = data.description()
+        val title = if (data.name().isNotBlank()) data.name() else albumItem?.albumTitle() ?: ""
+        val subtitle = if (data.description().isNotBlank() && !data.description().startsWith("0 ·")) data.description() else albumItem?.albumSubTitle() ?: ""
+
+        binding!!.albumTitle.text = title
+        binding!!.albumSubTitle.text = subtitle
         val imageList = data.image
         val coverUrl = if (!imageList.isNullOrEmpty()) imageList[imageList.size - 1]?.url ?: "" else albumItem?.albumCover ?: ""
-        if (coverUrl.isNotEmpty()) {
+        if (coverUrl.isNotEmpty() && coverUrl != "<shimmer>") {
             loadArtworkAndApplyDynamicTheme(coverUrl)
         }
-        SharedPreferenceManager.getInstance(this).addAlbumToHistory(
-            AlbumHistoryItem(
-                id = data.id ?: albumItem?.id,
-                title = data.name(),
-                subtitle = data.description(),
-                imageUrl = coverUrl
+        if (title.isNotBlank()) {
+            SharedPreferenceManager.getInstance(this).addAlbumToHistory(
+                AlbumHistoryItem(
+                    id = if (!data.id.isNullOrBlank()) data.id else albumItem?.id,
+                    title = title,
+                    subtitle = subtitle,
+                    imageUrl = coverUrl
+                )
             )
-        )
-        val songs = data.songs ?: mutableListOf()
+        }
+        val rawSongs = data.songs ?: mutableListOf()
+        val songs = rawSongs.filterNotNull().filter { it.id != "dsf7m88e" && it.name != "This is a sample trailer - testing" }.toMutableList()
         binding!!.recyclerView.setAdapter(
-            ActivityListSongsItemAdapter(
-                songs.filterNotNull().toMutableList()
-            )
+            ActivityListSongsItemAdapter(songs)
         )
         trackQueue.clear()
         for (song in songs) {
-            if (song != null && !song.id.isNullOrBlank()) trackQueue.add(song.id)
+            if (!song.id.isNullOrBlank()) trackQueue.add(song.id)
         }
 
-        // ((ApplicationClass)getApplicationContext()).setTrackQueue(trackQueue);
         binding!!.shareIcon.setOnClickListener(View.OnClickListener {
             if (data.url.isNullOrBlank()) return@OnClickListener
             val sendIntent = Intent()
@@ -724,25 +733,26 @@ class ListActivity : AppCompatActivity() {
     private fun onPlaylistFetched(playlistSearch: PlaylistSearch) {
         val data = playlistSearch.data ?: return
 
-        binding!!.albumTitle.text = data.name()
-        binding!!.albumSubTitle.text = data.description()
+        val title = if (data.name().isNotBlank()) data.name() else albumItem?.albumTitle() ?: ""
+        val subtitle = if (data.description().isNotBlank()) data.description() else albumItem?.albumSubTitle() ?: ""
+
+        binding!!.albumTitle.text = title
+        binding!!.albumSubTitle.text = subtitle
         val imageList = data.image
         val coverUrl = if (!imageList.isNullOrEmpty()) imageList[imageList.size - 1]?.url ?: "" else albumItem?.albumCover ?: ""
-        if (coverUrl.isNotEmpty()) {
+        if (coverUrl.isNotEmpty() && coverUrl != "<shimmer>") {
             loadArtworkAndApplyDynamicTheme(coverUrl)
         }
-        val songs = data.songs ?: mutableListOf()
+        val rawSongs = data.songs ?: mutableListOf()
+        val songs = rawSongs.filterNotNull().filter { it.id != "dsf7m88e" && it.name != "This is a sample trailer - testing" }.toMutableList()
         binding!!.recyclerView.setAdapter(
-            ActivityListSongsItemAdapter(
-                songs.filterNotNull().toMutableList()
-            )
+            ActivityListSongsItemAdapter(songs)
         )
         trackQueue.clear()
         for (song in songs) {
-            if (song != null && !song.id.isNullOrBlank()) trackQueue.add(song.id)
+            if (!song.id.isNullOrBlank()) trackQueue.add(song.id)
         }
 
-        // ((ApplicationClass)getApplicationContext()).setTrackQueue(trackQueue);
         binding!!.shareIcon.setOnClickListener(View.OnClickListener {
             if (data.url.isNullOrBlank()) return@OnClickListener
             val sendIntent = Intent()

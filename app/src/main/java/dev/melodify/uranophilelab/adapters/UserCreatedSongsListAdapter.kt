@@ -47,7 +47,7 @@ class UserCreatedSongsListAdapter(private val data: MutableList<Library.Songs?>)
 
         holder.binding.artist.text = songItem?.description
         val imageUrl = songItem?.image
-        if (imageUrl?.isNotBlank() == true) Glide.with(holder.binding.coverImage.context).load(imageUrl.toUri()).into(holder.binding.coverImage)
+        if (imageUrl?.isNotBlank() == true && imageUrl != "<shimmer>") Glide.with(holder.binding.coverImage.context).load(imageUrl.toUri()).into(holder.binding.coverImage)
 
         // Wire up the 3-dots menu
         val moreIcon = holder.itemView.findViewById<ImageView>(R.id.more)

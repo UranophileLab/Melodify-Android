@@ -43,7 +43,7 @@ class ActivityArtistProfileTopAlbumsAdapter(private val data: MutableList<Albums
         itemView.coverPlayed.text = String.format("%s | %s", data[position]!!.year, data[position]!!.language)
         val images = data[position]?.image
         val url = if (images.isNullOrEmpty()) "" else images[images.size - 1]?.url ?: ""
-        if (url.isNotEmpty()) {
+        if (url.isNotEmpty() && url != "<shimmer>") {
             Glide.with(itemView.coverImage.context).load(url.toUri()).into(itemView.coverImage)
         }
 
@@ -52,8 +52,8 @@ class ActivityArtistProfileTopAlbumsAdapter(private val data: MutableList<Albums
             val itemImages = item.image
             val itemUrl = if (itemImages.isNullOrEmpty()) "" else itemImages[itemImages.size - 1]?.url ?: ""
             val albumItem = AlbumItem(
-                item.id,
                 item.name(),
+                "${item.year} | ${item.language ?: ""}",
                 itemUrl,
                 item.id
             )

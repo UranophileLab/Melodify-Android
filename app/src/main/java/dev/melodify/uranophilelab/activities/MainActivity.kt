@@ -334,7 +334,7 @@ class MainActivity : AppCompatActivity() {
                             songs.add(
                                 AlbumItem(
                                     results.name(), results.language + " " + results.year,
-                                    imageUrl, results.id
+                                    imageUrl, results.id, "song"
                                 )
                             )
                         }
@@ -411,7 +411,7 @@ class MainActivity : AppCompatActivity() {
                             albums.add(
                                 AlbumItem(
                                     results.name(), results.language + " " + results.year,
-                                    imageUrl, results.id
+                                    imageUrl, results.id, "album"
                                 )
                             )
                         }
@@ -456,7 +456,7 @@ class MainActivity : AppCompatActivity() {
                                 playlists.add(
                                     AlbumItem(
                                         results.name(), "",
-                                        imageUrl, results.id
+                                        imageUrl, results.id, "playlist"
                                     )
                                 )
                             }

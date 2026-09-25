@@ -53,7 +53,7 @@ class ActivitySeeMoreListAdapter : RecyclerView.Adapter<ActivitySeeMoreListAdapt
         val url = if (images.isNullOrEmpty()) "" else images[images.size - 1]?.url ?: ""
         val coverImageView = holder.coverImage
         if (coverImageView != null) {
-            if (url.isNotEmpty()) {
+            if (url.isNotEmpty() && url != "<shimmer>") {
                 Glide.with(coverImageView.context).load(url)
                     .placeholder(R.drawable.headphone)
                     .fitCenter()

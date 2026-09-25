@@ -59,7 +59,7 @@ class SongHistoryAdapter(
         holder.artist?.isSelected = true
 
         val imageUrl = item.imageUrl
-        if (!imageUrl.isNullOrEmpty() && holder.coverImage != null) {
+        if (!imageUrl.isNullOrEmpty() && imageUrl != "<shimmer>" && holder.coverImage != null) {
             Glide.with(holder.coverImage.context).load(Uri.parse(imageUrl)).into(holder.coverImage)
         } else {
             holder.coverImage?.setImageResource(R.drawable.baseline_album_24)

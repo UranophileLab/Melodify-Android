@@ -516,7 +516,9 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
                 .inflate(layoutInflater)
             _binding.albumTitle.text = binding!!.title.text.toString()
             _binding.albumSubTitle.text = binding!!.description.text.toString()
-            Glide.with(_binding.coverImage.context).load(IMAGE_URL?.toUri()).into(_binding.coverImage)
+            if (!IMAGE_URL.isNullOrBlank() && IMAGE_URL != "<shimmer>") {
+                Glide.with(_binding.coverImage.context).load(IMAGE_URL?.toUri()).into(_binding.coverImage)
+            }
             val linearLayout = _binding.main
 
             _binding.goToAlbum.setOnClickListener(View.OnClickListener {
@@ -926,7 +928,7 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
 
     private fun loadArtworkAndApplyDynamicTheme(imageUrl: String?) {
         val b = binding ?: return
-        if (imageUrl.isNullOrBlank()) return
+        if (imageUrl.isNullOrBlank() || imageUrl == "<shimmer>") return
         if (imageUrl == currentLoadedImageUrl) return
         currentLoadedImageUrl = imageUrl
 

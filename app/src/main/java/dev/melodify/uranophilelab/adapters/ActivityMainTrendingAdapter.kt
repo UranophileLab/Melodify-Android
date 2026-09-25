@@ -15,6 +15,8 @@ import dev.melodify.uranophilelab.activities.ListActivity
 import dev.melodify.uranophilelab.activities.MusicOverviewActivity
 import dev.melodify.uranophilelab.model.AlbumItem
 
+import dev.melodify.uranophilelab.utils.MusicPlayerManager
+
 class ActivityMainTrendingAdapter(private val data: List<AlbumItem?>) :
     RecyclerView.Adapter<ActivityMainTrendingAdapter.ViewHolder>() {
 
@@ -49,13 +51,22 @@ class ActivityMainTrendingAdapter(private val data: List<AlbumItem?>) :
 
         holder.itemView.setOnClickListener { view ->
             val context = view.context
-            if (item.id != null && item.id.isNotBlank()) {
-                val intent = Intent(context, ListActivity::class.java).apply {
-                    putExtra("data", Gson().toJson(item))
-                    putExtra("id", item.id)
-                    putExtra("type", "album")
+            if (!item.id.isNullOrBlank()) {
+                if (item.type == "song") {
+                    MusicPlayerManager.trackQueue = arrayListOf(item.id)
+                    MusicPlayerManager.track_position = 0
+                    val intent = Intent(context, MusicOverviewActivity::class.java).apply {
+                        putExtra("id", item.id)
+                    }
+                    context.startActivity(intent)
+                } else {
+                    val intent = Intent(context, ListActivity::class.java).apply {
+                        putExtra("data", Gson().toJson(item))
+                        putExtra("id", item.id)
+                        putExtra("type", if (item.type == "playlist") "playlist" else "album")
+                    }
+                    context.startActivity(intent)
                 }
-                context.startActivity(intent)
             }
         }
     }

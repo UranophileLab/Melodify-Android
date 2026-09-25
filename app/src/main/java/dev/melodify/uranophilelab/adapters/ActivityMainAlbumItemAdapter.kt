@@ -50,7 +50,7 @@ class ActivityMainAlbumItemAdapter(private val data: MutableList<AlbumItem?>) :
 
         val coverImage = holder.itemView.findViewById<ImageView?>(R.id.coverImage)
         val coverUrl: String? = item.albumCover
-        if (!coverUrl.isNullOrEmpty() && coverImage != null) {
+        if (!coverUrl.isNullOrEmpty() && coverUrl != "<shimmer>" && coverImage != null) {
             Glide.with(coverImage.context).load(Uri.parse(coverUrl)).into(coverImage)
         }
 

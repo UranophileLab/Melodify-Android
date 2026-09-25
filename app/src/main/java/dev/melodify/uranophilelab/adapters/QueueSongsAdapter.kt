@@ -125,7 +125,7 @@ class QueueSongsAdapter(
         
         val images = song.image
         val imgUrl = if (images.isNullOrEmpty()) "" else images[images.size - 1]?.url ?: ""
-        if (imgUrl.isNotEmpty()) {
+        if (imgUrl.isNotEmpty() && imgUrl != "<shimmer>") {
             Glide.with(coverImage.context).load(imgUrl.toUri()).into(coverImage)
         }
         
