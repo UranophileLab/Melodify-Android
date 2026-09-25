@@ -129,6 +129,19 @@
                 app:chipStrokeColor="@color/chip_stroke_color"
                 app:chipStrokeWidth="1dp" />
 
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_playlists"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checkable="true"
+                android:fontFamily="@font/avenir_next_bold"
+                android:text="Playlists"
+                android:textColor="@color/chip_text_color"
+                app:chipBackgroundColor="@color/chip_background_color"
+                app:chipCornerRadius="999dp"
+                app:chipStrokeColor="@color/chip_stroke_color"
+                app:chipStrokeWidth="1dp" />
+
         </com.google.android.material.chip.ChipGroup>
 
     </HorizontalScrollView>
@@ -200,6 +213,34 @@
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/albums_recycler"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false"
+                    android:overScrollMode="never"
+                    tools:listitem="@layout/activity_list_song_item" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/playlist_section"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/playlist_section_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/avenir_next_bold"
+                    android:paddingHorizontal="@dimen/_12sdp"
+                    android:paddingTop="@dimen/_12sdp"
+                    android:paddingBottom="@dimen/_4sdp"
+                    android:text="Playlist History"
+                    android:textColor="@color/text_light"
+                    android:textSize="@dimen/_14ssp" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/playlists_recycler"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:nestedScrollingEnabled="false"

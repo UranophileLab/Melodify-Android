@@ -42,9 +42,8 @@ import dev.melodify.uranophilelab.utils.MiniPlayerHelper
 import dev.melodify.uranophilelab.utils.MusicPlayerManager
 import dev.melodify.uranophilelab.utils.SharedPreferenceManager
 import dev.melodify.uranophilelab.utils.attachSnapHelper
-import com.yarolegovich.slidingrootnav.SlidingRootNav
-import com.yarolegovich.slidingrootnav.SlidingRootNavBuilder
 import dev.melodify.uranophilelab.adapters.ActivityMainTrendingAdapter
+import dev.melodify.uranophilelab.utils.AnimatedMenuHelper
 import me.everything.android.ui.overscroll.OverScrollDecoratorHelper
 import org.json.JSONException
 import org.json.JSONObject
@@ -74,8 +73,6 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
-    private var slidingRootNavBuilder: SlidingRootNav? = null
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val inflatedBinding = ActivityMainBinding.inflate(layoutInflater)
@@ -85,35 +82,8 @@ class MainActivity : AppCompatActivity() {
         baseApplicationClass = applicationContext as BaseApplicationClass?
         BaseApplicationClass.updateTheme(this)
 
-        slidingRootNavBuilder = SlidingRootNavBuilder(this)
-            .withMenuLayout(R.layout.main_drawer_layout)
-            .withContentClickableWhenMenuOpened(false)
-            .withDragDistance(250)
-            .inject()
-
-        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                if (slidingRootNavBuilder?.isMenuOpened == true) {
-                    slidingRootNavBuilder?.closeMenu()
-                } else {
-                    isEnabled = false
-                    onBackPressedDispatcher.onBackPressed()
-                    isEnabled = true
-                }
-            }
-        })
-
-        // Set version text in the drawer layout
-        updateVersionTextInDrawer()
-
-        onDrawerItemsClicked()
-
         setupGreeting()
         setupBottomNavigation()
-
-        inflatedBinding.profileIcon.setOnClickListener {
-            slidingRootNavBuilder?.openMenu(true)
-        }
 
         inflatedBinding.historyButton?.setOnClickListener {
             startActivity(Intent(this, HistoryActivity::class.java))
@@ -121,6 +91,10 @@ class MainActivity : AppCompatActivity() {
 
         inflatedBinding.settingsButton?.setOnClickListener {
             startActivity(Intent(this, SettingsActivity::class.java))
+        }
+
+        inflatedBinding.moreButton?.setOnClickListener {
+            AnimatedMenuHelper.showAnimatedHomeMenu(this)
         }
 
         val span: Int = calculateNoOfColumns(this, 200f)
@@ -221,61 +195,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun onDrawerItemsClicked() {
-        val layout = slidingRootNavBuilder?.layout ?: return
-        layout.findViewById<View>(R.id.library)?.setOnClickListener {
-            startActivity(Intent(this, SavedLibrariesActivity::class.java))
-            slidingRootNavBuilder?.closeMenu()
-        }
 
-        layout.findViewById<View>(R.id.favorites)?.setOnClickListener {
-            startActivity(Intent(this, FavoritesActivity::class.java))
-            slidingRootNavBuilder?.closeMenu()
-        }
-
-        layout.findViewById<View>(R.id.history)?.setOnClickListener {
-            startActivity(Intent(this, HistoryActivity::class.java))
-            slidingRootNavBuilder?.closeMenu()
-        }
-
-        layout.findViewById<View>(R.id.settings)?.setOnClickListener {
-            startActivity(Intent(this, SettingsActivity::class.java))
-            slidingRootNavBuilder?.closeMenu()
-        }
-
-        layout.findViewById<View>(R.id.updates)?.setOnClickListener {
-            slidingRootNavBuilder?.closeMenu()
-            UpdateManager.checkForUpdates(this@MainActivity, isManualCheck = true)
-        }
-
-        layout.findViewById<View>(R.id.about)?.setOnClickListener {
-            startActivity(Intent(this@MainActivity, AboutActivity::class.java))
-            slidingRootNavBuilder?.closeMenu()
-        }
-
-        layout.findViewById<View>(R.id.download_manager)?.setOnClickListener {
-            startActivity(Intent(this@MainActivity, DownloadManagerActivity::class.java))
-            slidingRootNavBuilder?.closeMenu()
-        }
-    }
-
-    /**
-     * Updates the version text in the navigation drawer with the app's current version
-     */
-    private fun updateVersionTextInDrawer() {
-        try {
-            val versionName = packageManager.getPackageInfo(packageName, 0).versionName
-            val drawerLayout: View? = slidingRootNavBuilder?.layout
-            if (drawerLayout != null) {
-                val versionTextView = drawerLayout.findViewById<View?>(R.id.versionTxt)
-                if (versionTextView is TextView) {
-                    versionTextView.text = "version $versionName"
-                }
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error getting app version: " + e.message)
-        }
-    }
 
     override fun onResume() {
         super.onResume()

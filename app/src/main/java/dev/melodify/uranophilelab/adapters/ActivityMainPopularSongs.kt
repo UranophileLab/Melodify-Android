@@ -13,6 +13,7 @@ import com.bumptech.glide.Glide
 import dev.melodify.uranophilelab.R
 import dev.melodify.uranophilelab.activities.MusicOverviewActivity
 import dev.melodify.uranophilelab.model.AlbumItem
+import dev.melodify.uranophilelab.utils.AnimatedMenuHelper
 import dev.melodify.uranophilelab.utils.MusicPlayerManager
 
 class ActivityMainPopularSongs(private val data: MutableList<AlbumItem?>) :
@@ -49,6 +50,17 @@ class ActivityMainPopularSongs(private val data: MutableList<AlbumItem?>) :
         val coverUrl = item.albumCover
         if (!coverUrl.isNullOrEmpty() && coverUrl != "<shimmer>" && coverImage != null) {
             Glide.with(coverImage.context).load(coverUrl.toUri()).into(coverImage)
+        }
+
+        holder.itemView.findViewById<View?>(R.id.more)?.setOnClickListener { v ->
+            val songId = item.id ?: return@setOnClickListener
+            AnimatedMenuHelper.showAnimatedSongMenu(
+                context = v.context,
+                songId = songId,
+                title = item.albumTitle() ?: "",
+                artist = item.albumSubTitle() ?: "",
+                coverUrl = item.albumCover ?: ""
+            )
         }
 
         holder.itemView.setOnClickListener { v: View? ->

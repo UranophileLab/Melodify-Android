@@ -16,6 +16,7 @@ import dev.melodify.uranophilelab.R
 import dev.melodify.uranophilelab.activities.ListActivity
 import dev.melodify.uranophilelab.adapters.ActivityMainPlaylistAdapter.PlaylistAdapterViewHolder
 import dev.melodify.uranophilelab.model.AlbumItem
+import dev.melodify.uranophilelab.utils.AnimatedMenuHelper
 
 class ActivityMainPlaylistAdapter(private val data: MutableList<AlbumItem?>) :
     RecyclerView.Adapter<PlaylistAdapterViewHolder?>() {
@@ -49,6 +50,13 @@ class ActivityMainPlaylistAdapter(private val data: MutableList<AlbumItem?>) :
         val coverUrl: String? = item.albumCover
         if (coverUrl != null && coverUrl.isNotEmpty() && coverUrl != "<shimmer>" && imageView != null) {
             Glide.with(imageView.context).load(Uri.parse(coverUrl)).into(imageView)
+        }
+
+        holder.itemView.findViewById<View?>(R.id.more)?.setOnClickListener { v ->
+            AnimatedMenuHelper.showAnimatedAlbumMenu(
+                context = v.context,
+                albumItem = item
+            )
         }
 
         holder.itemView.setOnClickListener { v: View? ->

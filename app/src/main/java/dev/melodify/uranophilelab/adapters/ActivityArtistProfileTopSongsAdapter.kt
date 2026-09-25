@@ -16,6 +16,7 @@ import com.bumptech.glide.Glide
 import androidx.core.net.toUri
 import android.widget.Toast
 import androidx.core.content.ContextCompat
+import dev.melodify.uranophilelab.utils.AnimatedMenuHelper
 
 class ActivityArtistProfileTopSongsAdapter(private val data: MutableList<Song?>) :
     RecyclerView.Adapter<ActivityArtistProfileTopSongsAdapter.ViewHolder?>() {
@@ -62,25 +63,18 @@ class ActivityArtistProfileTopSongsAdapter(private val data: MutableList<Song?>)
 
         itemView.more.setOnClickListener { v ->
             val song = data[position] ?: return@setOnClickListener
-            val popup = androidx.appcompat.widget.PopupMenu(v.context, v)
-            popup.menu.add("Play Next")
-            popup.menu.add("Add to Queue")
-            popup.setOnMenuItemClickListener { menuItem ->
-                when (menuItem.title) {
-                    "Play Next" -> {
-                        MusicPlayerManager.playNext(song.id)
-                        Toast.makeText(v.context, "Song will play next", Toast.LENGTH_SHORT).show()
-                        true
-                    }
-                    "Add to Queue" -> {
-                        MusicPlayerManager.addToQueue(song.id)
-                        Toast.makeText(v.context, "Song added to queue", Toast.LENGTH_SHORT).show()
-                        true
-                    }
-                    else -> false
-                }
-            }
-            popup.show()
+            val songId = song.id ?: return@setOnClickListener
+            val images = song.image
+            val coverUrl = if (images.isNullOrEmpty()) "" else images[images.size - 1]?.url ?: ""
+            val primaryArtist = song.artists?.primary?.firstOrNull()?.name() ?: song.label ?: ""
+            AnimatedMenuHelper.showAnimatedSongMenu(
+                context = v.context,
+                songId = songId,
+                title = song.name(),
+                artist = primaryArtist,
+                coverUrl = coverUrl,
+                albumId = song.album?.id
+            )
         }
 
         holder.itemView.setOnClickListener { view: View? ->

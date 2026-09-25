@@ -17,6 +17,7 @@ import dev.melodify.uranophilelab.R
 import dev.melodify.uranophilelab.activities.MusicOverviewActivity
 import dev.melodify.uranophilelab.model.history.SongHistoryItem
 import dev.melodify.uranophilelab.records.SongResponse.Song
+import dev.melodify.uranophilelab.utils.AnimatedMenuHelper
 import dev.melodify.uranophilelab.utils.MusicPlayerManager
 import dev.melodify.uranophilelab.utils.SharedPreferenceManager
 
@@ -112,25 +113,16 @@ class ActivityListSongsItemAdapter(private val data: MutableList<Song>) :
         val moreIcon = holder.moreIcon
         if (moreIcon != null) {
             moreIcon.setOnClickListener { v ->
-                val popup = PopupMenu(v.context, v)
-                popup.menu.add("Play Next")
-                popup.menu.add("Add to Queue")
-                popup.setOnMenuItemClickListener { menuItem ->
-                    when (menuItem.title) {
-                        "Play Next" -> {
-                            MusicPlayerManager.playNext(song.id)
-                            Toast.makeText(v.context, "Song will play next", Toast.LENGTH_SHORT).show()
-                            true
-                        }
-                        "Add to Queue" -> {
-                            MusicPlayerManager.addToQueue(song.id)
-                            Toast.makeText(v.context, "Song added to queue", Toast.LENGTH_SHORT).show()
-                            true
-                        }
-                        else -> false
-                    }
-                }
-                popup.show()
+                val songId = song.id ?: return@setOnClickListener
+                val primaryArtist = if (artistsList.isNotEmpty()) artistsList[0]?.name() ?: "" else ""
+                AnimatedMenuHelper.showAnimatedSongMenu(
+                    context = v.context,
+                    songId = songId,
+                    title = song.name(),
+                    artist = primaryArtist,
+                    coverUrl = imgUrl,
+                    albumId = song.album?.id
+                )
             }
         }
 

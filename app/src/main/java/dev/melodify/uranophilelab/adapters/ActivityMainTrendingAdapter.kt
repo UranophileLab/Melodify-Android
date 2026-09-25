@@ -14,6 +14,7 @@ import dev.melodify.uranophilelab.R
 import dev.melodify.uranophilelab.activities.ListActivity
 import dev.melodify.uranophilelab.activities.MusicOverviewActivity
 import dev.melodify.uranophilelab.model.AlbumItem
+import dev.melodify.uranophilelab.utils.AnimatedMenuHelper
 
 import dev.melodify.uranophilelab.utils.MusicPlayerManager
 
@@ -47,6 +48,23 @@ class ActivityMainTrendingAdapter(private val data: List<AlbumItem?>) :
             }
         } else {
             holder.cover?.setImageResource(R.drawable.baseline_album_24)
+        }
+
+        holder.itemView.findViewById<View?>(R.id.more)?.setOnClickListener { v ->
+            if (item.type == "song") {
+                AnimatedMenuHelper.showAnimatedSongMenu(
+                    context = v.context,
+                    songId = item.id ?: "",
+                    title = item.albumTitle() ?: "",
+                    artist = item.albumSubTitle() ?: "",
+                    coverUrl = item.albumCover ?: ""
+                )
+            } else {
+                AnimatedMenuHelper.showAnimatedAlbumMenu(
+                    context = v.context,
+                    albumItem = item
+                )
+            }
         }
 
         holder.itemView.setOnClickListener { view ->
