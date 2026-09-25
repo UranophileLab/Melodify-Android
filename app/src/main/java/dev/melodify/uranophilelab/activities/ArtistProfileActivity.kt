@@ -157,7 +157,7 @@ class ArtistProfileActivity : AppCompatActivity() {
 
         val rawInitialImg = artistItem.image ?: ""
         val initialImgUrl = if (rawInitialImg.contains("50x50")) rawInitialImg.replace("50x50", "500x500") else rawInitialImg
-        val isInitialInvalid = initialImgUrl.isBlank() || initialImgUrl.contains("default") || initialImgUrl.contains("artist-default")
+        val isInitialInvalid = initialImgUrl.isBlank() || initialImgUrl == "<shimmer>" || initialImgUrl.contains("default") || initialImgUrl.contains("artist-default")
         if (!isInitialInvalid) {
             Glide.with(binding!!.artistImg.context).load(initialImgUrl.toUri())
                 .placeholder(R.drawable.headphone)
@@ -177,7 +177,7 @@ class ArtistProfileActivity : AppCompatActivity() {
             val data = artistSearch!!.data!!
             val rawImg = if (!data.image.isNullOrEmpty()) data.image[data.image.size - 1]?.url ?: "" else ""
             val imgUrl = if (rawImg.contains("50x50")) rawImg.replace("50x50", "500x500") else rawImg
-            val isInvalid = imgUrl.isBlank() || imgUrl.contains("default") || imgUrl.contains("artist-default")
+            val isInvalid = imgUrl.isBlank() || imgUrl == "<shimmer>" || imgUrl.contains("default") || imgUrl.contains("artist-default")
             if (!isInvalid) {
                 Glide.with(binding!!.artistImg.context).load(imgUrl.toUri())
                     .placeholder(R.drawable.headphone)

@@ -56,7 +56,7 @@ class ActivityArtistProfileTopSongsAdapter(private val data: MutableList<Song?>)
         itemView.coverPlayed.text = String.format("%s | %s", data[position]!!.year, data[position]!!.label)
         val images = data[position]?.image
         val url = if (images.isNullOrEmpty()) "" else images[images.size - 1]?.url ?: ""
-        if (url.isNotEmpty()) {
+        if (url.isNotEmpty() && url != "<shimmer>") {
             Glide.with(itemView.coverImage.context).load(url.toUri()).into(itemView.coverImage)
         }
 

@@ -184,7 +184,7 @@ class ActivitySearchListItemAdapter(private val data: MutableList<SearchListItem
             val imageUrl = if (!rawImageUrl.isNullOrEmpty() && rawImageUrl.contains("50x50")) {
                 rawImageUrl.replace("50x50", "500x500")
             } else rawImageUrl ?: ""
-            val isInvalid = imageUrl.isBlank() || imageUrl.contains("default") || imageUrl.contains("artist-default")
+            val isInvalid = imageUrl.isBlank() || imageUrl == "<shimmer>" || imageUrl.contains("default") || imageUrl.contains("artist-default")
             if (!isInvalid) {
                 Glide.with(coverImageView.context).load(imageUrl)
                     .placeholder(R.drawable.headphone)
@@ -220,16 +220,19 @@ class ActivitySearchListItemAdapter(private val data: MutableList<SearchListItem
 
                 SearchListItem.Type.ALBUM -> {
                     val albumItem =
-                        AlbumItem(parsedTitle, parsedSubtitle, item.coverImage, item.id)
+                        AlbumItem(parsedTitle, parsedSubtitle, item.coverImage, item.id, "album")
                     intent.putExtra("data", Gson().toJson(albumItem))
                     intent.putExtra("type", "album")
+                    intent.putExtra("id", item.id)
                     intent.setClass(holder.itemView.context, ListActivity::class.java)
                 }
 
                 SearchListItem.Type.PLAYLIST -> {
                     val albumItem =
-                        AlbumItem(parsedTitle, parsedSubtitle, item.coverImage, item.id)
+                        AlbumItem(parsedTitle, parsedSubtitle, item.coverImage, item.id, "playlist")
                     intent.putExtra("data", Gson().toJson(albumItem))
+                    intent.putExtra("type", "playlist")
+                    intent.putExtra("id", item.id)
                     intent.setClass(holder.itemView.context, ListActivity::class.java)
                 }
 

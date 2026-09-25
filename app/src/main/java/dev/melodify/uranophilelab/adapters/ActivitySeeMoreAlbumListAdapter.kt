@@ -58,7 +58,7 @@ class ActivitySeeMoreAlbumListAdapter :
         coverPlayed.text = String.format("%s | %s", data[position]!!.year, data[position]!!.language)
         val images = data[position]?.image
         val url = if (images.isNullOrEmpty()) "" else images[images.size - 1]?.url ?: ""
-        if (url.isNotEmpty()) {
+        if (url.isNotEmpty() && url != "<shimmer>") {
             Glide.with(coverImage.context).load(url.toUri()).into(coverImage)
         }
 
@@ -68,8 +68,8 @@ class ActivitySeeMoreAlbumListAdapter :
             val itemUrl = if (itemImages.isNullOrEmpty()) "" else itemImages[itemImages.size - 1]?.url ?: ""
 
             val albumItem = AlbumItem(
-                item.id,
                 item.name(),
+                "${item.year} | ${item.language ?: ""}",
                 itemUrl,
                 item.id
             )
@@ -87,7 +87,8 @@ class ActivitySeeMoreAlbumListAdapter :
     }
 
     override fun getItemViewType(position: Int): Int {
-        return 1
+        val item = data?.getOrNull(position)
+        return if (item?.id == "<shimmer>") 0 else 1
     }
 
     fun add(da: AlbumsSearch.Data.Results?) {

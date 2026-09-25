@@ -7,7 +7,8 @@ data class AlbumItem(
     val albumTitle: String?,
     val albumSubTitle: String?,
     val albumCover: String?,
-    val id: String?
+    val id: String?,
+    val type: String? = "album"
 ) {
     fun albumTitle(): String {
         return TextParserUtil.parseHtmlText(albumTitle)

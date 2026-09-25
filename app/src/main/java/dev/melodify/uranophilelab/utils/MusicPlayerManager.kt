@@ -292,37 +292,41 @@ object MusicPlayerManager {
             .setOnlyAlertOnce(true)
 
         try {
-            val target = object : CustomTarget<Bitmap>() {
-                override fun onResourceReady(bitmap: Bitmap, transition: Transition<in Bitmap>?) {
-                    try {
-                        Palette.from(bitmap).generate { palette ->
-                            val textSwatch = palette?.dominantSwatch
-                            if (textSwatch != null) {
-                                IMAGE_BG_COLOR = textSwatch.rgb
-                                TEXT_ON_IMAGE_COLOR = textSwatch.titleTextColor
-                                TEXT_ON_IMAGE_COLOR1 = textSwatch.bodyTextColor
+            if (!IMAGE_URL.isNullOrBlank() && IMAGE_URL != "<shimmer>") {
+                val target = object : CustomTarget<Bitmap>() {
+                    override fun onResourceReady(bitmap: Bitmap, transition: Transition<in Bitmap>?) {
+                        try {
+                            Palette.from(bitmap).generate { palette ->
+                                val textSwatch = palette?.dominantSwatch
+                                if (textSwatch != null) {
+                                    IMAGE_BG_COLOR = textSwatch.rgb
+                                    TEXT_ON_IMAGE_COLOR = textSwatch.titleTextColor
+                                    TEXT_ON_IMAGE_COLOR1 = textSwatch.bodyTextColor
+                                }
                             }
-                        }
-                        val metadataWithArt = MediaMetadataCompat.Builder()
-                            .putString(MediaMetadataCompat.METADATA_KEY_TITLE, MUSIC_TITLE)
-                            .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, MUSIC_DESCRIPTION)
-                            .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, duration)
-                            .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, bitmap)
-                            .putBitmap(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON, bitmap)
-                            .build()
-                        mediaSession?.setMetadata(metadataWithArt)
+                            val metadataWithArt = MediaMetadataCompat.Builder()
+                                .putString(MediaMetadataCompat.METADATA_KEY_TITLE, MUSIC_TITLE)
+                                .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, MUSIC_DESCRIPTION)
+                                .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, duration)
+                                .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, bitmap)
+                                .putBitmap(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON, bitmap)
+                                .build()
+                            mediaSession?.setMetadata(metadataWithArt)
 
-                        builder.setLargeIcon(bitmap)
-                        showBasicNotification(builder, playPauseButton != R.drawable.play_arrow_24px)
-                    } catch (e: Exception) {
-                        showBasicNotification(builder, playPauseButton != R.drawable.play_arrow_24px)
+                            builder.setLargeIcon(bitmap)
+                            showBasicNotification(builder, playPauseButton != R.drawable.play_arrow_24px)
+                        } catch (e: Exception) {
+                            showBasicNotification(builder, playPauseButton != R.drawable.play_arrow_24px)
+                        }
                     }
+                    override fun onLoadFailed(errorDrawable: Drawable?) { showBasicNotification(builder, playPauseButton != R.drawable.play_arrow_24px) }
+                    override fun onLoadCleared(placeholder: Drawable?) {}
                 }
-                override fun onLoadFailed(errorDrawable: Drawable?) { showBasicNotification(builder, playPauseButton != R.drawable.play_arrow_24px) }
-                override fun onLoadCleared(placeholder: Drawable?) {}
+                notificationTarget = target
+                Glide.with(ctx).asBitmap().load(IMAGE_URL).into(target)
+            } else {
+                showBasicNotification(builder, playPauseButton != R.drawable.play_arrow_24px)
             }
-            notificationTarget = target
-            Glide.with(ctx).asBitmap().load(IMAGE_URL).into(target)
         } catch (e: Exception) {
             showBasicNotification(builder, playPauseButton != R.drawable.play_arrow_24px)
         }

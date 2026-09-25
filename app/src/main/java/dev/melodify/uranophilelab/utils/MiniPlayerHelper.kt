@@ -121,7 +121,7 @@ object MiniPlayerHelper {
         titleText?.text = MusicPlayerManager.MUSIC_TITLE
         descText?.text = MusicPlayerManager.MUSIC_DESCRIPTION
         
-        if (coverImage != null && !MusicPlayerManager.IMAGE_URL.isNullOrBlank()) {
+        if (coverImage != null && !MusicPlayerManager.IMAGE_URL.isNullOrBlank() && MusicPlayerManager.IMAGE_URL != "<shimmer>") {
             try {
                 Glide.with(coverImage.context).load(MusicPlayerManager.IMAGE_URL!!.toUri()).into(coverImage)
             } catch (e: Exception) {
@@ -182,7 +182,7 @@ object MiniPlayerHelper {
         // Setup Now Playing
         nowPlayingTitle.text = MusicPlayerManager.MUSIC_TITLE
         nowPlayingArtist.text = MusicPlayerManager.MUSIC_DESCRIPTION
-        if (!MusicPlayerManager.IMAGE_URL.isNullOrBlank()) {
+        if (!MusicPlayerManager.IMAGE_URL.isNullOrBlank() && MusicPlayerManager.IMAGE_URL != "<shimmer>") {
             try {
                 Glide.with(nowPlayingCover.context).load(MusicPlayerManager.IMAGE_URL!!.toUri()).into(nowPlayingCover)
             } catch (e: Exception) {}

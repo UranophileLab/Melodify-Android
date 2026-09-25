@@ -34,9 +34,9 @@ class SavedLibrariesAdapter(private val data: MutableList<Library?>) :
         holder.artist.text = library.description
 
         // Use first song's image if library cover is blank
-        val coverUrl = library.image?.takeIf { it.isNotBlank() }
-            ?: library.songs?.firstOrNull { it?.image?.isNotBlank() == true }?.image
-        if (!coverUrl.isNullOrBlank()) {
+        val coverUrl = library.image?.takeIf { it.isNotBlank() && it != "<shimmer>" }
+            ?: library.songs?.firstOrNull { it?.image?.isNotBlank() == true && it.image != "<shimmer>" }?.image
+        if (!coverUrl.isNullOrBlank() && coverUrl != "<shimmer>") {
             holder.coverImage?.let { Glide.with(it.context).load(coverUrl.toUri()).into(it) }
         }
 

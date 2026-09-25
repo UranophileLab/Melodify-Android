@@ -47,7 +47,7 @@ class ActivityMainPopularSongs(private val data: MutableList<AlbumItem?>) :
 
         val coverImage = holder.itemView.findViewById<ImageView?>(R.id.coverImage)
         val coverUrl = item.albumCover
-        if (!coverUrl.isNullOrEmpty() && coverImage != null) {
+        if (!coverUrl.isNullOrEmpty() && coverUrl != "<shimmer>" && coverImage != null) {
             Glide.with(coverImage.context).load(coverUrl.toUri()).into(coverImage)
         }
 

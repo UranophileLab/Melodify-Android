@@ -49,7 +49,7 @@ class ActivityMainArtistsItemAdapter(private val data: MutableList<ArtistsSearch
         val images = item.image
         val rawUrl = if (images.isNullOrEmpty()) "" else images[images.size - 1]?.url ?: ""
         val url = if (rawUrl.contains("50x50")) rawUrl.replace("50x50", "500x500") else rawUrl
-        val isInvalid = url.isBlank() || url.contains("default") || url.contains("artist-default")
+        val isInvalid = url.isBlank() || url == "<shimmer>" || url.contains("default") || url.contains("artist-default")
         if (imageView != null) {
             if (!isInvalid) {
                 Glide.with(imageView.context).load(url.toUri())

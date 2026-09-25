@@ -99,7 +99,7 @@ class ActivityListSongsItemAdapter(private val data: MutableList<Song>) :
         val imgUrl = if (images.isNullOrEmpty()) "" else images[images.size - 1]?.url ?: ""
         val coverImage = holder.coverImage
         if (coverImage != null) {
-            if (imgUrl.isNotEmpty()) {
+            if (imgUrl.isNotEmpty() && imgUrl != "<shimmer>") {
                 Glide.with(coverImage.context).load(imgUrl)
                     .placeholder(R.drawable.headphone)
                     .fitCenter()
