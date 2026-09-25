@@ -40,6 +40,19 @@
             android:textSize="@dimen/_11ssp"
             tools:text="Trending Song or Album" />
 
+        <ImageView
+            android:id="@+id/more"
+            android:layout_width="@dimen/_24sdp"
+            android:layout_height="@dimen/_24sdp"
+            android:layout_marginEnd="@dimen/_6sdp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="@dimen/_4sdp"
+            android:src="@drawable/more_vert_24px"
+            app:tint="@color/text_light"
+            android:contentDescription="More options" />
+
     </LinearLayout>
 
 </com.google.android.material.card.MaterialCardView>

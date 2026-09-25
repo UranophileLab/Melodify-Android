@@ -660,6 +660,17 @@ class ListActivity : AppCompatActivity() {
             binding!!.albumSubTitle.text = library.description
             if (library.image?.isNotBlank() == true) loadArtworkAndApplyDynamicTheme(library.image)
 
+            if (!library.name.isNullOrBlank()) {
+                SharedPreferenceManager.getInstance(this).addPlaylistToHistory(
+                    AlbumHistoryItem(
+                        id = library.id,
+                        title = library.name,
+                        subtitle = library.description ?: "Playlist",
+                        imageUrl = library.image
+                    )
+                )
+            }
+
             val songs = library.songs ?: mutableListOf()
             binding!!.recyclerView.setAdapter(
                 UserCreatedSongsListAdapter(
@@ -687,14 +698,20 @@ class ListActivity : AppCompatActivity() {
             loadArtworkAndApplyDynamicTheme(coverUrl)
         }
         if (title.isNotBlank()) {
-            SharedPreferenceManager.getInstance(this).addAlbumToHistory(
-                AlbumHistoryItem(
-                    id = if (!data.id.isNullOrBlank()) data.id else albumItem?.id,
-                    title = title,
-                    subtitle = subtitle,
-                    imageUrl = coverUrl
-                )
+            val isPlaylist = intent.getStringExtra("type") == "playlist" ||
+                    albumItem?.type == "playlist" ||
+                    intent.getBooleanExtra("createdByUser", false)
+            val historyItem = AlbumHistoryItem(
+                id = if (!data.id.isNullOrBlank()) data.id else albumItem?.id,
+                title = title,
+                subtitle = subtitle,
+                imageUrl = coverUrl
             )
+            if (isPlaylist) {
+                SharedPreferenceManager.getInstance(this).addPlaylistToHistory(historyItem)
+            } else {
+                SharedPreferenceManager.getInstance(this).addAlbumToHistory(historyItem)
+            }
         }
         val rawSongs = data.songs ?: mutableListOf()
         val songs = rawSongs.filterNotNull().filter { it.id != "dsf7m88e" && it.name != "This is a sample trailer - testing" }.toMutableList()
@@ -742,6 +759,16 @@ class ListActivity : AppCompatActivity() {
         val coverUrl = if (!imageList.isNullOrEmpty()) imageList[imageList.size - 1]?.url ?: "" else albumItem?.albumCover ?: ""
         if (coverUrl.isNotEmpty() && coverUrl != "<shimmer>") {
             loadArtworkAndApplyDynamicTheme(coverUrl)
+        }
+        if (title.isNotBlank()) {
+            SharedPreferenceManager.getInstance(this).addPlaylistToHistory(
+                AlbumHistoryItem(
+                    id = if (!data.id.isNullOrBlank()) data.id else albumItem?.id,
+                    title = title,
+                    subtitle = subtitle,
+                    imageUrl = coverUrl
+                )
+            )
         }
         val rawSongs = data.songs ?: mutableListOf()
         val songs = rawSongs.filterNotNull().filter { it.id != "dsf7m88e" && it.name != "This is a sample trailer - testing" }.toMutableList()

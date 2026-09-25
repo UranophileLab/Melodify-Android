@@ -38,6 +38,22 @@
                 android:background="@color/spotify_dark_green"
                 tools:srcCompat="@drawable/ic_launcher_foreground" />
 
+            <ImageView
+                android:id="@+id/more"
+                android:layout_width="@dimen/_22sdp"
+                android:layout_height="@dimen/_22sdp"
+                android:layout_gravity="top|end"
+                android:layout_margin="@dimen/_4sdp"
+                android:background="@drawable/bg_circular_artwork"
+                android:backgroundTint="#80000000"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackgroundBorderless"
+                android:padding="@dimen/_3sdp"
+                android:src="@drawable/more_vert_24px"
+                app:tint="@color/text_light"
+                android:contentDescription="More options" />
+
         </com.google.android.material.card.MaterialCardView>
 
         <TextView

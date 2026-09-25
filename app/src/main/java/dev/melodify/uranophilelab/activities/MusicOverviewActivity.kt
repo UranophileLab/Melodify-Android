@@ -1048,7 +1048,7 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
             }
 
             val p = MusicPlayerManager.player ?: return
-            
+
             val duration: Long = p.duration
             val currentPosition: Long = p.currentPosition
 
@@ -1056,7 +1056,7 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
                 val progress = ((currentPosition.toFloat() / duration) * 100).toInt()
                 binding?.seekbar?.progress = progress
                 binding?.elapsedDuration?.text = convertDuration(currentPosition)
-                
+
                 lyricsAdapter?.updateTime(currentPosition, currentLyricsRecyclerView)
             }
         } catch (e: Exception) {
@@ -1073,17 +1073,17 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
     private fun updateTrackInfo() {
         mHandler.removeCallbacks(mUpdateTimeTask)
         if (isFinishing || isDestroyed || binding == null) return
-        
+
         val currentTitle = binding?.title?.text?.toString() ?: ""
         if (currentTitle != MusicPlayerManager.MUSIC_TITLE) {
             binding?.title?.text = MusicPlayerManager.MUSIC_TITLE
-            
+
             val currentTrackData = MusicPlayerManager.CURRENT_TRACK?.data?.getOrNull(0)
             if (currentTrackData != null && currentTitle.isNotEmpty()) {
                 fetchLyricsForCurrentSong(currentTrackData)
             }
         }
-        
+
         if (binding?.description?.text?.toString() != MusicPlayerManager.MUSIC_DESCRIPTION) {
             binding?.description?.text = MusicPlayerManager.MUSIC_DESCRIPTION
         }

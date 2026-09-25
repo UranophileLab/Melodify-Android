@@ -24,6 +24,7 @@ import dev.melodify.uranophilelab.model.BasicDataRecord
 import dev.melodify.uranophilelab.model.SearchListItem
 import dev.melodify.uranophilelab.model.history.SongHistoryItem
 import dev.melodify.uranophilelab.records.sharedpref.SavedLibraries
+import dev.melodify.uranophilelab.utils.AnimatedMenuHelper
 import dev.melodify.uranophilelab.utils.MusicPlayerManager
 import dev.melodify.uranophilelab.utils.SharedPreferenceManager
 
@@ -110,65 +111,31 @@ class ActivitySearchListItemAdapter(private val data: MutableList<SearchListItem
                 SearchListItem.Type.SONG -> {
                     moreIcon.visibility = View.VISIBLE
                     moreIcon.setOnClickListener { v ->
-                        val popup = PopupMenu(v.context, v)
-                        popup.menu.add("Play Next")
-                        popup.menu.add("Add to Queue")
-                        popup.setOnMenuItemClickListener { menuItem ->
-                            when (menuItem.title) {
-                                "Play Next" -> {
-                                    MusicPlayerManager.playNext(item.id)
-                                    Toast.makeText(v.context, "Song will play next", Toast.LENGTH_SHORT).show()
-                                    true
-                                }
-                                "Add to Queue" -> {
-                                    MusicPlayerManager.addToQueue(item.id)
-                                    Toast.makeText(v.context, "Song added to queue", Toast.LENGTH_SHORT).show()
-                                    true
-                                }
-                                else -> false
-                            }
-                        }
-                        popup.show()
+                        val songId = item.id ?: return@setOnClickListener
+                        AnimatedMenuHelper.showAnimatedSongMenu(
+                            context = v.context,
+                            songId = songId,
+                            title = parsedTitle,
+                            artist = parsedSubtitle,
+                            coverUrl = item.coverImage ?: ""
+                        )
                     }
                 }
 
                 SearchListItem.Type.ALBUM, SearchListItem.Type.PLAYLIST -> {
                     moreIcon.visibility = View.VISIBLE
                     moreIcon.setOnClickListener { v ->
-                        val popup = PopupMenu(v.context, v)
-                        val isSaved = !item.id.isNullOrEmpty() && isLibrarySaved(item.id, prefs.savedLibrariesData)
-                        popup.menu.add(if (isSaved) "Remove from Library" else "Add to Library")
-                        popup.menu.add("Play")
-                        popup.setOnMenuItemClickListener { menuItem ->
-                            when (menuItem.title) {
-                                "Add to Library", "Remove from Library" -> {
-                                    if (!item.id.isNullOrEmpty()) {
-                                        val isAlbum = item.type == SearchListItem.Type.ALBUM
-                                        val newSavedState = toggleSavedLibrary(
-                                            id = item.id,
-                                            title = parsedTitle,
-                                            subtitle = parsedSubtitle,
-                                            coverUrl = item.coverImage ?: "",
-                                            isAlbum = isAlbum,
-                                            prefs = prefs
-                                        )
-                                        favIcon?.setImageResource(if (newSavedState) R.drawable.favorite_24px else R.drawable.favorite_outline_24px)
-                                        Toast.makeText(
-                                            v.context,
-                                            if (newSavedState) "Added to Library" else "Removed from Library",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    }
-                                    true
-                                }
-                                "Play" -> {
-                                    holder.itemView.performClick()
-                                    true
-                                }
-                                else -> false
-                            }
-                        }
-                        popup.show()
+                        val albumItem = AlbumItem(
+                            parsedTitle,
+                            parsedSubtitle,
+                            item.coverImage,
+                            item.id,
+                            if (item.type == SearchListItem.Type.PLAYLIST) "playlist" else "album"
+                        )
+                        AnimatedMenuHelper.showAnimatedAlbumMenu(
+                            context = v.context,
+                            albumItem = albumItem
+                        )
                     }
                 }
 
