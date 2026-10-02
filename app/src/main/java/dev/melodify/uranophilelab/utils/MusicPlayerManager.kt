@@ -59,7 +59,12 @@ object MusicPlayerManager {
 
     var CURRENT_TRACK: SongResponse? = null
     var player: ExoPlayer? = null
-    var musicService: dev.melodify.uranophilelab.services.MusicService? = null
+    private var musicServiceRef: java.lang.ref.WeakReference<dev.melodify.uranophilelab.services.MusicService>? = null
+    var musicService: dev.melodify.uranophilelab.services.MusicService?
+        get() = musicServiceRef?.get()
+        set(value) {
+            musicServiceRef = value?.let { java.lang.ref.WeakReference(it) }
+        }
     private var mediaSession: MediaSessionCompat? = null
     var latestNotification: android.app.Notification? = null
 

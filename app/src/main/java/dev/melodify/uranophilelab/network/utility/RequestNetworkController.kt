@@ -15,67 +15,19 @@ import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.Response
 import java.io.IOException
-import java.security.SecureRandom
-import java.security.cert.CertificateException
-import java.security.cert.X509Certificate
 import java.util.concurrent.TimeUnit
-import javax.net.ssl.HostnameVerifier
-import javax.net.ssl.SSLContext
-import javax.net.ssl.SSLSession
-import javax.net.ssl.TrustManager
-import javax.net.ssl.X509TrustManager
 
 class RequestNetworkController {
     protected var client: OkHttpClient? = null
 
     private fun getOkHttpClient(): OkHttpClient {
         if (client == null) {
-            val builder = OkHttpClient.Builder()
-
-            try {
-                val trustAllCerts: Array<TrustManager> =
-                    arrayOf<TrustManager>(object : X509TrustManager {
-                        @Throws(CertificateException::class)
-                        override fun checkClientTrusted(
-                            chain: Array<X509Certificate?>?,
-                            authType: String?
-                        ) {
-                        }
-
-                        @Throws(CertificateException::class)
-                        override fun checkServerTrusted(
-                            chain: Array<X509Certificate?>?,
-                            authType: String?
-                        ) {
-                        }
-
-                        override fun getAcceptedIssuers(): Array<X509Certificate?> {
-                            return arrayOf<X509Certificate?>()
-                        }
-                    }
-                    )
-
-                val sslContext = SSLContext.getInstance("TLS")
-                sslContext.init(null, trustAllCerts, SecureRandom())
-                val sslSocketFactory = sslContext.socketFactory
-                builder.sslSocketFactory(
-                    sslSocketFactory,
-                    (trustAllCerts[0] as X509TrustManager?)!!
-                )
-                builder.connectTimeout(SOCKET_TIMEOUT.toLong(), TimeUnit.MILLISECONDS)
-                builder.readTimeout(READ_TIMEOUT.toLong(), TimeUnit.MILLISECONDS)
-                builder.writeTimeout(READ_TIMEOUT.toLong(), TimeUnit.MILLISECONDS)
-                builder.hostnameVerifier(object : HostnameVerifier {
-                    override fun verify(hostname: String?, session: SSLSession?): Boolean {
-                        return true
-                    }
-                })
-            } catch (e: Exception) {
-            }
-
-            client = builder.build()
+            client = OkHttpClient.Builder()
+                .connectTimeout(SOCKET_TIMEOUT.toLong(), TimeUnit.MILLISECONDS)
+                .readTimeout(READ_TIMEOUT.toLong(), TimeUnit.MILLISECONDS)
+                .writeTimeout(READ_TIMEOUT.toLong(), TimeUnit.MILLISECONDS)
+                .build()
         }
-
         return client!!
     }
 

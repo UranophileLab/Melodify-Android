@@ -14,19 +14,20 @@ class AboutActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityAboutBinding.inflate(layoutInflater)
-        setContentView(binding!!.getRoot())
+        val b = ActivityAboutBinding.inflate(layoutInflater)
+        binding = b
+        setContentView(b.root)
 
-        setSupportActionBar(binding!!.toolbar)
-        binding!!.toolbar.setNavigationOnClickListener { _: android.view.View? -> finish() }
+        setSupportActionBar(b.toolbar)
+        b.toolbar.setNavigationOnClickListener { finish() }
 
-        binding!!.versionTxt.titleTextView?.text = BuildConfig.VERSION_NAME
-        binding!!.versionTxt.setOnClickListener {
+        b.versionTxt.titleTextView?.text = BuildConfig.VERSION_NAME
+        b.versionTxt.setOnClickListener {
             Toast.makeText(this@AboutActivity, "Checking for updates...", Toast.LENGTH_SHORT).show()
             UpdateManager.checkForUpdates(this@AboutActivity, isManualCheck = true)
         }
 
-        binding!!.licenseTxt.setOnClickListener {
+        b.licenseTxt.setOnClickListener {
             val licenseText = try {
                 assets.open("LICENSE").bufferedReader().use { it.readText() }
             } catch (_: Exception) {

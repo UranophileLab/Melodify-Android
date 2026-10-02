@@ -7,11 +7,18 @@ import android.os.Binder
 import android.os.IBinder
 import android.util.Log
 import dev.melodify.uranophilelab.utils.MusicPlayerManager
+import java.lang.ref.WeakReference
 
 class MusicService : Service() {
     private val mBinder: IBinder = MyBinder()
 
-    var actionPlaying: ActionPlaying? = null
+    private var actionPlayingRef: WeakReference<ActionPlaying>? = null
+
+    var actionPlaying: ActionPlaying?
+        get() = actionPlayingRef?.get()
+        set(value) {
+            actionPlayingRef = value?.let { WeakReference(it) }
+        }
 
     override fun onCreate() {
         super.onCreate()

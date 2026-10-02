@@ -131,7 +131,13 @@ class SharedPreferenceManager private constructor(context: Context) {
     }
 
     private fun removeKey(key: String?) {
-        dao.deleteByKey(key)
+        ioExecutor.execute {
+            try {
+                dao.deleteByKey(key)
+            } catch (e: Exception) {
+                Log.e("SharedPreferenceManager", "Error deleting key $key", e)
+            }
+        }
     }
 
     var homeSongsRecommended: SongSearch?
