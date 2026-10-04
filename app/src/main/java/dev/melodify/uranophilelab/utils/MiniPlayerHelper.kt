@@ -221,18 +221,20 @@ object MiniPlayerHelper {
                             val adapter = dev.melodify.uranophilelab.adapters.QueueSongsAdapter(
                                 songList,
                                 onSongClick = { itemIndex ->
-                                    val absoluteIndex = pos + 1 + itemIndex
-                                    if (absoluteIndex < queue.size) {
-                                        MusicPlayerManager.track_position = absoluteIndex
-                                        MusicPlayerManager.MUSIC_ID = queue[absoluteIndex]
+                                    val songId = songList.getOrNull(itemIndex)?.id
+                                    val targetPos = if (songId != null) queue.indexOf(songId) else -1
+                                    if (targetPos in queue.indices) {
+                                        MusicPlayerManager.track_position = targetPos
+                                        MusicPlayerManager.MUSIC_ID = queue[targetPos]
                                         MusicPlayerManager.playTrack()
                                         bottomSheetDialog.dismiss()
                                     }
                                 },
                                 onRemoveClick = { itemIndex ->
-                                    val absoluteIndex = pos + 1 + itemIndex
-                                    if (absoluteIndex < queue.size) {
-                                        queue.removeAt(absoluteIndex)
+                                    val songId = songList.getOrNull(itemIndex)?.id
+                                    val targetPos = if (songId != null) queue.indexOf(songId) else -1
+                                    if (targetPos in queue.indices && itemIndex in songList.indices) {
+                                        queue.removeAt(targetPos)
                                         songList.removeAt(itemIndex)
                                         queueRecyclerView.adapter?.notifyItemRemoved(itemIndex)
                                         if (songList.isEmpty()) {
@@ -243,13 +245,13 @@ object MiniPlayerHelper {
                                     }
                                 },
                                 onOrderChanged = { fromItem, toItem ->
-                                    // fromItem / toItem are indices within the adapter's songList (upcoming only)
-                                    // Map back to absolute positions in the full queue
-                                    val absoluteFrom = pos + 1 + fromItem
-                                    val absoluteTo   = pos + 1 + toItem
-                                    if (absoluteFrom in queue.indices && absoluteTo in queue.indices) {
-                                        val id = queue.removeAt(absoluteFrom)
-                                        queue.add(absoluteTo, id)
+                                    val fromId = songList.getOrNull(fromItem)?.id
+                                    val toId = songList.getOrNull(toItem)?.id
+                                    val fromPos = if (fromId != null) queue.indexOf(fromId) else -1
+                                    val toPos = if (toId != null) queue.indexOf(toId) else -1
+                                    if (fromPos in queue.indices && toPos in queue.indices) {
+                                        val id = queue.removeAt(fromPos)
+                                        queue.add(toPos, id)
                                     }
                                 }
                             )

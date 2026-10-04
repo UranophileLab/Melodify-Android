@@ -1091,16 +1091,20 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
             loadArtworkAndApplyDynamicTheme(MusicPlayerManager.IMAGE_URL)
         }
         val p = MusicPlayerManager.player ?: return
-        binding?.seekbar?.progress = ((p.currentPosition.toFloat() / p.duration) * 100).toInt()
+        if (p.duration > 0) {
+            val progress = ((p.currentPosition.toFloat() / p.duration) * 100).toInt().coerceIn(0, 100)
+            val secondaryProgress = ((p.bufferedPosition.toFloat() / p.duration) * 100).toInt().coerceIn(0, 100)
+            binding?.seekbar?.progress = progress
+            binding?.seekbar?.secondaryProgress = secondaryProgress
 
-        binding?.seekbar?.secondaryProgress = ((p.bufferedPosition.toFloat() / p.duration) * 100).toInt()
-
-        val currentDuration: Long = p.currentPosition
-        binding?.elapsedDuration?.text = convertDuration(currentDuration)
-
-        if (binding?.totalDuration?.text?.toString()
-            != convertDuration(p.duration)
-        ) binding?.totalDuration?.text = convertDuration(p.duration)
+            binding?.elapsedDuration?.text = convertDuration(p.currentPosition)
+            binding?.totalDuration?.text = convertDuration(p.duration)
+        } else {
+            binding?.seekbar?.progress = 0
+            binding?.seekbar?.secondaryProgress = 0
+            binding?.elapsedDuration?.text = "00:00"
+            binding?.totalDuration?.text = "00:00"
+        }
 
         if (p.isPlaying) binding?.playPauseImage?.setImageResource(
             R.drawable.baseline_pause_24
@@ -1119,39 +1123,39 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
     }
 
     private fun updateRepeatButtonUI() {
-        val tintColor: Int
+        val b = binding ?: return
         val p = MusicPlayerManager.player ?: return
         val repeatMode: Int = p.repeatMode
 
+        val tintColor: Int
         when (repeatMode) {
             Player.REPEAT_MODE_ONE -> {
-                tintColor = getResources().getColor(R.color.spotify_green)
+                tintColor = getResources().getColor(R.color.spotify_green, theme)
                 try {
-                    binding!!.repeatIcon.setImageResource(R.drawable.repeat_one_24px)
+                    b.repeatIcon.setImageResource(R.drawable.repeat_one_24px)
                 } catch (e: Exception) {
-                    // Fallback to regular repeat icon if repeat_one_24px isn't available
                     Log.e(TAG, "Error setting repeat_one icon: " + e.message)
-                    binding!!.repeatIcon.setImageResource(R.drawable.repeat_24px)
+                    b.repeatIcon.setImageResource(R.drawable.repeat_24px)
                 }
             }
 
             Player.REPEAT_MODE_ALL -> {
-                tintColor = getResources().getColor(R.color.spotify_green)
-                binding!!.repeatIcon.setImageResource(R.drawable.repeat_24px)
+                tintColor = getResources().getColor(R.color.spotify_green, theme)
+                b.repeatIcon.setImageResource(R.drawable.repeat_24px)
             }
 
             Player.REPEAT_MODE_OFF -> {
-                tintColor = getResources().getColor(R.color.textSec)
-                binding!!.repeatIcon.setImageResource(R.drawable.repeat_24px)
+                tintColor = getResources().getColor(R.color.textSec, theme)
+                b.repeatIcon.setImageResource(R.drawable.repeat_24px)
             }
 
             else -> {
-                tintColor = getResources().getColor(R.color.textSec)
-                binding!!.repeatIcon.setImageResource(R.drawable.repeat_24px)
+                tintColor = getResources().getColor(R.color.textSec, theme)
+                b.repeatIcon.setImageResource(R.drawable.repeat_24px)
             }
         }
 
-        binding!!.repeatIcon.imageTintList = ColorStateList.valueOf(tintColor)
+        b.repeatIcon.imageTintList = ColorStateList.valueOf(tintColor)
     }
 
     override fun nextClicked() {
@@ -1162,19 +1166,18 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
                 return
             }
 
-            // Update UI to show active button state
             runOnUiThread {
-                binding!!.nextIcon.alpha = 0.5f
-                binding!!.nextIcon.animate().alpha(1.0f).setDuration(200).start()
+                val b = binding ?: return@runOnUiThread
+                b.nextIcon.alpha = 0.5f
+                b.nextIcon.animate().alpha(1.0f).setDuration(200).start()
 
-                // Update UI
                 updateTrackInfo()
                 updateSeekbar()
 
                 if (MusicPlayerManager.player?.isPlaying == true) {
-                    binding!!.playPauseImage.setImageResource(R.drawable.baseline_pause_24)
+                    b.playPauseImage.setImageResource(R.drawable.baseline_pause_24)
                 } else {
-                    binding!!.playPauseImage.setImageResource(R.drawable.play_arrow_24px)
+                    b.playPauseImage.setImageResource(R.drawable.play_arrow_24px)
                 }
             }
         } catch (e: Exception) {
@@ -1190,19 +1193,18 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
                 return
             }
 
-            // Update UI to show active button state
             runOnUiThread {
-                binding!!.prevIcon.alpha = 0.5f
-                binding!!.prevIcon.animate().alpha(1.0f).setDuration(200).start()
+                val b = binding ?: return@runOnUiThread
+                b.prevIcon.alpha = 0.5f
+                b.prevIcon.animate().alpha(1.0f).setDuration(200).start()
 
-                // Update UI
                 updateTrackInfo()
                 updateSeekbar()
 
                 if (MusicPlayerManager.player?.isPlaying == true) {
-                    binding!!.playPauseImage.setImageResource(R.drawable.baseline_pause_24)
+                    b.playPauseImage.setImageResource(R.drawable.baseline_pause_24)
                 } else {
-                    binding!!.playPauseImage.setImageResource(R.drawable.play_arrow_24px)
+                    b.playPauseImage.setImageResource(R.drawable.play_arrow_24px)
                 }
             }
         } catch (e: Exception) {
@@ -1252,20 +1254,15 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
         }
 
         fun convertDuration(duration: Long): String {
+            if (duration <= 0) return "00:00"
             var timeString = ""
-            val secondString: String?
-
             val hours = (duration / (1000 * 60 * 60)).toInt()
             val minutes = (duration % (1000 * 60 * 60)).toInt() / (1000 * 60)
             val seconds = ((duration % (1000 * 60 * 60)) % (1000 * 60) / 1000).toInt()
             if (hours > 0) {
                 timeString = "$hours:"
             }
-            secondString = if (seconds < 10) {
-                "0$seconds"
-            } else {
-                "" + seconds
-            }
+            val secondString = if (seconds < 10) "0$seconds" else "$seconds"
             timeString = "$timeString$minutes:$secondString"
             return timeString
         }

@@ -2,6 +2,7 @@ package dev.melodify.uranophilelab.network.utility
 
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import com.google.gson.Gson
 import okhttp3.Call
 import okhttp3.Callback
@@ -116,19 +117,30 @@ class RequestNetworkController {
 
                 @Throws(IOException::class)
                 override fun onResponse(call: Call, response: Response) {
-                    val responseBody = response.body?.string()?.trim { it <= ' ' }
-                    Handler(Looper.getMainLooper()).post(Runnable {
-                        try {
-                            val b = response.headers
-                            val map = HashMap<String?, Any?>()
-                            for (s in b.names()) {
-                                map.put(s, if (b.get(s) != null) b.get(s) else "null")
-                            }
-                            requestListener.onResponse(tag, responseBody, map)
-                        } catch (e: Exception) {
-                            e.printStackTrace()
+                    val responseBody = try {
+                        response.body?.string()?.trim { it <= ' ' }
+                    } catch (e: Exception) {
+                        Log.e("RequestNetwork", "Error reading response body", e)
+                        null
+                    }
+
+                    val headerMap = HashMap<String?, Any?>()
+                    try {
+                        val headers = response.headers
+                        for (name in headers.names()) {
+                            headerMap[name] = headers.get(name) ?: "null"
                         }
-                    })
+                    } catch (e: Exception) {
+                        Log.e("RequestNetwork", "Error reading response headers", e)
+                    }
+
+                    Handler(Looper.getMainLooper()).post {
+                        try {
+                            requestListener.onResponse(tag, responseBody, headerMap)
+                        } catch (e: Exception) {
+                            Log.e("RequestNetwork", "Error delivering response callback", e)
+                        }
+                    }
                 }
             })
         } catch (e: Exception) {

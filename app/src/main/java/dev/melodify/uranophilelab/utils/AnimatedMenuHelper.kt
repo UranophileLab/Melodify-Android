@@ -322,6 +322,8 @@ object AnimatedMenuHelper {
             context.startActivity(Intent(context, AboutActivity::class.java))
         }
 
+        dialogView.findViewById<TextView>(R.id.versionTxt)?.text = "version ${dev.melodify.uranophilelab.BuildConfig.VERSION_NAME}"
+
         bottomSheetDialog.setContentView(dialogView)
 
         bottomSheetDialog.setOnShowListener {

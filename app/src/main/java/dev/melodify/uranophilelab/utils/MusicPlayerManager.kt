@@ -298,6 +298,13 @@ object MusicPlayerManager {
 
         try {
             if (!IMAGE_URL.isNullOrBlank() && IMAGE_URL != "<shimmer>") {
+                notificationTarget?.let { oldTarget ->
+                    try {
+                        Glide.with(ctx).clear(oldTarget)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error clearing old notification target", e)
+                    }
+                }
                 val target = object : CustomTarget<Bitmap>() {
                     override fun onResourceReady(bitmap: Bitmap, transition: Transition<in Bitmap>?) {
                         try {
@@ -531,11 +538,11 @@ object MusicPlayerManager {
     }
 
     fun nextTrack() {
-        if (trackQueue.isNullOrEmpty()) return
+        val queue = trackQueue ?: return
+        if (queue.isEmpty()) return
         val p = player ?: return
-        
-        if (trackQueue!!.isEmpty()) return
-        if (track_position >= trackQueue!!.size - 1) {
+
+        if (track_position >= queue.size - 1) {
             when (p.repeatMode) {
                 Player.REPEAT_MODE_ONE -> { p.seekTo(0); p.play(); return }
                 Player.REPEAT_MODE_ALL -> { track_position = 0 }
@@ -548,44 +555,47 @@ object MusicPlayerManager {
                 }
             }
         } else {
-            if (p.shuffleModeEnabled && trackQueue!!.size > 1) {
+            if (p.shuffleModeEnabled && queue.size > 1) {
                 var newPos: Int
-                do { newPos = (Math.random() * trackQueue!!.size).toInt() } while (newPos == track_position)
+                do { newPos = (Math.random() * queue.size).toInt() } while (newPos == track_position && queue.size > 1)
                 track_position = newPos
             } else { track_position++ }
         }
-        
-        try {
-            MUSIC_ID = trackQueue!![track_position]
+
+        val targetId = queue.getOrNull(track_position)
+        if (targetId != null) {
+            MUSIC_ID = targetId
             playTrack()
             showNotification()
             updateWidget()
-        } catch (e: Exception) {
-            if (trackQueue!!.isNotEmpty()) {
-                track_position = 0
-                MUSIC_ID = trackQueue!![0]
-                playTrack()
-            }
+        } else if (queue.isNotEmpty()) {
+            track_position = 0
+            MUSIC_ID = queue[0]
+            if (MUSIC_ID != null) playTrack()
         }
     }
 
     fun prevTrack() {
-        if (trackQueue.isNullOrEmpty()) return
+        val queue = trackQueue ?: return
+        if (queue.isEmpty()) return
         val p = player ?: return
 
         if (track_position <= 0) {
-            if (p.repeatMode == Player.REPEAT_MODE_ALL) track_position = trackQueue!!.size - 1
+            if (p.repeatMode == Player.REPEAT_MODE_ALL) track_position = queue.size - 1
             else { p.seekTo(0); p.play(); return }
         } else {
-            if (p.shuffleModeEnabled && trackQueue!!.size > 1) {
-                track_position = (Math.random() * trackQueue!!.size).toInt()
+            if (p.shuffleModeEnabled && queue.size > 1) {
+                track_position = (Math.random() * queue.size).toInt()
             } else { track_position-- }
         }
-        
-        MUSIC_ID = trackQueue!![track_position]
-        playTrack()
-        showNotification()
-        updateWidget()
+
+        val targetId = queue.getOrNull(track_position)
+        if (targetId != null) {
+            MUSIC_ID = targetId
+            playTrack()
+            showNotification()
+            updateWidget()
+        }
     }
 
     private fun getStateString(state: Int): String = when (state) {

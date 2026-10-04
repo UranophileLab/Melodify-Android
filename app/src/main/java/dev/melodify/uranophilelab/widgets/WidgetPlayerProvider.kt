@@ -46,9 +46,10 @@ class WidgetPlayerProvider : AppWidgetProvider() {
             val title = if (MusicPlayerManager.MUSIC_TITLE.isNullOrEmpty()) "Not Playing" else MusicPlayerManager.MUSIC_TITLE
             val description = MusicPlayerManager.MUSIC_DESCRIPTION ?: "Melodify"
             
-            // Extract artist from description if it follows "plays | year | copyright" or similar
+            // Extract artist from description (e.g. "Artist Name | Year | Copyright")
             val artist = if (description.contains("|")) {
-                description.substringAfterLast("|").trim()
+                val rawArtist = description.split("|").firstOrNull()?.trim() ?: description
+                if (rawArtist.contains("plays", ignoreCase = true)) "Melodify" else rawArtist
             } else {
                 description
             }

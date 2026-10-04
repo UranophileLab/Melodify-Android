@@ -3,7 +3,9 @@ package dev.melodify.uranophilelab.services
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ServiceInfo
 import android.os.Binder
+import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import dev.melodify.uranophilelab.utils.MusicPlayerManager
@@ -46,7 +48,11 @@ class MusicService : Service() {
 
         if (notification != null) {
             try {
-                startForeground(1, notification)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    startForeground(1, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
+                } else {
+                    startForeground(1, notification)
+                }
             } catch (e: Exception) {
                 Log.e("MusicService", "Error starting foreground", e)
             }

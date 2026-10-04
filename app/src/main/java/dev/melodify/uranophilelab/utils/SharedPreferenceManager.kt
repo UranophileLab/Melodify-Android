@@ -123,11 +123,23 @@ class SharedPreferenceManager private constructor(context: Context) {
     }
 
     internal fun getJson(key: String?): String? {
-        return dao.getJson(key)
+        if (key.isNullOrEmpty()) return null
+        return try {
+            dao.getJson(key)
+        } catch (e: Exception) {
+            Log.e("SharedPreferenceManager", "Error reading key $key from Room DB", e)
+            null
+        }
     }
 
     private fun containsKey(key: String?): Boolean {
-        return dao.exists(key)
+        if (key.isNullOrEmpty()) return false
+        return try {
+            dao.exists(key)
+        } catch (e: Exception) {
+            Log.e("SharedPreferenceManager", "Error checking existence of key $key", e)
+            false
+        }
     }
 
     private fun removeKey(key: String?) {
