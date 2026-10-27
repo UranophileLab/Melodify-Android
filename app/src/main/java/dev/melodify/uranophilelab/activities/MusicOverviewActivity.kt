@@ -86,6 +86,7 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
     private var currentLyricsList: List<Pair<Long, String>>? = null
     private var lyricsAdapter: LyricsAdapter? = null
     private var currentLyricsRecyclerView: androidx.recyclerview.widget.RecyclerView? = null
+    private var lastLyricItemClickedTime = 0L
 
     inner class LyricsAdapter(private val lyrics: List<Pair<Long, String>>) : androidx.recyclerview.widget.RecyclerView.Adapter<LyricsAdapter.ViewHolder>() {
         var activeIndex = -1
@@ -112,6 +113,7 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
             }
             
             holder.textView.setOnClickListener {
+                lastLyricItemClickedTime = System.currentTimeMillis()
                 MusicPlayerManager.player?.seekTo(lyrics[position].first)
             }
         }
@@ -196,14 +198,12 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
             }
         }
 
-        binding?.lyricsIndicatorButton?.setOnClickListener {
-            if (currentLyricsList.isNullOrEmpty()) return@setOnClickListener
-            toggleLyrics()
-        }
-
-        binding!!.coverImageCard.setOnClickListener {
-            if (currentLyricsList.isNullOrEmpty()) return@setOnClickListener
-            toggleLyrics()
+        val handleLyricsToggleRequest = {
+            if (currentLyricsList.isNullOrEmpty()) {
+                Toast.makeText(this, "Lyrics unavailable for this song", Toast.LENGTH_SHORT).show()
+            } else {
+                toggleLyrics()
+            }
         }
 
         // Swipe left → next track, swipe right → previous track on the album-art area
@@ -243,8 +243,11 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
 
                 // Pass through taps so the lyrics toggle still works
                 override fun onSingleTapConfirmed(e: android.view.MotionEvent): Boolean {
-                    if (currentLyricsList.isNullOrEmpty()) return false
-                    toggleLyrics()
+                    // Don't toggle lyrics if user just tapped a specific lyric line to seek
+                    if (System.currentTimeMillis() - lastLyricItemClickedTime < 500) {
+                        return false
+                    }
+                    handleLyricsToggleRequest()
                     return true
                 }
             }

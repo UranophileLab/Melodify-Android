@@ -281,14 +281,6 @@
             android:orientation="horizontal"
             android:gravity="center_vertical">
 
-            <ImageView
-                android:id="@+id/lyrics_icon"
-                android:layout_width="@dimen/_24sdp"
-                android:layout_height="@dimen/_24sdp"
-                android:padding="@dimen/_3sdp"
-                android:src="@drawable/baseline_lyrics_24"
-                app:tint="@color/text_light" />
-
             <View
                 android:layout_width="0dp"
                 android:layout_height="1dp"

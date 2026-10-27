@@ -348,41 +348,6 @@
                 android:layout_height="1dp"
                 android:layout_weight="1" />
 
-            <!-- Centered Lyrics Toggle Button -->
-            <LinearLayout
-                android:id="@+id/lyrics_indicator_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:clickable="true"
-                android:focusable="true"
-                android:foreground="?attr/selectableItemBackgroundBorderless"
-                android:paddingHorizontal="@dimen/_12sdp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="@font/avenir_next_bold"
-                    android:letterSpacing="0.2"
-                    android:text="LYRICS"
-                    android:textColor="@color/text_light"
-                    android:textSize="@dimen/_10ssp" />
-
-                <ImageView
-                    android:layout_width="@dimen/_14sdp"
-                    android:layout_height="@dimen/_14sdp"
-                    android:src="@drawable/round_keyboard_arrow_down_24"
-                    app:tint="@color/text_light"
-                    android:contentDescription="@string/lyrics" />
-
-            </LinearLayout>
-
-            <View
-                android:layout_width="0dp"
-                android:layout_height="1dp"
-                android:layout_weight="1" />
-
             <ImageView
                 android:id="@+id/queue_icon"
                 android:layout_width="@dimen/_28sdp"
