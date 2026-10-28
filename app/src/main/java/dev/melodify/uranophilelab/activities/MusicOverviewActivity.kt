@@ -206,6 +206,16 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
             }
         }
 
+        binding!!.coverImageCard.setOnClickListener {
+            handleLyricsToggleRequest()
+        }
+
+        binding!!.coverArtFrame?.setOnClickListener {
+            if (binding!!.lyricsRecycler.isVisible) {
+                handleLyricsToggleRequest()
+            }
+        }
+
         // Swipe left → next track, swipe right → previous track on the album-art area
         val swipeGestureDetector = android.view.GestureDetector(
             this,
@@ -239,16 +249,6 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
                         return true
                     }
                     return false
-                }
-
-                // Pass through taps so the lyrics toggle still works
-                override fun onSingleTapConfirmed(e: android.view.MotionEvent): Boolean {
-                    // Don't toggle lyrics if user just tapped a specific lyric line to seek
-                    if (System.currentTimeMillis() - lastLyricItemClickedTime < 500) {
-                        return false
-                    }
-                    handleLyricsToggleRequest()
-                    return true
                 }
             }
         )
