@@ -87,6 +87,7 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
     private var lyricsAdapter: LyricsAdapter? = null
     private var currentLyricsRecyclerView: androidx.recyclerview.widget.RecyclerView? = null
     private var lastLyricItemClickedTime = 0L
+    private var lastLyricsToggledTime = 0L
 
     inner class LyricsAdapter(private val lyrics: List<Pair<Long, String>>) : androidx.recyclerview.widget.RecyclerView.Adapter<LyricsAdapter.ViewHolder>() {
         var activeIndex = -1
@@ -178,6 +179,7 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
         binding!!.description.isSelected = true
 
         val toggleLyrics = {
+            lastLyricsToggledTime = System.currentTimeMillis()
             val parent = binding!!.root as android.view.ViewGroup
             val transition = android.transition.Fade()
             transition.duration = 300
@@ -211,9 +213,7 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
         }
 
         binding!!.coverArtFrame?.setOnClickListener {
-            if (binding!!.lyricsRecycler.isVisible) {
-                handleLyricsToggleRequest()
-            }
+            handleLyricsToggleRequest()
         }
 
         // Swipe left → next track, swipe right → previous track on the album-art area
@@ -222,6 +222,10 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
             object : android.view.GestureDetector.SimpleOnGestureListener() {
                 private val SWIPE_THRESHOLD = 80
                 private val SWIPE_VELOCITY_THRESHOLD = 100
+
+                override fun onDown(e: android.view.MotionEvent): Boolean {
+                    return true
+                }
 
                 override fun onFling(
                     e1: android.view.MotionEvent?,
@@ -250,14 +254,28 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
                     }
                     return false
                 }
+
+                override fun onSingleTapConfirmed(e: android.view.MotionEvent): Boolean {
+                    val now = System.currentTimeMillis()
+                    if (now - lastLyricItemClickedTime < 500) return false
+                    if (now - lastLyricsToggledTime < 500) return false
+                    handleLyricsToggleRequest()
+                    return true
+                }
             }
         )
+
         binding!!.coverArtFrame?.setOnTouchListener { v, event ->
-            // Let the GestureDetector consume the event; return false so children
-            // (coverImageCard / lyricsRecycler) still receive their own touch events.
             swipeGestureDetector.onTouchEvent(event)
             false
         }
+
+        binding!!.lyricsRecycler.addOnItemTouchListener(object : androidx.recyclerview.widget.RecyclerView.SimpleOnItemTouchListener() {
+            override fun onInterceptTouchEvent(rv: androidx.recyclerview.widget.RecyclerView, e: android.view.MotionEvent): Boolean {
+                swipeGestureDetector.onTouchEvent(e)
+                return false
+            }
+        })
 
         binding!!.queueIcon?.setOnClickListener {
             dev.melodify.uranophilelab.utils.MiniPlayerHelper.showQueueBottomSheet(this)
