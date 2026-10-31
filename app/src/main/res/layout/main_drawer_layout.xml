@@ -116,7 +116,7 @@
         android:fontFamily="@font/avenir_next_regular"
         android:gravity="center"
         android:paddingStart="@dimen/_12sdp"
-        android:text="version 5.2.0"
+        android:text="version 5.3.0"
         android:textColor="#B3B3B3"
         tools:ignore="RtlSymmetry" />
 
