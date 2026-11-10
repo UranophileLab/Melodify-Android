@@ -4,45 +4,45 @@
     android:viewportWidth="512"
     android:viewportHeight="512">
 
-    <!-- Background Squircle Badge (Spotify Green) -->
+    <!-- Background Squircle Badge (White) -->
     <path
-        android:fillColor="#1DB954"
+        android:fillColor="#FFFFFF"
         android:pathData="M 96,0 H 416 A 96,96 0 0 1 512,96 V 416 A 96,96 0 0 1 416,512 H 96 A 96,96 0 0 1 0,416 V 96 A 96,96 0 0 1 96,0 Z" />
 
-    <!-- Green Ambient Circle Glow -->
+    <!-- Ambient Circle Glow -->
     <path
-        android:fillColor="#1DB954"
+        android:fillColor="#B71C1C"
         android:pathData="M 256,96 C 344.37,96 416,167.63 416,256 C 416,344.37 344.37,416 256,416 C 167.63,416 96,344.37 96,256 C 96,167.63 167.63,96 256,96 Z"
-        android:fillAlpha="0.3" />
+        android:fillAlpha="0.12" />
 
     <!-- Waveform Equalizer Bars -->
     <path
-        android:fillColor="#FFFFFF"
+        android:fillColor="#B71C1C"
         android:pathData="M 120,200 H 144 V 312 H 120 Z" />
 
     <path
-        android:fillColor="#FFFFFF"
+        android:fillColor="#B71C1C"
         android:pathData="M 160,150 H 184 V 362 H 160 Z" />
 
     <path
-        android:fillColor="#FFFFFF"
+        android:fillColor="#B71C1C"
         android:pathData="M 200,110 L 396,55 V 95 L 200,150 Z" />
 
     <path
-        android:fillColor="#FFFFFF"
+        android:fillColor="#B71C1C"
         android:pathData="M 200,125 H 228 V 355 H 200 Z" />
 
     <path
-        android:fillColor="#FFFFFF"
+        android:fillColor="#B71C1C"
         android:pathData="M 368,70 H 396 V 300 H 368 Z" />
 
     <!-- Music Note Heads -->
     <path
-        android:fillColor="#FFFFFF"
+        android:fillColor="#B71C1C"
         android:pathData="M 164,320 C 199,320 228,338 228,365 C 228,392 199,410 164,410 C 129,410 100,392 100,365 C 100,338 129,320 164,320 Z" />
 
     <path
-        android:fillColor="#FFFFFF"
+        android:fillColor="#B71C1C"
         android:pathData="M 332,260 C 367,260 396,278 396,305 C 396,332 367,350 332,350 C 297,350 268,332 268,305 C 268,278 297,260 332,260 Z" />
 
 </vector>

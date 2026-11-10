@@ -211,6 +211,19 @@ class SharedPreferenceManager private constructor(context: Context) {
             putJson("home_playlists_recommended", gson.toJson(playlistsSearch))
         }
 
+    var homeNewReleasesRecommended: SongSearch?
+        get() {
+            val json = getJson("home_new_releases_recommended")
+            return if (json.isNullOrEmpty()) null else gson.fromJson(
+                json,
+                SongSearch::class.java
+            )
+        }
+        // home new releases recommended
+        set(newReleases) {
+            putJson("home_new_releases_recommended", gson.toJson(newReleases))
+        }
+
     // song response by id
     fun setSongResponseById(id: String?, songSearch: SongResponse?) {
         if (id == null) return

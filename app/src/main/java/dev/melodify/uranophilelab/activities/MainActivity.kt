@@ -62,6 +62,7 @@ class MainActivity : AppCompatActivity() {
     private var binding: ActivityMainBinding? = null
     private var baseApplicationClass: BaseApplicationClass? = null
     val songs: MutableList<AlbumItem?> = ArrayList<AlbumItem?>()
+    val newReleaseSongs: MutableList<AlbumItem?> = ArrayList<AlbumItem?>()
     val artists: MutableList<ArtistsSearch.Data.Results?> = ArrayList<ArtistsSearch.Data.Results?>()
     val albums: MutableList<AlbumItem?> = ArrayList<AlbumItem?>()
     val playlists: MutableList<AlbumItem?> = ArrayList<AlbumItem?>()
@@ -72,11 +73,11 @@ class MainActivity : AppCompatActivity() {
     var networkChangeReceiver: NetworkChangeReceiver =
         NetworkChangeReceiver(object : NetworkStatusListener {
             override fun onNetworkConnected() {
-                if (songs.isEmpty() || artists.isEmpty() || albums.isEmpty() || playlists.isEmpty()) showData()
+                if (songs.isEmpty() || newReleaseSongs.isEmpty() || artists.isEmpty() || albums.isEmpty() || playlists.isEmpty()) showData()
             }
 
             override fun onNetworkDisconnected() {
-                if (songs.isEmpty() || artists.isEmpty() || albums.isEmpty() || playlists.isEmpty()) showOfflineData()
+                if (songs.isEmpty() || newReleaseSongs.isEmpty() || artists.isEmpty() || albums.isEmpty() || playlists.isEmpty()) showOfflineData()
                 val currentBinding = binding ?: return
                 Snackbar.make(currentBinding.getRoot(), "No Internet Connection", Snackbar.LENGTH_LONG)
                     .show()
@@ -143,6 +144,8 @@ class MainActivity : AppCompatActivity() {
 
         inflatedBinding.recommendationsRecyclerView?.layoutManager =
             LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        inflatedBinding.newReleasesRecyclerView?.layoutManager =
+            LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         inflatedBinding.popularSongsRecyclerView.layoutManager =
             LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         inflatedBinding.popularAlbumsRecyclerView.layoutManager =
@@ -152,11 +155,15 @@ class MainActivity : AppCompatActivity() {
 
         // Snap helpers — smooth magnetic scroll on all horizontal lists
         inflatedBinding.recommendationsRecyclerView?.attachSnapHelper()
+        inflatedBinding.newReleasesRecyclerView?.attachSnapHelper()
         inflatedBinding.popularSongsRecyclerView.attachSnapHelper()
         inflatedBinding.popularAlbumsRecyclerView.attachSnapHelper()
         inflatedBinding.savedRecyclerView.attachSnapHelper()
 
         inflatedBinding.recommendationsRecyclerView?.let {
+            OverScrollDecoratorHelper.setUpOverScroll(it, OverScrollDecoratorHelper.ORIENTATION_HORIZONTAL)
+        }
+        inflatedBinding.newReleasesRecyclerView?.let {
             OverScrollDecoratorHelper.setUpOverScroll(it, OverScrollDecoratorHelper.ORIENTATION_HORIZONTAL)
         }
         OverScrollDecoratorHelper.setUpOverScroll(
@@ -264,6 +271,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun showData() {
         songs.clear()
+        newReleaseSongs.clear()
         artists.clear()
         albums.clear()
         playlists.clear()
@@ -284,16 +292,61 @@ class MainActivity : AppCompatActivity() {
         }
 
         val songSeeds = listOf("2023", "2024", "2025", "2026", "Hits", "Latest", "Romantic", "Chill", "Lo-Fi", "Dance", "Hindi", "Sad", "Love", "Workout")
+        val newReleaseSeeds = listOf("New Releases", "Global New Releases", "Latest Global Hits", "Latest Releases", "New Pop Hits", "2025 New Releases", "Global New", "Latest Songs", "New Hits")
         val artistSeeds = listOf("Arijit", "Taylor", "Drake", "BTS", "Ed Sheeran", "Shreya", "Justin", "Badshah")
         val albumSeeds = listOf("2023", "2024", "2025", "2026", "Hits", "Latest", "New", "Sad", "Lo-Fi", "Romantic", "Rock", "Pop", "Classic", "Party")
         val playlistSeeds = listOf("2023", "2024", "2025", "2026", "Hits", "Latest", "Trending", "Party", "Devotional", "Chill", "Love", "Sad", "Top", "Classic")
 
         val songQuery = songSeeds.random()
+        val newReleaseQuery = newReleaseSeeds.random()
         val artistQuery = artistSeeds.random()
         val albumQuery = albumSeeds.random()
         val playlistQuery = playlistSeeds.random()
 
         val apiManager = ApiManager(this)
+
+        apiManager.searchSongs(newReleaseQuery, 0, 15, object : RequestNetwork.RequestListener {
+            override fun onResponse(
+                tag: String?,
+                response: String?,
+                responseHeaders: HashMap<String?, Any?>?
+            ) {
+                val currentBinding = binding ?: return
+                try {
+                    val songSearch = Gson().fromJson(response, SongSearch::class.java)
+                    Log.i(TAG, "onResponse New Releases: $response")
+                    if (songSearch?.success == true) {
+                        val resultsList = songSearch.data?.results ?: emptyList()
+                        for (results in resultsList) {
+                            if (results == null) continue
+                            val imageList = results.image
+                            val imageUrl =
+                                if (!imageList.isNullOrEmpty()) imageList[imageList.size - 1]?.url ?: "" else ""
+                            newReleaseSongs.add(
+                                AlbumItem(
+                                    results.name(), results.language + " " + results.year,
+                                    imageUrl, results.id, "song"
+                                )
+                            )
+                        }
+                        val adapter = ActivityMainPopularSongs(newReleaseSongs)
+                        currentBinding.newReleasesRecyclerView?.adapter = adapter
+                        adapter.notifyDataSetChanged()
+                        updateTrendingGrid()
+                        BaseApplicationClass.sharedPreferenceManager?.homeNewReleasesRecommended = songSearch
+                    } else {
+                        showOfflineData()
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "onResponse new release song parse error: ", e)
+                    showOfflineData()
+                }
+            }
+
+            override fun onErrorResponse(tag: String?, message: String?) {
+                showOfflineData()
+            }
+        })
 
         apiManager.searchSongs(songQuery, 0, 15, object : RequestNetwork.RequestListener {
             override fun onResponse(
@@ -478,6 +531,7 @@ class MainActivity : AppCompatActivity() {
             )
         }
         currentBinding.recommendationsRecyclerView?.adapter = ActivityMainAlbumItemAdapter(dataShimmer)
+        currentBinding.newReleasesRecyclerView?.adapter = ActivityMainAlbumItemAdapter(dataShimmer)
         currentBinding.popularSongsRecyclerView.adapter = ActivityMainAlbumItemAdapter(dataShimmer)
         currentBinding.popularAlbumsRecyclerView.adapter = ActivityMainAlbumItemAdapter(dataShimmer)
         currentBinding.popularArtistsRecyclerView?.adapter = ActivityMainArtistsItemAdapter(artistsShimmer)
@@ -487,6 +541,26 @@ class MainActivity : AppCompatActivity() {
     private fun showOfflineData() {
         val currentBinding = binding ?: return
         val prefManager = BaseApplicationClass.sharedPreferenceManager ?: return
+        val newReleasesSearch: SongSearch? = prefManager.homeNewReleasesRecommended
+        if (newReleasesSearch?.success == true) {
+            val resultsList = newReleasesSearch.data?.results ?: emptyList()
+            for (results in resultsList) {
+                if (results == null) continue
+                val imageList = results.image
+                val imageUrl =
+                    if (!imageList.isNullOrEmpty()) imageList[imageList.size - 1]?.url ?: "" else ""
+                newReleaseSongs.add(
+                    AlbumItem(
+                        results.name(), results.language + " " + results.year,
+                        imageUrl, results.id, "song"
+                    )
+                )
+            }
+            val adapter = ActivityMainPopularSongs(newReleaseSongs)
+            currentBinding.newReleasesRecyclerView?.adapter = adapter
+            adapter.notifyDataSetChanged()
+        }
+
         val songSearch: SongSearch? = prefManager.homeSongsRecommended
         if (songSearch?.success == true) {
             val resultsList = songSearch.data?.results ?: emptyList()
@@ -596,6 +670,7 @@ class MainActivity : AppCompatActivity() {
         val combined = ArrayList<AlbumItem?>()
         combined.addAll(albums.filterNotNull())
         combined.addAll(songs.filterNotNull())
+        combined.addAll(newReleaseSongs.filterNotNull())
         combined.shuffle()
         for (item in combined) {
             if (item != null && item.id != "<shimmer>" && trendingItems.size < 6) {
