@@ -29,6 +29,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.PopupMenu
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
+import dev.melodify.uranophilelab.utils.AnimatedMenuHelper
 import dev.melodify.uranophilelab.utils.ListeningEventTracker
 import dev.melodify.uranophilelab.utils.ShuffleUtil
 import dev.melodify.uranophilelab.utils.SleepTimerManager

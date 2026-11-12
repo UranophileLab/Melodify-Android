@@ -632,20 +632,23 @@ class SharedPreferenceManager private constructor(context: Context) {
 
     fun syncLikedSongsLibrary() {
         val favs = favoriteSongs
-        val saved = savedLibrariesData ?: SavedLibraries(mutableListOf())
-        val list = (saved.lists ?: mutableListOf()).filterNotNull().toMutableList()
+        val saved = savedLibrariesData ?: SavedLibraries(ArrayList())
+        val list: MutableList<Library?> = ArrayList(saved.lists ?: ArrayList())
 
-        val existingIndex = list.indexOfFirst { it.id == "liked_songs" }
+        val existingIndex = list.indexOfFirst { it?.id == "liked_songs" }
 
         if (favs.isNotEmpty()) {
-            val songsList = favs.map { 
-                Library.Songs(
-                    id = it.id,
-                    title = it.title,
-                    description = it.artist,
-                    image = it.imageUrl
+            val songsList: MutableList<Library.Songs?> = ArrayList()
+            for (item in favs) {
+                songsList.add(
+                    Library.Songs(
+                        id = item.id,
+                        title = item.title,
+                        description = item.artist,
+                        image = item.imageUrl
+                    )
                 )
-            }.toMutableList()
+            }
 
             val likedLibrary = Library(
                 id = "liked_songs",

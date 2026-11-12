@@ -361,9 +361,9 @@ object AnimatedMenuHelper {
         coverUrl: String
     ) {
         val prefs = SharedPreferenceManager.getInstance(activity)
-        val savedLibraries = prefs.savedLibrariesData ?: SavedLibraries(mutableListOf())
-        val lists = (savedLibraries.lists ?: mutableListOf()).filterNotNull().toMutableList()
-        val userPlaylists = lists.filter { it.isCreatedByUser && it.id != "liked_songs" }
+        val savedLibraries = prefs.savedLibrariesData ?: SavedLibraries(ArrayList())
+        val lists: MutableList<Library?> = ArrayList(savedLibraries.lists ?: ArrayList())
+        val userPlaylists = lists.filterNotNull().filter { it.isCreatedByUser && it.id != "liked_songs" }
 
         val showCreateDialog = {
             val sheetBinding = AddNewLibraryBottomSheetBinding.inflate(activity.layoutInflater)
@@ -387,7 +387,7 @@ object AnimatedMenuHelper {
                     name = name,
                     image = coverUrl,
                     description = "1 song",
-                    songs = mutableListOf(newSong)
+                    songs = arrayListOf(newSong)
                 )
                 prefs.addLibraryToSavedLibraries(newLib)
                 Toast.makeText(activity, "Created \"$name\" & added song", Toast.LENGTH_SHORT).show()
@@ -420,18 +420,19 @@ object AnimatedMenuHelper {
                         showCreateDialog()
                     } else {
                         val targetPlaylist = userPlaylists[which - 1]
-                        val songList = targetPlaylist.songs ?: mutableListOf()
+                        val songList = targetPlaylist.songs ?: ArrayList()
                         val alreadyExists = songList.any { it?.id == songId }
                         if (alreadyExists) {
                             Toast.makeText(activity, "\"$songTitle\" is already in ${targetPlaylist.name}", Toast.LENGTH_SHORT).show()
                         } else {
                             val newSong = Library.Songs(songId, songTitle, artist, coverUrl)
                             songList.add(newSong)
-                            targetPlaylist.description = "${songList.size} ${if (songList.size == 1) "song" else "songs"}"
-                            if (targetPlaylist.image.isNullOrBlank()) {
-                                val updatedLib = targetPlaylist.copy(image = coverUrl)
-                                val idx = lists.indexOfFirst { it.id == targetPlaylist.id }
-                                if (idx >= 0) lists[idx] = updatedLib
+                            val newDesc = "${songList.size} ${if (songList.size == 1) "song" else "songs"}"
+                            val newImage = if (targetPlaylist.image.isNullOrBlank()) coverUrl else targetPlaylist.image
+                            val updatedLib = targetPlaylist.copy(description = newDesc, image = newImage)
+                            val idx = lists.indexOfFirst { it?.id == targetPlaylist.id }
+                            if (idx >= 0) {
+                                lists[idx] = updatedLib
                             }
                             prefs.savedLibrariesData = SavedLibraries(lists)
                             Toast.makeText(activity, "Added to ${targetPlaylist.name}", Toast.LENGTH_SHORT).show()
