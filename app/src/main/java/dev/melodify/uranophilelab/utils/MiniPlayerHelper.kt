@@ -121,6 +121,10 @@ object MiniPlayerHelper {
         titleText?.text = MusicPlayerManager.MUSIC_TITLE
         descText?.text = MusicPlayerManager.MUSIC_DESCRIPTION
         
+        // Enable smooth marquee scrolling for long titles and artist names
+        titleText?.isSelected = true
+        descText?.isSelected = true
+        
         if (coverImage != null && !MusicPlayerManager.IMAGE_URL.isNullOrBlank() && MusicPlayerManager.IMAGE_URL != "<shimmer>") {
             try {
                 Glide.with(coverImage.context).load(MusicPlayerManager.IMAGE_URL!!.toUri()).into(coverImage)
@@ -139,10 +143,17 @@ object MiniPlayerHelper {
         (activity as? ListActivity)?.updatePlayerControlsState()
         
         val bgCardColor = getDarkenedCardColor(MusicPlayerManager.IMAGE_BG_COLOR)
-        val gradientDrawable = GradientDrawable()
-        gradientDrawable.setColor(bgCardColor)
-        gradientDrawable.cornerRadius = 24f
-        playBar.background = gradientDrawable
+        if (playBar is com.google.android.material.card.MaterialCardView) {
+            playBar.setCardBackgroundColor(bgCardColor)
+            playBar.strokeColor = Color.parseColor("#25FFFFFF")
+            playBar.strokeWidth = (activity.resources.displayMetrics.density * 1.0f).toInt().coerceAtLeast(1)
+        } else {
+            val gradientDrawable = GradientDrawable()
+            gradientDrawable.setColor(bgCardColor)
+            gradientDrawable.cornerRadius = activity.resources.getDimension(R.dimen._14sdp)
+            gradientDrawable.setStroke((activity.resources.displayMetrics.density * 1.0f).toInt().coerceAtLeast(1), Color.parseColor("#25FFFFFF"))
+            playBar.background = gradientDrawable
+        }
         
         titleText?.setTextColor(Color.WHITE)
         descText?.setTextColor(Color.parseColor("#B3B3B3"))

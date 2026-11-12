@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Floating mini-player card layout
+  Floating mini-player card layout (Echo & Auris style)
 -->
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/play_bar_background"
@@ -10,137 +10,168 @@
     android:layout_height="wrap_content"
     android:layout_marginHorizontal="@dimen/_10sdp"
     android:layout_marginBottom="@dimen/_10sdp"
-    android:background="@drawable/play_bar_background"
-    android:elevation="@dimen/_12sdp"
+    app:cardBackgroundColor="@color/spotify_dark_green"
+    app:cardCornerRadius="@dimen/_14sdp"
+    app:cardElevation="@dimen/_8sdp"
+    app:cardMaxElevation="@dimen/_10sdp"
+    app:cardPreventCornerOverlap="false"
+    app:strokeWidth="1dp"
+    app:strokeColor="#25FFFFFF"
+    app:rippleColor="#1AFFFFFF"
+    android:clickable="true"
+    android:focusable="true"
     android:visibility="gone"
     tools:visibility="visible">
 
-    <!-- Main content row -->
-    <LinearLayout
+    <!-- Container for content and bottom progress bar -->
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingHorizontal="@dimen/_8sdp"
-        android:paddingVertical="@dimen/_6sdp"
-        android:gravity="center_vertical">
+        android:layout_height="wrap_content">
 
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="@dimen/_34sdp"
-            android:layout_height="@dimen/_34sdp"
-            app:cardBackgroundColor="@android:color/transparent"
-            app:cardCornerRadius="@dimen/_10sdp"
-            app:strokeWidth="0.5dp"
-            app:strokeColor="@color/textSec">
-
-            <ImageView
-                android:id="@+id/play_bar_cover_image"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="centerCrop"
-                android:background="@color/spotify_dark_green"
-                android:contentDescription="Mini Player Cover Image" />
-
-        </com.google.android.material.card.MaterialCardView>
-
+        <!-- Main content row -->
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginStart="@dimen/_10sdp"
-            android:layout_marginEnd="@dimen/_6sdp"
-            android:layout_weight="1">
+            android:orientation="horizontal"
+            android:paddingHorizontal="@dimen/_8sdp"
+            android:paddingVertical="@dimen/_6sdp"
+            android:gravity="center_vertical">
 
-            <TextView
-                android:id="@+id/play_bar_music_title"
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="@dimen/_40sdp"
+                android:layout_height="@dimen/_40sdp"
+                app:cardBackgroundColor="@android:color/transparent"
+                app:cardCornerRadius="@dimen/_10sdp"
+                app:cardElevation="0dp"
+                app:strokeWidth="0.5dp"
+                app:strokeColor="#30FFFFFF">
+
+                <ImageView
+                    android:id="@+id/play_bar_cover_image"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:background="@color/spotify_dark_green"
+                    android:contentDescription="Mini Player Cover Image" />
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginStart="@dimen/_10sdp"
+                android:layout_marginEnd="@dimen/_8sdp"
+                android:layout_weight="1">
+
+                <TextView
+                    android:id="@+id/play_bar_music_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:singleLine="true"
+                    android:ellipsize="marquee"
+                    android:marqueeRepeatLimit="marquee_forever"
+                    android:scrollHorizontally="true"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:text="@string/app_name"
+                    android:fontFamily="@font/avenir_next_bold"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/_12ssp" />
+
+                <TextView
+                    android:id="@+id/play_bar_music_desc"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/_2sdp"
+                    android:singleLine="true"
+                    android:ellipsize="marquee"
+                    android:marqueeRepeatLimit="marquee_forever"
+                    android:scrollHorizontally="true"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:text="@string/app_name"
+                    android:fontFamily="@font/avenir_next_regular"
+                    android:textColor="#B3FFFFFF"
+                    android:textSize="@dimen/_10ssp" />
+
+            </LinearLayout>
+
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:singleLine="true"
-                android:ellipsize="marquee"
-                android:text="@string/app_name"
-                android:fontFamily="@font/avenir_next_bold"
-                android:textColor="@color/text_light"
-                android:textSize="@dimen/_12ssp" />
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
-            <TextView
-                android:id="@+id/play_bar_music_desc"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:singleLine="true"
-                android:ellipsize="marquee"
-                android:text="@string/app_name"
-                android:fontFamily="@font/avenir_next_regular"
-                android:textColor="@color/textSec"
-                android:textSize="@dimen/_10ssp" />
+                <ImageView
+                    android:id="@+id/play_bar_prev_icon"
+                    android:layout_width="@dimen/_28sdp"
+                    android:layout_height="@dimen/_28sdp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:focusable="true"
+                    android:clickable="true"
+                    android:src="@drawable/skip_previous_24px"
+                    android:padding="@dimen/_4sdp"
+                    app:tint="@color/white"
+                    android:contentDescription="Previous" />
+
+                <ImageView
+                    android:id="@+id/play_bar_play_pause_icon"
+                    android:layout_width="@dimen/_34sdp"
+                    android:layout_height="@dimen/_34sdp"
+                    android:layout_marginHorizontal="@dimen/_3sdp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/play_arrow_24px"
+                    android:padding="@dimen/_3sdp"
+                    android:focusable="true"
+                    android:clickable="true"
+                    app:tint="@color/white"
+                    android:contentDescription="Play/Pause" />
+
+                <ImageView
+                    android:id="@+id/play_bar_next_icon"
+                    android:layout_width="@dimen/_28sdp"
+                    android:layout_height="@dimen/_28sdp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:focusable="true"
+                    android:clickable="true"
+                    android:src="@drawable/skip_next_24px"
+                    android:padding="@dimen/_4sdp"
+                    app:tint="@color/white"
+                    android:contentDescription="Next" />
+
+                <ImageView
+                    android:id="@+id/play_bar_queue_icon"
+                    android:layout_width="@dimen/_28sdp"
+                    android:layout_height="@dimen/_28sdp"
+                    android:layout_marginStart="@dimen/_2sdp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:focusable="true"
+                    android:clickable="true"
+                    android:src="@drawable/ic_queue_music"
+                    android:padding="@dimen/_4sdp"
+                    app:tint="@color/white"
+                    android:contentDescription="Queue" />
+
+            </LinearLayout>
 
         </LinearLayout>
 
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
+        <!--
+          Thin progress bar pinned to the bottom curve of the card.
+        -->
+        <ProgressBar
+            android:id="@+id/play_bar_progress"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="2.5dp"
+            android:layout_gravity="bottom"
+            android:max="1000"
+            android:progress="0"
+            android:progressBackgroundTint="#26FFFFFF"
+            android:progressTint="@color/spotify_dark_green"
+            android:indeterminate="false" />
 
-            <ImageView
-                android:id="@+id/play_bar_prev_icon"
-                android:layout_width="@dimen/_28sdp"
-                android:layout_height="@dimen/_28sdp"
-                android:focusable="true"
-                android:src="@drawable/skip_previous_24px"
-                android:clickable="true"
-                android:padding="@dimen/_3sdp"
-                app:tint="@color/text_light"
-                android:contentDescription="Previous" />
+    </FrameLayout>
 
-            <ImageView
-                android:id="@+id/play_bar_play_pause_icon"
-                android:layout_width="@dimen/_32sdp"
-                android:layout_height="@dimen/_32sdp"
-                android:src="@drawable/play_arrow_24px"
-                android:padding="@dimen/_2sdp"
-                android:focusable="true"
-                android:clickable="true"
-                app:tint="@color/text_light"
-                android:contentDescription="Play/Pause" />
-
-            <ImageView
-                android:id="@+id/play_bar_next_icon"
-                android:layout_width="@dimen/_28sdp"
-                android:layout_height="@dimen/_28sdp"
-                android:focusable="true"
-                android:src="@drawable/skip_next_24px"
-                android:clickable="true"
-                android:padding="@dimen/_3sdp"
-                app:tint="@color/text_light"
-                android:contentDescription="Next" />
-
-            <ImageView
-                android:id="@+id/play_bar_queue_icon"
-                android:layout_width="@dimen/_28sdp"
-                android:layout_height="@dimen/_28sdp"
-                android:focusable="true"
-                android:src="@drawable/ic_queue_music"
-                android:clickable="true"
-                android:padding="@dimen/_4sdp"
-                app:tint="@color/text_light"
-                android:contentDescription="Queue" />
-
-        </LinearLayout>
-
-    </LinearLayout>
-
-    <!--
-      Thin progress bar pinned to the bottom of the card.
-    -->
-    <ProgressBar
-        android:id="@+id/play_bar_progress"
-        style="?android:attr/progressBarStyleHorizontal"
-        android:layout_width="match_parent"
-        android:layout_height="2.5dp"
-        android:layout_gravity="bottom"
-        android:max="1000"
-        android:progress="0"
-        android:progressBackgroundTint="@android:color/transparent"
-        android:progressTint="@color/textMain"
-        android:indeterminate="false" />
-
-</FrameLayout>
+</com.google.android.material.card.MaterialCardView>
