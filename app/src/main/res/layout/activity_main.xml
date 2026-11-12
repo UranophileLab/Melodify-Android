@@ -201,7 +201,7 @@
                             android:foreground="?attr/selectableItemBackgroundBorderless"
                             android:padding="@dimen/_4sdp"
                             android:text="See All"
-                            android:textColor="#1DB954"
+                            android:textColor="@color/spotify_green"
                             android:textSize="@dimen/_11ssp" />
 
                     </LinearLayout>

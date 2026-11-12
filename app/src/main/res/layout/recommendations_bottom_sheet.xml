@@ -83,7 +83,7 @@
             android:clickable="true"
             android:focusable="true"
             android:foreground="?attr/selectableItemBackground"
-            app:cardBackgroundColor="#1DB954"
+            app:cardBackgroundColor="@color/spotify_green"
             app:cardCornerRadius="999dp"
             app:strokeWidth="0dp">
 

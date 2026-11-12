@@ -92,7 +92,7 @@ class MainActivity : AppCompatActivity() {
         binding = inflatedBinding
         setContentView(inflatedBinding.getRoot())
 
-        baseApplicationClass = applicationContext as BaseApplicationClass?
+        baseApplicationClass = applicationContext as? BaseApplicationClass
         BaseApplicationClass.updateTheme(this)
 
         val initialToolbarPaddingTop = inflatedBinding.toolbar.paddingTop
@@ -545,6 +545,11 @@ class MainActivity : AppCompatActivity() {
     private fun showOfflineData() {
         val currentBinding = binding ?: return
         val prefManager = BaseApplicationClass.sharedPreferenceManager ?: return
+        newReleaseSongs.clear()
+        songs.clear()
+        artists.clear()
+        albums.clear()
+        playlists.clear()
         val newReleasesSearch: SongSearch? = prefManager.homeNewReleasesRecommended
         if (newReleasesSearch?.success == true) {
             val resultsList = newReleasesSearch.data?.results ?: emptyList()

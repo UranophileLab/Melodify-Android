@@ -18,7 +18,7 @@ class EqCurveView @JvmOverloads constructor(
 
     private var gains: FloatArray = FloatArray(10)
     private var isSelectedState: Boolean = false
-    private var accentColor: Int = Color.parseColor("#1DB954")
+    private var accentColor: Int = Color.parseColor("#F43F5E")
 
     private val baselinePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.parseColor("#33888888")
@@ -43,7 +43,7 @@ class EqCurveView @JvmOverloads constructor(
     private var cachedShaderHeight: Float = -1f
     private var cachedShaderColor: Int = -1
 
-    fun setGains(newGains: FloatArray, isSelected: Boolean, accentColor: Int = Color.parseColor("#1DB954")) {
+    fun setGains(newGains: FloatArray, isSelected: Boolean, accentColor: Int = Color.parseColor("#F43F5E")) {
         this.gains = newGains
         this.isSelectedState = isSelected
         this.accentColor = accentColor

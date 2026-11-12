@@ -9,6 +9,7 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import com.bumptech.glide.Glide
 import dev.melodify.uranophilelab.R
@@ -59,7 +60,7 @@ class BottomSheetItemView : LinearLayout {
             this.iconImageView?.let { imgView ->
                 imgView.setImageResource(R.drawable.baseline_person_24)
                 imgView.imageTintList = ColorStateList.valueOf(
-                    resources.getColor(R.color.text_light, context?.theme)
+                    ContextCompat.getColor(context ?: imgView.context, R.color.text_light)
                 )
             }
         }
@@ -90,7 +91,7 @@ class BottomSheetItemView : LinearLayout {
             this.iconImageView?.let { imgView ->
                 imgView.setImageDrawable(mExampleDrawable)
                 imgView.imageTintList = ColorStateList.valueOf(
-                    resources.getColor(R.color.text_light, context.theme)
+                    ContextCompat.getColor(context, R.color.text_light)
                 )
             }
         }

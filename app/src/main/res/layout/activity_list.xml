@@ -220,7 +220,7 @@
                     android:focusable="true"
                     android:foreground="?attr/selectableItemBackground"
                     android:stateListAnimator="@null"
-                    app:cardBackgroundColor="#1DB954"
+                    app:cardBackgroundColor="@color/spotify_green"
                     app:cardCornerRadius="999dp"
                     app:cardElevation="@dimen/_4sdp"
                     app:strokeWidth="0dp">

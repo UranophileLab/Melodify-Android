@@ -11,6 +11,7 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import dev.melodify.uranophilelab.R
 import dev.melodify.uranophilelab.activities.MusicOverviewActivity
@@ -188,8 +189,8 @@ object MiniPlayerHelper {
             } else {
                 progressBar.progress = 0
             }
-            // Tint the progress bar Spotify green
-            progressBar.progressTintList = ColorStateList.valueOf(Color.parseColor("#1DB954"))
+            // Tint the progress bar with brand red accent
+            progressBar.progressTintList = ColorStateList.valueOf(ContextCompat.getColor(progressBar.context, R.color.spotify_green))
         }
     }
 

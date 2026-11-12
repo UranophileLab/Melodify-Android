@@ -22,7 +22,7 @@ class AnimatedEqualizerView @JvmOverloads constructor(
 
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.FILL
-        color = Color.parseColor("#1DB954") // Default Spotify green
+        color = Color.parseColor("#F43F5E") // Default brand red
     }
 
     private val barRect = RectF()

@@ -26,7 +26,7 @@
             android:scaleType="centerCrop"
             android:background="@color/spotify_dark_green"
             app:strokeWidth="2dp"
-            app:strokeColor="#1DB954"
+            app:strokeColor="@color/spotify_green"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"

@@ -245,7 +245,7 @@ class ListActivity : AppCompatActivity() {
         }
 
         val isShuffle = player?.shuffleModeEnabled ?: false
-        val tintColor = if (isShuffle) Color.parseColor("#1DB954") else ContextCompat.getColor(this, R.color.text_light)
+        val tintColor = if (isShuffle) ContextCompat.getColor(this, R.color.spotify_green) else ContextCompat.getColor(this, R.color.text_light)
         b.shuffleBtn?.imageTintList = ColorStateList.valueOf(tintColor)
     }
 

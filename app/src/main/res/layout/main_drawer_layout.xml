@@ -62,7 +62,7 @@
         android:layout_height="wrap_content"
         android:src="@drawable/baseline_library_music_24"
         app:srcPadding="@dimen/_4sdp"
-        app:title="Your Library" />
+        app:title="@string/menu_your_library" />
 
     <dev.melodify.uranophilelab.utils.customview.BottomSheetItemView
         android:id="@+id/favorites"
@@ -70,7 +70,7 @@
         android:layout_height="wrap_content"
         android:src="@drawable/favorite_24px"
         app:srcPadding="@dimen/_4sdp"
-        app:title="Favorites" />
+        app:title="@string/menu_favorites" />
 
     <dev.melodify.uranophilelab.utils.customview.BottomSheetItemView
         android:id="@+id/history"
@@ -78,7 +78,7 @@
         android:layout_height="wrap_content"
         android:src="@drawable/round_history_24"
         app:srcPadding="@dimen/_4sdp"
-        app:title="History" />
+        app:title="@string/menu_history" />
 
     <dev.melodify.uranophilelab.utils.customview.BottomSheetItemView
         android:id="@+id/download_manager"
@@ -86,7 +86,7 @@
         android:layout_height="wrap_content"
         android:src="@drawable/baseline_download_for_offline_24"
         app:srcPadding="@dimen/_4sdp"
-        app:title="Downloads" />
+        app:title="@string/menu_downloads" />
 
     <dev.melodify.uranophilelab.utils.customview.BottomSheetItemView
         android:id="@+id/updates"
@@ -94,7 +94,7 @@
         android:layout_height="wrap_content"
         android:src="@drawable/ic_update_24"
         app:srcPadding="@dimen/_4sdp"
-        app:title="Check for Updates" />
+        app:title="@string/menu_check_updates" />
 
     <dev.melodify.uranophilelab.utils.customview.BottomSheetItemView
         android:id="@+id/about"
@@ -102,7 +102,7 @@
         android:layout_height="wrap_content"
         android:src="@drawable/round_info_outline_24"
         app:srcPadding="@dimen/_4sdp"
-        app:title="About" />
+        app:title="@string/menu_about" />
 
     <View
         android:layout_width="wrap_content"
@@ -116,7 +116,7 @@
         android:fontFamily="@font/avenir_next_regular"
         android:gravity="center"
         android:paddingStart="@dimen/_12sdp"
-        android:text="version 5.4.0"
+        tools:text="version 5.4.0"
         android:textColor="#B3B3B3"
         tools:ignore="RtlSymmetry" />
 

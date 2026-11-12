@@ -84,7 +84,7 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
     private val TAG = "MusicOverviewActivity"
 
     // private final MediaPlayer mediaPlayer = new MediaPlayer();
-    private val handler = Handler()
+    private val handler = Handler(Looper.getMainLooper())
     var binding: ActivityMusicOverviewBinding? = null
     private var SONG_URL = ""
     private var ID_FROM_EXTRA: String? = ""

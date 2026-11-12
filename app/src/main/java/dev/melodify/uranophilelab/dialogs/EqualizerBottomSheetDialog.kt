@@ -121,7 +121,7 @@ class EqualizerBottomSheetDialog(context: Context) :
         }
 
         // Live curve update
-        liveCurveOverlay?.setGains(gains, isSelected = enabled, accentColor = Color.parseColor("#1DB954"))
+        liveCurveOverlay?.setGains(gains, isSelected = enabled, accentColor = Color.parseColor("#F43F5E"))
 
         // Reset button state (dimmed when flat)
         val isFlat = gains.all { abs(it) < 0.05f }
@@ -132,7 +132,7 @@ class EqualizerBottomSheetDialog(context: Context) :
         val activeName = preset?.name ?: "Custom"
         val statusText = if (enabled) "Active: $activeName" else "Disabled"
         eqSubtitle?.text = statusText
-        eqSubtitle?.setTextColor(if (enabled) Color.parseColor("#1DB954") else Color.parseColor("#888888"))
+        eqSubtitle?.setTextColor(if (enabled) Color.parseColor("#F43F5E") else Color.parseColor("#888888"))
 
         if (preset != null) {
             presetDescriptionText?.text = preset.description
@@ -226,22 +226,22 @@ class EqualizerBottomSheetDialog(context: Context) :
 
             holder.presetNameText.text = preset.name
             holder.presetNameText.setTextColor(
-                if (isSelected) Color.parseColor("#1DB954") else Color.parseColor("#E0E0E0")
+                if (isSelected) Color.parseColor("#F43F5E") else Color.parseColor("#E0E0E0")
             )
 
             holder.eqCurveView.setGains(
                 preset.gains,
                 isSelected = isSelected,
-                accentColor = Color.parseColor("#1DB954")
+                accentColor = Color.parseColor("#F43F5E")
             )
 
             val surfaceColor = MaterialColors.getColor(holder.itemView, com.google.android.material.R.attr.colorSurface)
             holder.cardContainer.setCardBackgroundColor(
-                if (isSelected) Color.argb(38, 29, 185, 84) else surfaceColor
+                if (isSelected) Color.argb(38, 244, 63, 94) else surfaceColor
             )
 
             holder.cardContainer.strokeColor =
-                if (isSelected) Color.parseColor("#1DB954") else Color.parseColor("#33888888")
+                if (isSelected) Color.parseColor("#F43F5E") else Color.parseColor("#33888888")
             holder.cardContainer.strokeWidth = if (isSelected) 4 else 2
 
             holder.cardContainer.setOnClickListener {

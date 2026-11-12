@@ -41,7 +41,7 @@ class EqBandSliderView @JvmOverloads constructor(
     }
 
     private val activeTrackPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#1DB954")
+        color = Color.parseColor("#F43F5E")
         style = Paint.Style.FILL
     }
 
@@ -64,7 +64,7 @@ class EqBandSliderView @JvmOverloads constructor(
     }
 
     private val bubbleBgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#1DB954")
+        color = Color.parseColor("#F43F5E")
         style = Paint.Style.FILL
     }
 
@@ -185,8 +185,8 @@ class EqBandSliderView @JvmOverloads constructor(
             canvas.drawRoundRect(rectF, trackWidth / 2f, trackWidth / 2f, activeTrackPaint)
         }
 
-        // Thumb styling: neutral gray at 0 dB, accent green when changed
-        thumbPaint.color = if (isChanged && isEnabled) Color.parseColor("#1DB954") else Color.parseColor("#999999")
+        // Thumb styling: neutral gray at 0 dB, accent red when changed
+        thumbPaint.color = if (isChanged && isEnabled) Color.parseColor("#F43F5E") else Color.parseColor("#999999")
 
         val thumbWidth = (w * 0.88f).coerceIn(38f, 62f)
         val thumbHeight = 32f

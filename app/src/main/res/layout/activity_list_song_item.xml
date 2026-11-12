@@ -92,7 +92,7 @@
             android:layout_height="@dimen/_18sdp"
             android:src="@drawable/favorite_24px"
             android:visibility="gone"
-            app:tint="#1DB954"
+            app:tint="@color/spotify_green"
             android:contentDescription="Favorite" />
 
         <ImageView

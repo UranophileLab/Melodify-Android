@@ -170,7 +170,12 @@ object MusicPlayerManager {
                         appContext?.let { ctx ->
                             ListeningEventTracker.onTrackEnded(ctx, completed = true, wasSkipped = false)
                         }
-                        if (duration > 0 && currentPos >= duration - 1500) {
+                        val isNearEnd = if (duration >= 1500) {
+                            currentPos >= duration - 1500
+                        } else {
+                            duration > 0 && currentPos >= (duration * 0.8).toLong()
+                        }
+                        if (isNearEnd) {
                             nextTrack()
                         } else {
                             Log.w(TAG, "STATE_ENDED fired prematurely (pos: $currentPos, dur: $duration). Ignoring auto-skip.")
@@ -217,7 +222,7 @@ object MusicPlayerManager {
     }
 
     private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID_1, "Media Controls",
                 NotificationManager.IMPORTANCE_DEFAULT
@@ -619,7 +624,7 @@ object MusicPlayerManager {
                 } ?: return
                 if (songResponse.success && !songResponse.data.isNullOrEmpty()) {
                     CURRENT_TRACK = songResponse
-                    val firstSong = songResponse.data?.get(0) ?: return
+                    val firstSong = songResponse.data?.firstOrNull() ?: return
                     MUSIC_TITLE = firstSong.name()
                     MUSIC_DESCRIPTION = "${MusicOverviewActivity.convertPlayCount(firstSong.playCount ?: 0)} plays | ${firstSong.year} | ${firstSong.copyright}"
                     firstSong.image?.lastOrNull()?.url?.let { IMAGE_URL = it }
@@ -707,8 +712,9 @@ object MusicPlayerManager {
                 trackQueue = existingQueue
 
                 track_position++
-                if (track_position in 0 until trackQueue!!.size) {
-                    MUSIC_ID = trackQueue!![track_position]
+                val queue = trackQueue
+                if (queue != null && track_position in 0 until queue.size) {
+                    MUSIC_ID = queue[track_position]
                     playTrack()
                     showNotification()
                     updateWidget()
