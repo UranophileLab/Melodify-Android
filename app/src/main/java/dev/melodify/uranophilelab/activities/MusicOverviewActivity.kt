@@ -29,6 +29,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.PopupMenu
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
+import dev.melodify.uranophilelab.utils.AnimatedMenuHelper
 import dev.melodify.uranophilelab.utils.ListeningEventTracker
 import dev.melodify.uranophilelab.utils.ShuffleUtil
 import dev.melodify.uranophilelab.utils.SleepTimerManager
@@ -65,6 +66,12 @@ import dev.melodify.uranophilelab.utils.SharedPreferenceManager
 import dev.melodify.uranophilelab.utils.TrackDownloader
 import dev.melodify.uranophilelab.utils.TrackDownloader.TrackDownloadListener
 import dev.melodify.uranophilelab.utils.customview.BottomSheetItemView
+import dev.melodify.uranophilelab.utils.HapticUtil
+import dev.melodify.uranophilelab.utils.customview.AnimatedEqualizerView
+import android.graphics.RenderEffect
+import android.graphics.Shader
+import android.animation.ValueAnimator
+import android.view.animation.AccelerateDecelerateInterpolator
 import com.bumptech.glide.Glide
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
@@ -177,6 +184,7 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
 
         binding!!.title.isSelected = true
         binding!!.description.isSelected = true
+        binding!!.headerTitle?.isSelected = true
 
         val toggleLyrics = {
             lastLyricsToggledTime = System.currentTimeMillis()
@@ -241,11 +249,13 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
                     ) {
                         if (diffX < 0) {
                             // Swipe left → next
+                            HapticUtil.tap(binding?.root)
                             binding!!.nextIcon.alpha = 0.5f
                             binding!!.nextIcon.animate().alpha(1.0f).setDuration(200).start()
                             MusicPlayerManager.nextTrack()
                         } else {
                             // Swipe right → previous
+                            HapticUtil.tap(binding?.root)
                             binding!!.prevIcon.alpha = 0.5f
                             binding!!.prevIcon.animate().alpha(1.0f).setDuration(200).start()
                             MusicPlayerManager.prevTrack()
@@ -278,12 +288,14 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
         })
 
         binding!!.queueIcon?.setOnClickListener {
+            HapticUtil.tap(it)
             dev.melodify.uranophilelab.utils.MiniPlayerHelper.showQueueBottomSheet(this)
         }
 
         if ((MusicPlayerManager.trackQueue?.size ?: 0) <= 1) binding!!.shuffleIcon.visibility = View.INVISIBLE
 
-        binding!!.playPauseImage.setOnClickListener(View.OnClickListener { _: View? ->
+        binding!!.playPauseImage.setOnClickListener(View.OnClickListener { v: View? ->
+            HapticUtil.tap(v)
             try {
                 if (MusicPlayerManager.player == null) {
                     Log.e(TAG, "Player is null, cannot toggle playback")
@@ -312,14 +324,22 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
 
         binding!!.seekbar.max = 100
 
+        var lastHapticSeekProgress = -1
         binding!!.seekbar.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, i: Int, b: Boolean) {
+                if (b && kotlin.math.abs(i - lastHapticSeekProgress) >= 5) {
+                    HapticUtil.tick(seekBar)
+                    lastHapticSeekProgress = i
+                }
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar?) {
+                HapticUtil.tick(seekBar)
+                lastHapticSeekProgress = seekBar?.progress ?: -1
             }
 
             override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                HapticUtil.tap(seekBar)
                 val p = MusicPlayerManager.player
                 if (p != null) {
                     val playPosition = ((p.duration / 100)
@@ -332,7 +352,8 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
 
         // val baseApplicationClass = getApplicationContext() as BaseApplicationClass
 
-        binding!!.nextIcon.setOnClickListener(View.OnClickListener {
+        binding!!.nextIcon.setOnClickListener(View.OnClickListener { v ->
+            HapticUtil.tap(v)
             try {
                 Log.i(TAG, "Next button clicked")
                 if (MusicPlayerManager.player == null) {
@@ -378,7 +399,8 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
             }
         })
 
-        binding!!.prevIcon.setOnClickListener(View.OnClickListener {
+        binding!!.prevIcon.setOnClickListener(View.OnClickListener { v ->
+            HapticUtil.tap(v)
             try {
                 Log.i(TAG, "Previous button clicked")
                 if (MusicPlayerManager.player == null) {
@@ -436,7 +458,8 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
             }
         })
 
-        binding!!.repeatIcon.setOnClickListener(View.OnClickListener {
+        binding!!.repeatIcon.setOnClickListener(View.OnClickListener { v ->
+            HapticUtil.tap(v)
             try {
                 // Cycle through all three repeat modes
                 val player = MusicPlayerManager.player ?: return@OnClickListener
@@ -487,7 +510,8 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
             }
         })
 
-        binding!!.shuffleIcon.setOnClickListener {
+        binding!!.shuffleIcon.setOnClickListener { v ->
+            HapticUtil.tap(v)
             val player = MusicPlayerManager.player
             if (player != null) {
                 val newShuffleState = !player.shuffleModeEnabled
@@ -527,18 +551,17 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
             ).show()
         }
 
-        binding?.favoriteIcon?.setOnClickListener {
+        binding?.favoriteIcon?.setOnClickListener { v ->
+            HapticUtil.confirm(v)
             val songId = if (!MusicPlayerManager.MUSIC_ID.isNullOrEmpty()) MusicPlayerManager.MUSIC_ID else ID_FROM_EXTRA
             if (songId.isNullOrEmpty()) return@setOnClickListener
 
-            val currentSong = mSongResponse?.data?.getOrNull(0)
-            val songTitle = binding!!.title.text.toString()
-            val primaryArtist = if (artistsList.size > 0) artistsList[0].name() else ""
+            val (finalTitle, primaryArtist, coverUrl) = getCurrentTrackMetadata()
             val songItem = SongHistoryItem(
                 id = songId,
-                title = if (songTitle != "loading...") songTitle else currentSong?.name() ?: "",
+                title = finalTitle,
                 artist = primaryArtist,
-                imageUrl = IMAGE_URL
+                imageUrl = coverUrl
             )
             val prefs = SharedPreferenceManager.getInstance(this)
             val added = prefs.toggleFavorite(songItem)
@@ -550,7 +573,8 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
             Snackbar.make(binding!!.root, msg, Snackbar.LENGTH_SHORT).show()
         }
 
-        binding!!.shareIcon.setOnClickListener(View.OnClickListener {
+        binding!!.shareIcon.setOnClickListener(View.OnClickListener { v ->
+            HapticUtil.tap(v)
             if (SHARE_URL.isBlank()) return@OnClickListener
             val sendIntent = Intent()
             sendIntent.action = Intent.ACTION_SEND
@@ -559,17 +583,26 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
             startActivity(sendIntent)
         })
 
-        binding!!.moreIcon.setOnClickListener(View.OnClickListener {
+        binding!!.collapseIcon?.setOnClickListener { v ->
+            HapticUtil.tap(v)
+            finish()
+        }
+
+        binding!!.moreIcon.setOnClickListener(View.OnClickListener { v ->
+            HapticUtil.tap(v)
             val bottomSheetDialog = BottomSheetDialog(
                 this@MusicOverviewActivity,
                 R.style.MyBottomSheetDialogTheme
             )
             val _binding = MusicOverviewMoreInfoBottomSheetBinding
                 .inflate(layoutInflater)
-            _binding.albumTitle.text = binding!!.title.text.toString()
-            _binding.albumSubTitle.text = binding!!.description.text.toString()
-            if (!IMAGE_URL.isNullOrBlank() && IMAGE_URL != "<shimmer>") {
-                Glide.with(_binding.coverImage.context).load(IMAGE_URL?.toUri()).into(_binding.coverImage)
+            val (metaTitle, metaArtist, metaCover) = getCurrentTrackMetadata()
+            _binding.albumTitle.text = metaTitle
+            _binding.albumSubTitle.text = metaArtist
+            if (!metaCover.isBlank() && metaCover != "<shimmer>") {
+                Glide.with(_binding.coverImage.context).load(metaCover.toUri()).into(_binding.coverImage)
+            } else {
+                _binding.coverImage.setImageResource(R.drawable.headphone)
             }
             val linearLayout = _binding.main
 
@@ -586,25 +619,17 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
             })
 
             _binding.addToLibrary.setOnClickListener(View.OnClickListener {
-                val sharedPreferenceManager: SharedPreferenceManager =
-                    SharedPreferenceManager.getInstance(this@MusicOverviewActivity)
-                var savedLibraries = sharedPreferenceManager.savedLibrariesData
-                if (savedLibraries == null) savedLibraries = SavedLibraries(ArrayList())
-                val lists = savedLibraries.lists ?: emptyList()
-                if (lists.isEmpty()) {
-                    Snackbar.make(_binding.getRoot(), "No Libraries Found", Snackbar.LENGTH_SHORT)
-                        .show()
-                    return@OnClickListener
-                }
-                val userCreatedLibraries: MutableList<String?> = ArrayList()
-                for (library in lists) {
-                    if (library != null && library.isCreatedByUser) userCreatedLibraries.add(library.name)
-                }
-
-                val materialAlertDialogBuilder = getMaterialAlertDialogBuilder(
-                    userCreatedLibraries, savedLibraries, sharedPreferenceManager
+                bottomSheetDialog.dismiss()
+                val songId = if (!MusicPlayerManager.MUSIC_ID.isNullOrEmpty()) MusicPlayerManager.MUSIC_ID else ID_FROM_EXTRA
+                if (songId.isNullOrEmpty()) return@OnClickListener
+                val (finalTitle, primaryArtist, coverUrl) = getCurrentTrackMetadata()
+                AnimatedMenuHelper.showAddToPlaylistDialog(
+                    activity = this@MusicOverviewActivity,
+                    songId = songId,
+                    songTitle = finalTitle,
+                    artist = primaryArtist,
+                    coverUrl = coverUrl
                 )
-                materialAlertDialogBuilder.show()
             })
 
             val song = mSongResponse?.data?.getOrNull(0) ?: return@OnClickListener
@@ -712,44 +737,6 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
         showData()
 
         updateTrackInfo()
-    }
-
-    private fun getMaterialAlertDialogBuilder(
-        userCreatedLibraries: MutableList<String?>,
-        savedLibraries: SavedLibraries, sharedPreferenceManager: SharedPreferenceManager
-    ): MaterialAlertDialogBuilder {
-        val materialAlertDialogBuilder = MaterialAlertDialogBuilder(
-            this@MusicOverviewActivity
-        )
-        val listAdapter: ListAdapter = ArrayAdapter<String?>(
-            this@MusicOverviewActivity, android.R.layout.simple_list_item_1,
-            userCreatedLibraries
-        )
-        materialAlertDialogBuilder.setAdapter(
-            listAdapter,
-            DialogInterface.OnClickListener { _: DialogInterface?, i: Int ->
-                // index = i;
-                Log.i(TAG, "pickedLibrary: $i")
-
-                val song = mSongResponse?.data?.getOrNull(0) ?: return@OnClickListener
-
-                val songs = Library.Songs(
-                    song.id,
-                    song.name(),
-                    binding!!.description.text.toString(),
-                    IMAGE_URL
-                )
-
-                savedLibraries.lists?.get(i)?.songs?.add(songs)
-                sharedPreferenceManager.savedLibrariesData = savedLibraries
-                Toast.makeText(
-                    this@MusicOverviewActivity, "Added to " + savedLibraries.lists?.get(i)?.name,
-                    Toast.LENGTH_SHORT
-                ).show()
-            })
-
-        materialAlertDialogBuilder.setTitle("Select Library")
-        return materialAlertDialogBuilder
     }
 
     override fun onResume() {
@@ -900,6 +887,12 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
 
         binding!!.title.text = song.name()
         binding!!.description.text = if (!primaryArtistName.isNullOrEmpty()) primaryArtistName else song.copyright ?: ""
+        
+        binding!!.title.isSelected = true
+        binding!!.description.isSelected = true
+        binding!!.headerTitle?.isSelected = true
+        binding!!.headerTitle?.text = if (!albumName.isNullOrEmpty()) albumName else (primaryArtistName ?: getString(R.string.app_name))
+        binding!!.headerTitle?.isSelected = true
         val image = song.image
         IMAGE_URL = if (!image.isNullOrEmpty()) image[image.size - 1]?.url ?: "" else ""
         SHARE_URL = song.url ?: ""
@@ -1028,8 +1021,8 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
 
                         val isNight = isNightMode()
                         val dynamicGradient = if (isNight) {
-                            val topColor = adjustColorDarkness(primaryColor, 0.65f)
-                            val centerColor = adjustColorDarkness(primaryColor, 0.20f)
+                            val topColor = adjustColorDarkness(primaryColor, 0.70f)
+                            val centerColor = adjustColorDarkness(primaryColor, 0.22f)
                             val bottomColor = Color.parseColor("#121212")
                             GradientDrawable(
                                 GradientDrawable.Orientation.TOP_BOTTOM,
@@ -1154,9 +1147,51 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
     private val mHandler = Handler(Looper.getMainLooper())
     private val mUpdateTimeTask = Runnable { this.updateTrackInfo() }
 
+    private fun getCurrentTrackMetadata(): Triple<String, String, String> {
+        val currentTrackData = MusicPlayerManager.CURRENT_TRACK?.data?.getOrNull(0)
+
+        // 1. Cover URL
+        val coverUrl = when {
+            !MusicPlayerManager.IMAGE_URL.isNullOrBlank() && MusicPlayerManager.IMAGE_URL != "<shimmer>" -> MusicPlayerManager.IMAGE_URL!!
+            !IMAGE_URL.isNullOrBlank() && IMAGE_URL != "<shimmer>" -> IMAGE_URL!!
+            !currentTrackData?.image.isNullOrEmpty() -> currentTrackData?.image?.lastOrNull()?.url ?: ""
+            !mSongResponse?.data.isNullOrEmpty() -> mSongResponse?.data?.getOrNull(0)?.image?.lastOrNull()?.url ?: ""
+            else -> ""
+        }
+
+        // 2. Title
+        val title = when {
+            !binding?.title?.text.isNullOrBlank() && binding?.title?.text != "loading..." -> binding!!.title.text.toString()
+            !MusicPlayerManager.MUSIC_TITLE.isNullOrBlank() -> MusicPlayerManager.MUSIC_TITLE!!
+            currentTrackData != null -> currentTrackData.name()
+            !mSongResponse?.data.isNullOrEmpty() -> mSongResponse!!.data!![0]!!.name()
+            else -> "Unknown Track"
+        }
+
+        // 3. Artist
+        val artist = when {
+            !MusicPlayerManager.MUSIC_DESCRIPTION.isNullOrBlank() -> MusicPlayerManager.MUSIC_DESCRIPTION!!
+            !binding?.description?.text.isNullOrBlank() -> binding!!.description.text.toString()
+            currentTrackData?.artists?.primary?.isNotEmpty() == true -> currentTrackData.artists!!.primary!![0]!!.name()
+            artistsList.isNotEmpty() -> artistsList[0].name()
+            else -> ""
+        }
+
+        return Triple(title, artist, coverUrl)
+    }
+
     private fun updateTrackInfo() {
         mHandler.removeCallbacks(mUpdateTimeTask)
         if (isFinishing || isDestroyed || binding == null) return
+
+        val playerImage = MusicPlayerManager.IMAGE_URL
+        if (!playerImage.isNullOrBlank() && playerImage != "<shimmer>") {
+            IMAGE_URL = playerImage
+        }
+        val playerId = MusicPlayerManager.MUSIC_ID
+        if (!playerId.isNullOrBlank()) {
+            ID_FROM_EXTRA = playerId
+        }
 
         updateFavoriteStatus()
 
@@ -1190,10 +1225,16 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
             binding?.totalDuration?.text = "00:00"
         }
 
-        if (p.isPlaying) binding?.playPauseImage?.setImageResource(
+        val isPlaying = p.isPlaying
+        if (isPlaying) binding?.playPauseImage?.setImageResource(
             R.drawable.baseline_pause_24
         )
         else binding?.playPauseImage?.setImageResource(R.drawable.play_arrow_24px)
+
+        binding?.nowPlayingEqualizer?.let { eq ->
+            eq.visibility = if (isPlaying) View.VISIBLE else View.GONE
+            eq.isAnimating = isPlaying
+        }
 
         // Update repeat and shuffle button UI
         updateRepeatButtonUI()

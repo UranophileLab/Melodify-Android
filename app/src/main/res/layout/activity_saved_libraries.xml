@@ -23,27 +23,37 @@
         <ImageView
             android:layout_width="@dimen/_35sdp"
             android:layout_height="@dimen/_35sdp"
-            android:padding="@dimen/_4sdp"
+            android:padding="@dimen/_6sdp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackgroundBorderless"
             android:onClick="backPress"
             android:src="@drawable/round_arrow_back_24"
+            app:tint="@color/textMain"
             tools:ignore="UsingOnClickInXml" />
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="@dimen/_8sdp"
+            android:layout_weight="1"
+            android:fontFamily="@font/avenir_next_bold"
             android:text="Your Library"
-            android:textSize="@dimen/_16ssp"
-            android:textStyle="bold"
-            android:layout_weight="1" />
+            android:textColor="@color/textMain"
+            android:textSize="@dimen/_18ssp"
+            android:textStyle="bold" />
 
         <ImageView
             android:contentDescription="import library"
             android:id="@+id/importLibrary"
             android:layout_width="@dimen/_35sdp"
             android:layout_height="@dimen/_35sdp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_import"
-            android:padding="@dimen/_4sdp"
+            android:padding="@dimen/_6sdp"
+            app:tint="@color/textMain"
             tools:ignore="HardcodedText" />
 
         <ImageView
@@ -51,8 +61,12 @@
             android:id="@+id/exportLibrary"
             android:layout_width="@dimen/_35sdp"
             android:layout_height="@dimen/_35sdp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_export"
-            android:padding="@dimen/_4sdp"
+            android:padding="@dimen/_6sdp"
+            app:tint="@color/textMain"
             tools:ignore="HardcodedText" />
 
         <ImageView
@@ -60,8 +74,12 @@
             android:id="@+id/addNewLibrary"
             android:layout_width="@dimen/_35sdp"
             android:layout_height="@dimen/_35sdp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/round_add_24"
-            android:padding="@dimen/_4sdp"
+            android:padding="@dimen/_6sdp"
+            app:tint="@color/textMain"
             tools:ignore="HardcodedText" />
 
     </LinearLayout>
@@ -70,6 +88,7 @@
         android:id="@+id/divider"
         android:layout_width="match_parent"
         android:layout_height="0.5dp"
+        android:alpha="0.2"
         android:background="@color/textSec"
         app:layout_constraintTop_toBottomOf="@id/toolbar"
         app:layout_constraintStart_toStartOf="parent"

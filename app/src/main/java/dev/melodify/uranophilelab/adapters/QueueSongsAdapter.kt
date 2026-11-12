@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import dev.melodify.uranophilelab.R
 import dev.melodify.uranophilelab.records.SongResponse.Song
+import dev.melodify.uranophilelab.utils.HapticUtil
 import dev.melodify.uranophilelab.utils.MusicPlayerManager
 import com.bumptech.glide.Glide
 
@@ -42,6 +43,7 @@ class QueueSongsAdapter(
                 val to   = target.bindingAdapterPosition
                 if (dragFrom == -1) dragFrom = from
                 dragTo = to
+                HapticUtil.tick(recyclerView)
                 // Immediately animate the swap in the adapter
                 val item = data.removeAt(from)
                 data.add(to, item)
@@ -60,6 +62,7 @@ class QueueSongsAdapter(
                 super.clearView(recyclerView, viewHolder)
                 // Notify caller only once the drag is fully released
                 if (dragFrom != -1 && dragTo != -1 && dragFrom != dragTo) {
+                    HapticUtil.confirm(recyclerView)
                     onOrderChanged?.invoke(dragFrom, dragTo)
                 }
                 dragFrom = -1
@@ -134,11 +137,13 @@ class QueueSongsAdapter(
         moreIcon.visibility = View.VISIBLE
         moreIcon.setImageResource(R.drawable.baseline_clear_24)
         moreIcon.setOnClickListener {
+            HapticUtil.tap(it)
             val pos = holder.bindingAdapterPosition
             if (pos != RecyclerView.NO_ID.toInt()) onRemoveClick(pos)
         }
         
         holder.itemView.setOnClickListener {
+            HapticUtil.tap(it)
             val pos = holder.bindingAdapterPosition
             if (pos != RecyclerView.NO_ID.toInt()) onSongClick(pos)
         }

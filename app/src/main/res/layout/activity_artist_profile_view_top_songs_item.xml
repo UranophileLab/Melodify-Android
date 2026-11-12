@@ -21,34 +21,48 @@
         android:textSize="@dimen/_12ssp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/coverImage"
+        app:layout_constraintEnd_toStartOf="@+id/coverCard"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <ImageView
-        android:id="@+id/coverImage"
-        android:layout_width="@dimen/_30sdp"
-        android:layout_height="@dimen/_30sdp"
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/coverCard"
+        android:layout_width="@dimen/_34sdp"
+        android:layout_height="@dimen/_34sdp"
         android:layout_marginStart="@dimen/_4sdp"
-        android:background="@color/textSec"
-        android:contentDescription="Artist-Profile-Image"
+        android:stateListAnimator="@null"
+        app:cardBackgroundColor="@android:color/transparent"
+        app:cardCornerRadius="@dimen/_6sdp"
+        app:cardElevation="0dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="#1FFFFFFF"
+        app:cardPreventCornerOverlap="false"
         app:layout_constraintBottom_toBottomOf="@id/position"
         app:layout_constraintStart_toEndOf="@id/position"
-        app:layout_constraintTop_toTopOf="@id/position" />
+        app:layout_constraintTop_toTopOf="@id/position">
+
+        <ImageView
+            android:id="@+id/coverImage"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:contentDescription="Artist-Profile-Image" />
+
+    </com.google.android.material.card.MaterialCardView>
 
     <TextView
         android:id="@+id/coverTitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/_6sdp"
+        android:layout_marginStart="@dimen/_8sdp"
         android:singleLine="true"
         android:text="a long song name will appear here"
         android:textColor="@color/textMain"
         android:textSize="@dimen/_14ssp"
         android:textStyle="bold"
         app:layout_constraintEnd_toStartOf="@+id/more"
-        app:layout_constraintStart_toEndOf="@id/coverImage"
-        app:layout_constraintTop_toTopOf="@id/coverImage" />
+        app:layout_constraintStart_toEndOf="@id/coverCard"
+        app:layout_constraintTop_toTopOf="@id/coverCard" />
 
     <TextView
         android:id="@+id/coverPlayed"

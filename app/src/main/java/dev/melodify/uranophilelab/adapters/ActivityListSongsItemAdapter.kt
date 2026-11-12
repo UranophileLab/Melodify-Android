@@ -18,9 +18,11 @@ import dev.melodify.uranophilelab.activities.MusicOverviewActivity
 import dev.melodify.uranophilelab.model.history.SongHistoryItem
 import dev.melodify.uranophilelab.records.SongResponse.Song
 import dev.melodify.uranophilelab.utils.AnimatedMenuHelper
+import dev.melodify.uranophilelab.utils.HapticUtil
 import dev.melodify.uranophilelab.utils.ListeningEventTracker
 import dev.melodify.uranophilelab.utils.MusicPlayerManager
 import dev.melodify.uranophilelab.utils.SharedPreferenceManager
+import dev.melodify.uranophilelab.utils.customview.AnimatedEqualizerView
 
 class ActivityListSongsItemAdapter(private val data: MutableList<Song>) :
     RecyclerView.Adapter<ActivityListSongsItemAdapter.ViewHolder>() {
@@ -30,6 +32,7 @@ class ActivityListSongsItemAdapter(private val data: MutableList<Song>) :
         val artistView: TextView? = itemView.findViewById(R.id.artist)
         val coverImage: ImageView? = itemView.findViewById(R.id.coverImage)
         val moreIcon: ImageView? = itemView.findViewById(R.id.more)
+        val playingEqualizer: AnimatedEqualizerView? = itemView.findViewById(R.id.playing_equalizer)
         val shimmer: ShimmerFrameLayout? = itemView.findViewById(R.id.shimmer)
 
         init {
@@ -62,6 +65,13 @@ class ActivityListSongsItemAdapter(private val data: MutableList<Song>) :
             holder.titleView?.setTypeface(null, Typeface.NORMAL)
         }
 
+        val eqView = holder.playingEqualizer
+        if (eqView != null) {
+            val isPlaying = isCurrentPlaying && (MusicPlayerManager.player?.isPlaying == true)
+            eqView.visibility = if (isCurrentPlaying) View.VISIBLE else View.GONE
+            eqView.isAnimating = isPlaying
+        }
+
         val artistsNames = StringBuilder()
         val artistsList = song.artists?.all.orEmpty()
         for (a in artistsList) {
@@ -82,6 +92,7 @@ class ActivityListSongsItemAdapter(private val data: MutableList<Song>) :
             favIcon.visibility = if (isFav) View.VISIBLE else View.GONE
             favIcon.setImageResource(R.drawable.favorite_24px)
             favIcon.setOnClickListener {
+                HapticUtil.confirm(it)
                 if (songId.isNullOrEmpty()) return@setOnClickListener
                 val primaryArtist = if (artistsList.isNotEmpty()) artistsList[0]?.name() ?: "" else ""
                 val images = song.image
@@ -117,6 +128,7 @@ class ActivityListSongsItemAdapter(private val data: MutableList<Song>) :
         val moreIcon = holder.moreIcon
         if (moreIcon != null) {
             moreIcon.setOnClickListener { v ->
+                HapticUtil.tap(v)
                 val songId = song.id ?: return@setOnClickListener
                 val primaryArtist = if (artistsList.isNotEmpty()) artistsList[0]?.name() ?: "" else ""
                 AnimatedMenuHelper.showAnimatedSongMenu(
@@ -134,6 +146,7 @@ class ActivityListSongsItemAdapter(private val data: MutableList<Song>) :
         }
 
         holder.itemView.setOnClickListener { view: View ->
+            HapticUtil.tap(view)
             MusicPlayerManager.trackQueue?.clear()
             var clickIndex = 0
             var validIndex = 0

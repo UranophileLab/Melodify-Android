@@ -3,7 +3,7 @@
     <!-- Background Track (Unplayed) -->
     <item android:id="@android:id/background">
         <shape android:shape="rectangle">
-            <corners android:radius="2dp" />
+            <corners android:radius="3dp" />
             <solid android:color="@color/seekbar_track_background" />
         </shape>
     </item>
@@ -11,7 +11,7 @@
     <item android:id="@android:id/secondaryProgress">
         <clip>
             <shape android:shape="rectangle">
-                <corners android:radius="2dp" />
+                <corners android:radius="3dp" />
                 <solid android:color="@color/seekbar_secondary_progress" />
             </shape>
         </clip>
@@ -20,7 +20,7 @@
     <item android:id="@android:id/progress">
         <clip>
             <shape android:shape="rectangle">
-                <corners android:radius="2dp" />
+                <corners android:radius="3dp" />
                 <solid android:color="@color/text_light" />
             </shape>
         </clip>

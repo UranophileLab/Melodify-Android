@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <color name="white">#FFFFFF</color>
     <color name="background">#FFFFFF</color>
     <color name="textMain">#121212</color>
     <color name="textSec">#666666</color>
@@ -45,6 +46,17 @@
     <color name="gray_600">#757575</color>
 
     <color name="widget_transparent_75">#BF0A0A0A</color>
+
+    <!-- True Auris-spec Liquid Glass colors (Light theme) -->
+    <color name="glass_nav_background">#D9F8FAFC</color>
+    <color name="glass_nav_stroke">#1A000000</color>
+    <color name="glass_card_background">#CCF5F7FA</color>
+    <color name="glass_card_stroke">#14000000</color>
+    <color name="glass_sheet_background">#E6F8FAFC</color>
+    <!-- Auris translucent specular pill (approx 45% tint + specular hairline) -->
+    <color name="glass_pill_background">#73F0F4F8</color>
+    <color name="glass_pill_stroke">#24000000</color>
+    <color name="glass_pill_rim_highlight">#66FFFFFF</color>
 
     <!-- Seekbar track colors -->
     <color name="seekbar_track_background">#33000000</color>

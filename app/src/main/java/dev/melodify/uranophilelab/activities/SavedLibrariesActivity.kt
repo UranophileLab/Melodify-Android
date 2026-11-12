@@ -193,9 +193,11 @@ class SavedLibrariesActivity : AppCompatActivity() {
             this
         )
     ) {
+        sharedPreferenceManager.syncLikedSongsLibrary()
         val libs = sharedPreferenceManager.savedLibrariesData
         savedLibraries = libs
-        binding!!.emptyListTv.visibility = if (libs == null) View.VISIBLE else View.GONE
+        val hasItems = libs?.lists?.any { it != null } == true
+        binding!!.emptyListTv.visibility = if (!hasItems) View.VISIBLE else View.GONE
         if (libs != null) binding!!.recyclerView.setAdapter(
             SavedLibrariesAdapter(
                 libs.lists ?: mutableListOf()

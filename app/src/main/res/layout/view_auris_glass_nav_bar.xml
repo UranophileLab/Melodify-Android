@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    tools:parentTag="android.widget.FrameLayout">
+
+    <!-- Outer Auris Liquid Glass Capsule Container -->
+    <FrameLayout
+        android:id="@+id/nav_glass_container"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/_50sdp"
+        android:background="@drawable/bg_auris_glass_bar"
+        android:paddingHorizontal="@dimen/_6sdp"
+        android:paddingVertical="@dimen/_5sdp">
+
+        <!-- Traveling Active Tab Capsule Pill (Auris Red Coral Lens) -->
+        <View
+            android:id="@+id/active_tab_pill"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_auris_active_tab_pill" />
+
+        <!-- Tab Items Row -->
+        <LinearLayout
+            android:id="@+id/tabs_row"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <!-- Home Tab -->
+            <LinearLayout
+                android:id="@+id/tab_home"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:paddingVertical="@dimen/_4sdp">
+
+                <ImageView
+                    android:id="@+id/tab_home_icon"
+                    android:layout_width="@dimen/_20sdp"
+                    android:layout_height="@dimen/_20sdp"
+                    android:src="@drawable/ic_home_24"
+                    app:tint="@android:color/white"
+                    android:contentDescription="Home" />
+
+                <TextView
+                    android:id="@+id/tab_home_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:fontFamily="@font/avenir_next_bold"
+                    android:text="Home"
+                    android:textColor="@android:color/white"
+                    android:textSize="@dimen/_8ssp" />
+
+            </LinearLayout>
+
+            <!-- Search Tab -->
+            <LinearLayout
+                android:id="@+id/tab_search"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:paddingVertical="@dimen/_4sdp">
+
+                <ImageView
+                    android:id="@+id/tab_search_icon"
+                    android:layout_width="@dimen/_20sdp"
+                    android:layout_height="@dimen/_20sdp"
+                    android:src="@drawable/search_24px"
+                    app:tint="@color/textSec"
+                    android:contentDescription="Search" />
+
+                <TextView
+                    android:id="@+id/tab_search_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:fontFamily="@font/avenir_next_bold"
+                    android:text="Search"
+                    android:textColor="@color/textSec"
+                    android:textSize="@dimen/_8ssp" />
+
+            </LinearLayout>
+
+            <!-- Library Tab -->
+            <LinearLayout
+                android:id="@+id/tab_library"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:paddingVertical="@dimen/_4sdp">
+
+                <ImageView
+                    android:id="@+id/tab_library_icon"
+                    android:layout_width="@dimen/_20sdp"
+                    android:layout_height="@dimen/_20sdp"
+                    android:src="@drawable/baseline_library_music_24"
+                    app:tint="@color/textSec"
+                    android:contentDescription="Library" />
+
+                <TextView
+                    android:id="@+id/tab_library_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:fontFamily="@font/avenir_next_bold"
+                    android:text="Library"
+                    android:textColor="@color/textSec"
+                    android:textSize="@dimen/_8ssp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </FrameLayout>
+
+</merge>
+

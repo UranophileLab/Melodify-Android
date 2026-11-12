@@ -9,7 +9,7 @@
     android:background="@drawable/bg_player_gradient"
     tools:context=".activities.MusicOverviewActivity">
 
-    <!-- Top Toolbar -->
+    <!-- Top Toolbar with Collapse and Options -->
     <LinearLayout
         android:id="@+id/__toolbar"
         android:layout_width="match_parent"
@@ -23,19 +23,59 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <View
-            android:layout_width="0dp"
-            android:layout_height="1dp"
-            android:layout_weight="1" />
-
         <ImageView
-            android:id="@+id/more_icon"
-            android:layout_width="@dimen/_32sdp"
-            android:layout_height="@dimen/_32sdp"
+            android:id="@+id/collapse_icon"
+            android:layout_width="@dimen/_28sdp"
+            android:layout_height="@dimen/_28sdp"
             android:clickable="true"
             android:focusable="true"
             android:foreground="?attr/selectableItemBackgroundBorderless"
-            android:padding="@dimen/_6sdp"
+            android:padding="@dimen/_4sdp"
+            android:src="@drawable/round_keyboard_arrow_down_24"
+            app:tint="@color/text_light"
+            android:contentDescription="Collapse" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/_8sdp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="PLAYING FROM"
+                android:textAllCaps="true"
+                android:fontFamily="@font/avenir_next_bold"
+                android:textColor="#80FFFFFF"
+                android:textSize="@dimen/_7ssp"
+                android:letterSpacing="0.1" />
+
+            <TextView
+                android:id="@+id/header_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:singleLine="true"
+                android:ellipsize="marquee"
+                android:marqueeRepeatLimit="marquee_forever"
+                android:scrollHorizontally="true"
+                android:text="@string/app_name"
+                android:fontFamily="@font/avenir_next_bold"
+                android:textColor="@color/text_light"
+                android:textSize="@dimen/_10ssp" />
+
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/more_icon"
+            android:layout_width="@dimen/_28sdp"
+            android:layout_height="@dimen/_28sdp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackgroundBorderless"
+            android:padding="@dimen/_4sdp"
             android:src="@drawable/more_vert_24px"
             app:tint="@color/text_light"
             android:contentDescription="@string/more_options" />
@@ -65,8 +105,11 @@
             android:layout_height="match_parent"
             android:layout_gravity="center"
             app:cardBackgroundColor="@android:color/transparent"
-            app:cardCornerRadius="@dimen/_12sdp"
-            app:strokeWidth="0dp">
+            app:cardCornerRadius="@dimen/_18sdp"
+            app:cardElevation="@dimen/_12sdp"
+            app:cardMaxElevation="@dimen/_16sdp"
+            app:strokeWidth="1.2dp"
+            app:strokeColor="#2EFFFFFF">
 
             <ImageView
                 android:id="@+id/coverImage"
@@ -111,27 +154,51 @@
                 android:layout_weight="1"
                 android:orientation="vertical">
 
-                <TextView
-                    android:id="@+id/title"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:ellipsize="marquee"
-                    android:gravity="start"
-                    android:scrollHorizontally="true"
-                    android:singleLine="true"
-                    android:text="loading..."
-                    android:textColor="@color/text_light"
-                    android:textSize="@dimen/_18ssp"
-                    android:fontFamily="@font/avenir_next_bold" />
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/title"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:ellipsize="marquee"
+                        android:marqueeRepeatLimit="marquee_forever"
+                        android:gravity="start"
+                        android:scrollHorizontally="true"
+                        android:singleLine="true"
+                        android:focusable="true"
+                        android:focusableInTouchMode="true"
+                        android:text="loading..."
+                        android:textColor="@color/text_light"
+                        android:textSize="@dimen/_18ssp"
+                        android:fontFamily="@font/avenir_next_bold" />
+
+                    <dev.melodify.uranophilelab.utils.customview.AnimatedEqualizerView
+                        android:id="@+id/now_playing_equalizer"
+                        android:layout_width="@dimen/_16sdp"
+                        android:layout_height="@dimen/_14sdp"
+                        android:layout_marginStart="@dimen/_8sdp"
+                        android:visibility="gone"
+                        tools:visibility="visible" />
+
+                </LinearLayout>
 
                 <TextView
                     android:id="@+id/description"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/_2sdp"
                     android:ellipsize="marquee"
+                    android:marqueeRepeatLimit="marquee_forever"
                     android:gravity="start"
                     android:scrollHorizontally="true"
                     android:singleLine="true"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
                     android:text="loading......."
                     android:textColor="#B3B3B3"
                     android:textSize="@dimen/_11ssp" />
@@ -142,9 +209,13 @@
                 android:id="@+id/favorite_icon"
                 android:layout_width="@dimen/_32sdp"
                 android:layout_height="@dimen/_32sdp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackgroundBorderless"
                 android:padding="@dimen/_2sdp"
                 android:src="@drawable/ic_circle_add"
-                app:tint="@color/text_light" />
+                app:tint="@color/text_light"
+                android:contentDescription="@string/favorite_or_add" />
 
         </LinearLayout>
 
@@ -157,7 +228,7 @@
             android:id="@+id/seekbarContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/_12sdp">
+            android:layout_marginBottom="@dimen/_10sdp">
 
             <SeekBar
                 android:id="@+id/seekbar"
@@ -169,6 +240,7 @@
                 android:thumbOffset="0dp"
                 android:splitTrack="false"
                 android:progressDrawable="@drawable/custom_seekbar_progress"
+                android:thumb="@drawable/custom_seekbar_thumb"
                 android:thumbTint="@color/text_light"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -211,6 +283,9 @@
                 android:id="@+id/shuffle_icon"
                 android:layout_width="@dimen/_32sdp"
                 android:layout_height="@dimen/_32sdp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackgroundBorderless"
                 android:padding="@dimen/_5sdp"
                 android:src="@drawable/shuffle_24px"
                 app:tint="@color/text_light"
@@ -222,6 +297,9 @@
                 android:id="@+id/repeat_icon"
                 android:layout_width="@dimen/_32sdp"
                 android:layout_height="@dimen/_32sdp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackgroundBorderless"
                 android:padding="@dimen/_5sdp"
                 android:src="@drawable/repeat_24px"
                 app:tint="@color/text_light"
@@ -231,10 +309,11 @@
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/__play_pause_icon_bg"
-                android:layout_width="@dimen/_48sdp"
-                android:layout_height="@dimen/_48sdp"
+                android:layout_width="@dimen/_50sdp"
+                android:layout_height="@dimen/_50sdp"
                 app:cardBackgroundColor="@color/text_light"
                 app:cardCornerRadius="999dp"
+                app:cardElevation="@dimen/_4sdp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -245,7 +324,10 @@
                     android:id="@+id/play_pause_image"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:padding="@dimen/_8sdp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackgroundBorderless"
+                    android:padding="@dimen/_9sdp"
                     android:src="@drawable/play_arrow_24px"
                     app:tint="@color/background" />
 
@@ -253,8 +335,11 @@
 
             <ImageView
                 android:id="@+id/prevIcon"
-                android:layout_width="@dimen/_32sdp"
-                android:layout_height="@dimen/_32sdp"
+                android:layout_width="@dimen/_34sdp"
+                android:layout_height="@dimen/_34sdp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackgroundBorderless"
                 android:padding="@dimen/_4sdp"
                 android:src="@drawable/skip_previous_24px"
                 app:tint="@color/text_light"
@@ -264,8 +349,11 @@
 
             <ImageView
                 android:id="@+id/nextIcon"
-                android:layout_width="@dimen/_32sdp"
-                android:layout_height="@dimen/_32sdp"
+                android:layout_width="@dimen/_34sdp"
+                android:layout_height="@dimen/_34sdp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackgroundBorderless"
                 android:padding="@dimen/_4sdp"
                 android:src="@drawable/skip_next_24px"
                 app:tint="@color/text_light"
@@ -288,20 +376,28 @@
 
             <ImageView
                 android:id="@+id/share_icon"
-                android:layout_width="@dimen/_24sdp"
-                android:layout_height="@dimen/_24sdp"
+                android:layout_width="@dimen/_26sdp"
+                android:layout_height="@dimen/_26sdp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackgroundBorderless"
                 android:padding="@dimen/_3sdp"
                 android:src="@drawable/share_24px"
-                app:tint="@color/text_light" />
+                app:tint="@color/text_light"
+                android:contentDescription="@string/share" />
 
             <ImageView
                 android:id="@+id/queue_icon"
-                android:layout_width="@dimen/_24sdp"
-                android:layout_height="@dimen/_24sdp"
+                android:layout_width="@dimen/_26sdp"
+                android:layout_height="@dimen/_26sdp"
                 android:layout_marginStart="@dimen/_8sdp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackgroundBorderless"
                 android:padding="@dimen/_3sdp"
                 android:src="@drawable/ic_queue_music"
-                app:tint="@color/text_light" />
+                app:tint="@color/text_light"
+                android:contentDescription="@string/queue" />
 
         </LinearLayout>
 

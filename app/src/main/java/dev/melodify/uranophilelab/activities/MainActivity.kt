@@ -8,6 +8,7 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
@@ -35,6 +36,7 @@ import dev.melodify.uranophilelab.adapters.SavedLibrariesAdapter
 import dev.melodify.uranophilelab.databinding.ActivityMainBinding
 import dev.melodify.uranophilelab.databinding.RecommendationsBottomSheetBinding
 import dev.melodify.uranophilelab.model.AlbumItem
+import dev.melodify.uranophilelab.utils.HapticUtil
 import dev.melodify.uranophilelab.network.ApiManager
 import dev.melodify.uranophilelab.network.NetworkChangeReceiver
 import dev.melodify.uranophilelab.network.NetworkChangeReceiver.NetworkStatusListener
@@ -94,7 +96,7 @@ class MainActivity : AppCompatActivity() {
         BaseApplicationClass.updateTheme(this)
 
         val initialToolbarPaddingTop = inflatedBinding.toolbar.paddingTop
-        val initialBottomNavPaddingBottom = inflatedBinding.bottomNavigation?.paddingBottom ?: 0
+        val initialBottomNavBarMarginBottom = (inflatedBinding.bottomNavBar?.layoutParams as? ViewGroup.MarginLayoutParams)?.bottomMargin ?: 0
 
         ViewCompat.setOnApplyWindowInsetsListener(inflatedBinding.main) { _, insets ->
             val statusBarInset = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
@@ -107,13 +109,12 @@ class MainActivity : AppCompatActivity() {
                 inflatedBinding.toolbar.paddingBottom
             )
 
-            inflatedBinding.bottomNavigation?.let { bottomNav ->
-                bottomNav.setPadding(
-                    bottomNav.paddingLeft,
-                    bottomNav.paddingTop,
-                    bottomNav.paddingRight,
-                    initialBottomNavPaddingBottom + navBarInset
-                )
+            inflatedBinding.bottomNavBar?.let { bar ->
+                val lp = bar.layoutParams as? ViewGroup.MarginLayoutParams
+                if (lp != null) {
+                    lp.bottomMargin = initialBottomNavBarMarginBottom + navBarInset
+                    bar.layoutParams = lp
+                }
             }
 
             insets
@@ -238,9 +239,12 @@ class MainActivity : AppCompatActivity() {
 
     private fun showSavedLibrariesData() {
         val currentBinding = binding ?: return
-        val savedLibraries = SharedPreferenceManager.getInstance(this).savedLibrariesData
+        val prefs = SharedPreferenceManager.getInstance(this)
+        prefs.syncLikedSongsLibrary()
+        val savedLibraries = prefs.savedLibrariesData
+        val hasItems = savedLibraries?.lists?.any { it != null } == true
         currentBinding.savedLibrariesSection.visibility =
-            if (savedLibraries != null && !(savedLibraries.lists?.isEmpty() ?: true)) View.VISIBLE else View.GONE
+            if (hasItems) View.VISIBLE else View.GONE
         if (savedLibraries != null) {
             currentBinding.savedRecyclerView.adapter = SavedLibrariesAdapter(
                 savedLibraries.lists ?: mutableListOf()
@@ -254,7 +258,7 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         NetworkChangeReceiver.registerReceiver(this, networkChangeReceiver)
         showSavedLibrariesData()
-        binding?.bottomNavigation?.selectedItemId = R.id.nav_home
+        binding?.bottomNavBar?.selectTab(R.id.nav_home, animate = false)
         MiniPlayerHelper.onActivityResume(this)
     }
 
@@ -684,21 +688,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupBottomNavigation() {
-        binding?.bottomNavigation?.setOnItemSelectedListener { item ->
-            when (item.itemId) {
+        binding?.bottomNavBar?.onTabSelectedListener = { tabId ->
+            when (tabId) {
                 R.id.nav_home -> {
                     binding?.nestedScrollView?.smoothScrollTo(0, 0)
-                    true
                 }
                 R.id.nav_search -> {
                     startActivity(Intent(this, SearchActivity::class.java))
-                    true
                 }
                 R.id.nav_library -> {
                     startActivity(Intent(this, SavedLibrariesActivity::class.java))
-                    true
                 }
-                else -> false
             }
         }
     }
