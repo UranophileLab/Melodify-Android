@@ -238,9 +238,12 @@ class MainActivity : AppCompatActivity() {
 
     private fun showSavedLibrariesData() {
         val currentBinding = binding ?: return
-        val savedLibraries = SharedPreferenceManager.getInstance(this).savedLibrariesData
+        val prefs = SharedPreferenceManager.getInstance(this)
+        prefs.syncLikedSongsLibrary()
+        val savedLibraries = prefs.savedLibrariesData
+        val hasItems = savedLibraries?.lists?.any { it != null } == true
         currentBinding.savedLibrariesSection.visibility =
-            if (savedLibraries != null && !(savedLibraries.lists?.isEmpty() ?: true)) View.VISIBLE else View.GONE
+            if (hasItems) View.VISIBLE else View.GONE
         if (savedLibraries != null) {
             currentBinding.savedRecyclerView.adapter = SavedLibrariesAdapter(
                 savedLibraries.lists ?: mutableListOf()

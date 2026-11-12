@@ -591,25 +591,20 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
             })
 
             _binding.addToLibrary.setOnClickListener(View.OnClickListener {
-                val sharedPreferenceManager: SharedPreferenceManager =
-                    SharedPreferenceManager.getInstance(this@MusicOverviewActivity)
-                var savedLibraries = sharedPreferenceManager.savedLibrariesData
-                if (savedLibraries == null) savedLibraries = SavedLibraries(ArrayList())
-                val lists = savedLibraries.lists ?: emptyList()
-                if (lists.isEmpty()) {
-                    Snackbar.make(_binding.getRoot(), "No Libraries Found", Snackbar.LENGTH_SHORT)
-                        .show()
-                    return@OnClickListener
-                }
-                val userCreatedLibraries: MutableList<String?> = ArrayList()
-                for (library in lists) {
-                    if (library != null && library.isCreatedByUser) userCreatedLibraries.add(library.name)
-                }
-
-                val materialAlertDialogBuilder = getMaterialAlertDialogBuilder(
-                    userCreatedLibraries, savedLibraries, sharedPreferenceManager
+                bottomSheetDialog.dismiss()
+                val songId = if (!MusicPlayerManager.MUSIC_ID.isNullOrEmpty()) MusicPlayerManager.MUSIC_ID else ID_FROM_EXTRA
+                if (songId.isNullOrEmpty()) return@OnClickListener
+                val currentSong = mSongResponse?.data?.getOrNull(0)
+                val songTitle = binding!!.title.text.toString()
+                val finalTitle = if (songTitle != "loading...") songTitle else currentSong?.name() ?: ""
+                val primaryArtist = if (artistsList.isNotEmpty()) artistsList[0].name() else ""
+                AnimatedMenuHelper.showAddToPlaylistDialog(
+                    activity = this@MusicOverviewActivity,
+                    songId = songId,
+                    songTitle = finalTitle,
+                    artist = primaryArtist,
+                    coverUrl = IMAGE_URL ?: ""
                 )
-                materialAlertDialogBuilder.show()
             })
 
             val song = mSongResponse?.data?.getOrNull(0) ?: return@OnClickListener
@@ -717,44 +712,6 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
         showData()
 
         updateTrackInfo()
-    }
-
-    private fun getMaterialAlertDialogBuilder(
-        userCreatedLibraries: MutableList<String?>,
-        savedLibraries: SavedLibraries, sharedPreferenceManager: SharedPreferenceManager
-    ): MaterialAlertDialogBuilder {
-        val materialAlertDialogBuilder = MaterialAlertDialogBuilder(
-            this@MusicOverviewActivity
-        )
-        val listAdapter: ListAdapter = ArrayAdapter<String?>(
-            this@MusicOverviewActivity, android.R.layout.simple_list_item_1,
-            userCreatedLibraries
-        )
-        materialAlertDialogBuilder.setAdapter(
-            listAdapter,
-            DialogInterface.OnClickListener { _: DialogInterface?, i: Int ->
-                // index = i;
-                Log.i(TAG, "pickedLibrary: $i")
-
-                val song = mSongResponse?.data?.getOrNull(0) ?: return@OnClickListener
-
-                val songs = Library.Songs(
-                    song.id,
-                    song.name(),
-                    binding!!.description.text.toString(),
-                    IMAGE_URL
-                )
-
-                savedLibraries.lists?.get(i)?.songs?.add(songs)
-                sharedPreferenceManager.savedLibrariesData = savedLibraries
-                Toast.makeText(
-                    this@MusicOverviewActivity, "Added to " + savedLibraries.lists?.get(i)?.name,
-                    Toast.LENGTH_SHORT
-                ).show()
-            })
-
-        materialAlertDialogBuilder.setTitle("Select Library")
-        return materialAlertDialogBuilder
     }
 
     override fun onResume() {

@@ -642,7 +642,11 @@ class ListActivity : AppCompatActivity() {
         binding!!.shareIcon.visibility = View.INVISIBLE
         // binding.moreIcon.setVisibility(View.INVISIBLE);
         binding!!.addToLibrary.visibility = View.INVISIBLE
-        binding?.addMoreSongs?.visibility = View.VISIBLE
+        if (albumItem?.id == "liked_songs") {
+            binding?.addMoreSongs?.visibility = View.GONE
+        } else {
+            binding?.addMoreSongs?.visibility = View.VISIBLE
+        }
 
         val sharedPreferenceManager: SharedPreferenceManager =
             SharedPreferenceManager.getInstance(this)
@@ -659,7 +663,12 @@ class ListActivity : AppCompatActivity() {
         if (library != null) {
             binding!!.albumTitle.text = library.name
             binding!!.albumSubTitle.text = library.description
-            if (library.image?.isNotBlank() == true) loadArtworkAndApplyDynamicTheme(library.image)
+            if (library.image?.isNotBlank() == true) {
+                loadArtworkAndApplyDynamicTheme(library.image)
+            } else if (library.id == "liked_songs") {
+                binding!!.albumCover.setImageResource(R.drawable.favorite_24px)
+                binding!!.albumCover.setColorFilter(resources.getColor(R.color.spotify_green, theme))
+            }
 
             if (!library.name.isNullOrBlank()) {
                 SharedPreferenceManager.getInstance(this).addPlaylistToHistory(

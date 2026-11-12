@@ -1,5 +1,6 @@
 package dev.melodify.uranophilelab.utils
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.view.LayoutInflater
@@ -13,6 +14,7 @@ import android.widget.Toast
 import androidx.core.net.toUri
 import com.bumptech.glide.Glide
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.gson.Gson
 import dev.melodify.uranophilelab.R
 import dev.melodify.uranophilelab.activities.AboutActivity
@@ -22,9 +24,11 @@ import dev.melodify.uranophilelab.activities.HistoryActivity
 import dev.melodify.uranophilelab.activities.ListActivity
 import dev.melodify.uranophilelab.activities.SavedLibrariesActivity
 import dev.melodify.uranophilelab.activities.SettingsActivity
+import dev.melodify.uranophilelab.databinding.AddNewLibraryBottomSheetBinding
 import dev.melodify.uranophilelab.model.AlbumItem
 import dev.melodify.uranophilelab.model.history.SongHistoryItem
 import dev.melodify.uranophilelab.records.sharedpref.SavedLibraries
+import dev.melodify.uranophilelab.records.sharedpref.SavedLibraries.Library
 import dev.melodify.uranophilelab.utils.customview.BottomSheetItemView
 
 object AnimatedMenuHelper {
@@ -132,7 +136,18 @@ object AnimatedMenuHelper {
         }
         mainContainer.addView(favView)
 
-        // 4. Go to Album (if albumId present)
+        // 4. Add to Playlist
+        val addToPlaylistView = BottomSheetItemView(context, "Add to Playlist", "", null)
+        addToPlaylistView.iconImageView?.setImageResource(R.drawable.round_add_24)
+        addToPlaylistView.setOnClickListener {
+            bottomSheetDialog.dismiss()
+            if (context is Activity) {
+                showAddToPlaylistDialog(context, songId, title, artist, coverUrl)
+            }
+        }
+        mainContainer.addView(addToPlaylistView)
+
+        // 5. Go to Album (if albumId present)
         if (!albumId.isNullOrBlank()) {
             val albumView = BottomSheetItemView(context, "Go to Album", "", null)
             albumView.iconImageView?.setImageResource(R.drawable.baseline_album_24)
@@ -331,5 +346,100 @@ object AnimatedMenuHelper {
         }
 
         bottomSheetDialog.show()
+    }
+
+    /**
+     * Unified, user-friendly dialog to add any song to a playlist.
+     * If no user playlists exist, prompts to create one and automatically adds the song.
+     * If user playlists exist, displays "+ Create New Playlist" followed by existing playlists.
+     */
+    fun showAddToPlaylistDialog(
+        activity: Activity,
+        songId: String,
+        songTitle: String,
+        artist: String,
+        coverUrl: String
+    ) {
+        val prefs = SharedPreferenceManager.getInstance(activity)
+        val savedLibraries = prefs.savedLibrariesData ?: SavedLibraries(mutableListOf())
+        val lists = (savedLibraries.lists ?: mutableListOf()).filterNotNull().toMutableList()
+        val userPlaylists = lists.filter { it.isCreatedByUser && it.id != "liked_songs" }
+
+        val showCreateDialog = {
+            val sheetBinding = AddNewLibraryBottomSheetBinding.inflate(activity.layoutInflater)
+            val dialog = BottomSheetDialog(activity, R.style.MyBottomSheetDialogTheme)
+            dialog.setContentView(sheetBinding.root)
+            sheetBinding.edittext.hint = "Playlist Name"
+            sheetBinding.cancel.setOnClickListener { dialog.dismiss() }
+            sheetBinding.create.setOnClickListener {
+                val name = sheetBinding.edittext.text?.toString()?.trim()
+                if (name.isNullOrEmpty()) {
+                    sheetBinding.edittext.error = "Name cannot be empty"
+                    return@setOnClickListener
+                }
+                dialog.dismiss()
+                val currentTime = System.currentTimeMillis().toString()
+                val newSong = Library.Songs(songId, songTitle, artist, coverUrl)
+                val newLib = Library(
+                    id = "#$currentTime",
+                    isCreatedByUser = true,
+                    isAlbum = false,
+                    name = name,
+                    image = coverUrl,
+                    description = "1 song",
+                    songs = mutableListOf(newSong)
+                )
+                prefs.addLibraryToSavedLibraries(newLib)
+                Toast.makeText(activity, "Created \"$name\" & added song", Toast.LENGTH_SHORT).show()
+            }
+            dialog.show()
+        }
+
+        if (userPlaylists.isEmpty()) {
+            MaterialAlertDialogBuilder(activity)
+                .setTitle("Create Playlist")
+                .setMessage("You don't have any playlists yet.\nWould you like to create one and add \"$songTitle\"?")
+                .setPositiveButton("Create Playlist") { d, _ ->
+                    d.dismiss()
+                    showCreateDialog()
+                }
+                .setNegativeButton("Cancel") { d, _ -> d.dismiss() }
+                .show()
+        } else {
+            val options = mutableListOf<String>()
+            options.add("+ Create New Playlist")
+            userPlaylists.forEach { pl ->
+                val count = pl.songs?.size ?: 0
+                options.add("${pl.name} ($count ${if (count == 1) "song" else "songs"})")
+            }
+
+            MaterialAlertDialogBuilder(activity)
+                .setTitle("Add to Playlist")
+                .setItems(options.toTypedArray()) { _, which ->
+                    if (which == 0) {
+                        showCreateDialog()
+                    } else {
+                        val targetPlaylist = userPlaylists[which - 1]
+                        val songList = targetPlaylist.songs ?: mutableListOf()
+                        val alreadyExists = songList.any { it?.id == songId }
+                        if (alreadyExists) {
+                            Toast.makeText(activity, "\"$songTitle\" is already in ${targetPlaylist.name}", Toast.LENGTH_SHORT).show()
+                        } else {
+                            val newSong = Library.Songs(songId, songTitle, artist, coverUrl)
+                            songList.add(newSong)
+                            targetPlaylist.description = "${songList.size} ${if (songList.size == 1) "song" else "songs"}"
+                            if (targetPlaylist.image.isNullOrBlank()) {
+                                val updatedLib = targetPlaylist.copy(image = coverUrl)
+                                val idx = lists.indexOfFirst { it.id == targetPlaylist.id }
+                                if (idx >= 0) lists[idx] = updatedLib
+                            }
+                            prefs.savedLibrariesData = SavedLibraries(lists)
+                            Toast.makeText(activity, "Added to ${targetPlaylist.name}", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+                .setNegativeButton("Cancel", null)
+                .show()
+        }
     }
 }

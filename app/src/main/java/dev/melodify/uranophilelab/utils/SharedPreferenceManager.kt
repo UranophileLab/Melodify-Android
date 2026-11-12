@@ -601,6 +601,7 @@ class SharedPreferenceManager private constructor(context: Context) {
         current.removeAll { !it.id.isNullOrBlank() && it.id.trim() == cleanId }
         current.add(0, song)
         favoriteSongs = current
+        syncLikedSongsLibrary()
     }
 
     fun removeFavorite(songId: String?) {
@@ -609,6 +610,7 @@ class SharedPreferenceManager private constructor(context: Context) {
         val current = favoriteSongs.toMutableList()
         current.removeAll { !it.id.isNullOrBlank() && it.id.trim() == cleanId }
         favoriteSongs = current
+        syncLikedSongsLibrary()
     }
 
     fun toggleFavorite(song: SongHistoryItem): Boolean {
@@ -625,6 +627,48 @@ class SharedPreferenceManager private constructor(context: Context) {
     fun clearFavoriteSongs() {
         cachedFavoriteSongs = mutableListOf()
         putJson("favorite_songs", gson.toJson(emptyList<SongHistoryItem>()))
+        syncLikedSongsLibrary()
+    }
+
+    fun syncLikedSongsLibrary() {
+        val favs = favoriteSongs
+        val saved = savedLibrariesData ?: SavedLibraries(mutableListOf())
+        val list = (saved.lists ?: mutableListOf()).filterNotNull().toMutableList()
+
+        val existingIndex = list.indexOfFirst { it.id == "liked_songs" }
+
+        if (favs.isNotEmpty()) {
+            val songsList = favs.map { 
+                Library.Songs(
+                    id = it.id,
+                    title = it.title,
+                    description = it.artist,
+                    image = it.imageUrl
+                )
+            }.toMutableList()
+
+            val likedLibrary = Library(
+                id = "liked_songs",
+                isCreatedByUser = true,
+                isAlbum = false,
+                name = "Liked Songs",
+                image = favs.firstOrNull { !it.imageUrl.isNullOrBlank() }?.imageUrl ?: "",
+                description = "${favs.size} ${if (favs.size == 1) "song" else "songs"}",
+                songs = songsList
+            )
+
+            if (existingIndex >= 0) {
+                list[existingIndex] = likedLibrary
+            } else {
+                list.add(0, likedLibrary)
+            }
+            this.savedLibrariesData = SavedLibraries(list)
+        } else {
+            if (existingIndex >= 0) {
+                list.removeAt(existingIndex)
+                this.savedLibrariesData = SavedLibraries(list)
+            }
+        }
     }
 
     fun getStreamQuality(): String {

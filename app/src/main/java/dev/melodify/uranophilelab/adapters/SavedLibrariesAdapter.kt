@@ -37,7 +37,19 @@ class SavedLibrariesAdapter(private val data: MutableList<Library?>) :
         val coverUrl = library.image?.takeIf { it.isNotBlank() && it != "<shimmer>" }
             ?: library.songs?.firstOrNull { it?.image?.isNotBlank() == true && it.image != "<shimmer>" }?.image
         if (!coverUrl.isNullOrBlank() && coverUrl != "<shimmer>") {
-            holder.coverImage?.let { Glide.with(it.context).load(coverUrl.toUri()).into(it) }
+            holder.coverImage?.let { 
+                Glide.with(it.context).load(coverUrl.toUri())
+                    .placeholder(if (library.id == "liked_songs") R.drawable.favorite_24px else R.drawable.baseline_album_24)
+                    .into(it) 
+            }
+        } else {
+            if (library.id == "liked_songs") {
+                holder.coverImage?.setImageResource(R.drawable.favorite_24px)
+                holder.coverImage?.setColorFilter(holder.itemView.context.resources.getColor(R.color.spotify_green, null))
+            } else {
+                holder.coverImage?.setImageResource(R.drawable.baseline_album_24)
+                holder.coverImage?.clearColorFilter()
+            }
         }
 
         // 3-dots more menu
@@ -45,6 +57,9 @@ class SavedLibrariesAdapter(private val data: MutableList<Library?>) :
         moreIcon?.setOnClickListener { v ->
             val popup = androidx.appcompat.widget.PopupMenu(v.context, v)
             popup.menu.add("Play All")
+            if (library.isCreatedByUser && library.id != "liked_songs") {
+                popup.menu.add("Delete Playlist")
+            }
             popup.setOnMenuItemClickListener { menuItem ->
                 when (menuItem.title) {
                     "Play All" -> {
@@ -57,6 +72,22 @@ class SavedLibrariesAdapter(private val data: MutableList<Library?>) :
                             v.context.startActivity(intent)
                         } else {
                             Toast.makeText(v.context, "No songs in this library", Toast.LENGTH_SHORT).show()
+                        }
+                        true
+                    }
+                    "Delete Playlist" -> {
+                        val currentPos = holder.bindingAdapterPosition
+                        if (currentPos >= 0 && currentPos < data.size) {
+                            val prefs = dev.melodify.uranophilelab.utils.SharedPreferenceManager.getInstance(v.context)
+                            val saved = prefs.savedLibrariesData
+                            val lists = saved?.lists ?: mutableListOf()
+                            val idx = lists.indexOfFirst { it?.id == library.id }
+                            if (idx >= 0) {
+                                prefs.removeLibraryFromSavedLibraries(idx)
+                            }
+                            data.removeAt(currentPos)
+                            notifyItemRemoved(currentPos)
+                            Toast.makeText(v.context, "Playlist deleted", Toast.LENGTH_SHORT).show()
                         }
                         true
                     }
