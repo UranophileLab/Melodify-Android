@@ -47,14 +47,16 @@
 
     <color name="widget_transparent_75">#BF0A0A0A</color>
 
-    <!-- Glassmorphism colors -->
-    <color name="glass_nav_background">#E6121417</color>
+    <!-- True Auris-spec Liquid Glass colors (Dark theme) -->
+    <color name="glass_nav_background">#D9121417</color>
     <color name="glass_nav_stroke">#22FFFFFF</color>
-    <color name="glass_card_background">#D9181C20</color>
-    <color name="glass_card_stroke">#2BFFFFFF</color>
-    <color name="glass_sheet_background">#F214171A</color>
-    <color name="glass_pill_background">#CC12151B</color>
-    <color name="glass_pill_stroke">#38FFFFFF</color>
+    <color name="glass_card_background">#CC181C20</color>
+    <color name="glass_card_stroke">#22FFFFFF</color>
+    <color name="glass_sheet_background">#E614171A</color>
+    <!-- Auris translucent specular pill (approx 45% tint + specular hairline) -->
+    <color name="glass_pill_background">#7312151B</color>
+    <color name="glass_pill_stroke">#2EFFFFFF</color>
+    <color name="glass_pill_rim_highlight">#38FFFFFF</color>
 
     <!-- Seekbar track colors -->
     <color name="seekbar_track_background">#33FFFFFF</color>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Floating mini-player card layout (Echo & Auris style)
+  Floating mini-player card layout (Auris Liquid Glass Capsule)
 -->
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -8,16 +8,16 @@
     android:id="@+id/play_bar_background"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="@dimen/_12sdp"
+    android:layout_marginHorizontal="@dimen/_14sdp"
     android:layout_marginBottom="@dimen/_6sdp"
     app:cardBackgroundColor="@color/glass_pill_background"
     app:cardCornerRadius="999dp"
-    app:cardElevation="@dimen/_10sdp"
-    app:cardMaxElevation="@dimen/_14sdp"
+    app:cardElevation="@dimen/_8sdp"
+    app:cardMaxElevation="@dimen/_12sdp"
     app:cardPreventCornerOverlap="false"
-    app:strokeWidth="1.2dp"
+    app:strokeWidth="1dp"
     app:strokeColor="@color/glass_pill_stroke"
-    app:rippleColor="#1AFFFFFF"
+    app:rippleColor="@color/glass_pill_rim_highlight"
     android:clickable="true"
     android:focusable="true"
     android:visibility="gone"

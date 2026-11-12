@@ -435,17 +435,17 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <!-- Floating Pill Bottom Navigation (Echo & Auris style) -->
+    <!-- True Auris Floating Stadium Pill Bottom Navigation -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/bottom_nav_card"
         android:layout_width="wrap_content"
-        android:layout_height="@dimen/_46sdp"
+        android:layout_height="@dimen/_44sdp"
         android:layout_marginBottom="@dimen/_14sdp"
         app:cardCornerRadius="999dp"
-        app:cardElevation="@dimen/_12sdp"
-        app:cardMaxElevation="@dimen/_16sdp"
+        app:cardElevation="@dimen/_8sdp"
+        app:cardMaxElevation="@dimen/_12sdp"
         app:cardBackgroundColor="@color/glass_pill_background"
-        app:strokeWidth="1.2dp"
+        app:strokeWidth="1dp"
         app:strokeColor="@color/glass_pill_stroke"
         app:cardPreventCornerOverlap="false"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -457,13 +457,14 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_gravity="center"
-            android:paddingHorizontal="@dimen/_14sdp"
+            android:paddingHorizontal="@dimen/_12sdp"
             android:background="@android:color/transparent"
             app:elevation="0dp"
             app:itemIconTint="@color/bottom_nav_item_color"
             app:itemTextColor="@color/bottom_nav_item_color"
-            app:itemRippleColor="#25FFFFFF"
+            app:itemRippleColor="@color/glass_pill_rim_highlight"
             app:labelVisibilityMode="labeled"
+            app:itemHorizontalTranslationEnabled="false"
             app:menu="@menu/bottom_nav_menu" />
 
     </com.google.android.material.card.MaterialCardView>
