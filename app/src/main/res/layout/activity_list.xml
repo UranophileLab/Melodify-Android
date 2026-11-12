@@ -97,19 +97,22 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginTop="@dimen/_4sdp"
-                android:layout_marginBottom="@dimen/_12sdp"
+                android:layout_marginTop="@dimen/_6sdp"
+                android:layout_marginBottom="@dimen/_14sdp"
                 android:layout_marginHorizontal="@dimen/_8sdp"
                 android:stateListAnimator="@null"
                 app:cardBackgroundColor="@android:color/transparent"
-                app:cardCornerRadius="@dimen/_10sdp"
-                app:cardElevation="@dimen/_8sdp"
-                app:strokeWidth="0dp">
+                app:cardCornerRadius="@dimen/_16sdp"
+                app:cardElevation="@dimen/_12sdp"
+                app:cardMaxElevation="@dimen/_16sdp"
+                app:strokeWidth="1dp"
+                app:strokeColor="#25FFFFFF"
+                app:cardPreventCornerOverlap="false">
 
                 <ImageView
                     android:id="@+id/album_cover"
-                    android:layout_width="@dimen/_180sdp"
-                    android:layout_height="@dimen/_180sdp"
+                    android:layout_width="@dimen/_185sdp"
+                    android:layout_height="@dimen/_185sdp"
                     android:scaleType="centerCrop"
                     android:src="@drawable/baseline_album_24"
                     android:contentDescription="@string/album_art" />
@@ -125,24 +128,24 @@
                 android:fontFamily="@font/avenir_next_bold"
                 android:text="Liked Songs"
                 android:textColor="@color/text_light"
-                android:textSize="@dimen/_20ssp" />
+                android:textSize="@dimen/_22ssp" />
 
             <TextView
                 android:id="@+id/albumSubTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingHorizontal="@dimen/_12sdp"
-                android:layout_marginTop="@dimen/_2sdp"
+                android:layout_marginTop="@dimen/_3sdp"
                 android:fontFamily="@font/avenir_next_regular"
                 android:text="Playlist"
                 android:textColor="@color/textSec"
-                android:textSize="@dimen/_11ssp" />
+                android:textSize="@dimen/_12ssp" />
 
             <!-- Controls Row: Add to library, Download, Share, Shuffle, Play All in a single row -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/_10sdp"
+                android:layout_marginTop="@dimen/_12sdp"
                 android:paddingHorizontal="@dimen/_12sdp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
@@ -150,13 +153,13 @@
                 <!-- Add to Library Button -->
                 <ImageView
                     android:id="@+id/add_to_library"
-                    android:layout_width="@dimen/_30sdp"
-                    android:layout_height="@dimen/_30sdp"
+                    android:layout_width="@dimen/_32sdp"
+                    android:layout_height="@dimen/_32sdp"
                     android:layout_marginStart="-4dp"
                     android:clickable="true"
                     android:focusable="true"
                     android:foreground="?attr/selectableItemBackgroundBorderless"
-                    android:padding="@dimen/_4sdp"
+                    android:padding="@dimen/_5sdp"
                     android:src="@drawable/round_add_24"
                     app:tint="@color/text_light"
                     android:contentDescription="@string/add_to_library" />
@@ -164,13 +167,13 @@
                 <!-- Download Button -->
                 <ImageView
                     android:id="@+id/download_btn"
-                    android:layout_width="@dimen/_30sdp"
-                    android:layout_height="@dimen/_30sdp"
+                    android:layout_width="@dimen/_32sdp"
+                    android:layout_height="@dimen/_32sdp"
                     android:layout_marginStart="@dimen/_12sdp"
                     android:clickable="true"
                     android:focusable="true"
                     android:foreground="?attr/selectableItemBackgroundBorderless"
-                    android:padding="@dimen/_4sdp"
+                    android:padding="@dimen/_5sdp"
                     android:src="@drawable/baseline_download_for_offline_24"
                     app:tint="@color/text_light"
                     android:contentDescription="Download" />
@@ -178,8 +181,8 @@
                 <!-- Share Button -->
                 <ImageView
                     android:id="@+id/share_btn"
-                    android:layout_width="@dimen/_30sdp"
-                    android:layout_height="@dimen/_30sdp"
+                    android:layout_width="@dimen/_32sdp"
+                    android:layout_height="@dimen/_32sdp"
                     android:layout_marginStart="@dimen/_12sdp"
                     android:clickable="true"
                     android:focusable="true"
@@ -197,13 +200,13 @@
                 <!-- Shuffle Button -->
                 <ImageView
                     android:id="@+id/shuffle_btn"
-                    android:layout_width="@dimen/_32sdp"
-                    android:layout_height="@dimen/_32sdp"
+                    android:layout_width="@dimen/_34sdp"
+                    android:layout_height="@dimen/_34sdp"
                     android:layout_marginEnd="@dimen/_10sdp"
                     android:clickable="true"
                     android:focusable="true"
                     android:foreground="?attr/selectableItemBackgroundBorderless"
-                    android:padding="@dimen/_5sdp"
+                    android:padding="@dimen/_6sdp"
                     android:src="@drawable/shuffle_24px"
                     app:tint="@color/text_light"
                     android:contentDescription="Shuffle" />
@@ -211,14 +214,15 @@
                 <!-- Green Circular Play Button -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/playAllCard"
-                    android:layout_width="@dimen/_42sdp"
-                    android:layout_height="@dimen/_42sdp"
+                    android:layout_width="@dimen/_46sdp"
+                    android:layout_height="@dimen/_46sdp"
                     android:clickable="true"
                     android:focusable="true"
                     android:foreground="?attr/selectableItemBackground"
                     android:stateListAnimator="@null"
                     app:cardBackgroundColor="#1DB954"
                     app:cardCornerRadius="999dp"
+                    app:cardElevation="@dimen/_4sdp"
                     app:strokeWidth="0dp">
 
                     <ImageView
@@ -227,7 +231,7 @@
                         android:layout_height="match_parent"
                         android:clickable="false"
                         android:focusable="false"
-                        android:padding="@dimen/_10sdp"
+                        android:padding="@dimen/_11sdp"
                         android:src="@drawable/play_arrow_24px"
                         app:tint="@color/background_dark"
                         android:contentDescription="@string/album_art" />

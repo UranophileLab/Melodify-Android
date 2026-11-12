@@ -22,14 +22,16 @@
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/coverCard"
-            android:layout_width="@dimen/_38sdp"
-            android:layout_height="@dimen/_38sdp"
+            android:layout_width="@dimen/_42sdp"
+            android:layout_height="@dimen/_42sdp"
             android:layout_margin="@dimen/_2sdp"
             android:stateListAnimator="@null"
             app:cardBackgroundColor="@android:color/transparent"
-            app:cardCornerRadius="@dimen/_6sdp"
+            app:cardCornerRadius="@dimen/_8sdp"
             app:cardElevation="@dimen/_2sdp"
-            app:strokeWidth="0dp">
+            app:strokeWidth="1dp"
+            app:strokeColor="#1FFFFFFF"
+            app:cardPreventCornerOverlap="false">
 
             <ImageView
                 android:id="@+id/coverImage"
@@ -53,6 +55,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:ellipsize="marquee"
+                android:marqueeRepeatLimit="marquee_forever"
                 android:fontFamily="@font/avenir_next_bold"
                 android:scrollHorizontally="true"
                 android:singleLine="true"
@@ -64,8 +67,9 @@
                 android:id="@+id/artist"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/_1sdp"
+                android:layout_marginTop="@dimen/_2sdp"
                 android:ellipsize="marquee"
+                android:marqueeRepeatLimit="marquee_forever"
                 android:fontFamily="@font/avenir_next_regular"
                 android:scrollHorizontally="true"
                 android:singleLine="true"
@@ -77,8 +81,8 @@
 
         <ImageView
             android:id="@+id/favorite_item_icon"
-            android:layout_width="@dimen/_16sdp"
-            android:layout_height="@dimen/_16sdp"
+            android:layout_width="@dimen/_18sdp"
+            android:layout_height="@dimen/_18sdp"
             android:src="@drawable/favorite_24px"
             android:visibility="gone"
             app:tint="#1DB954"

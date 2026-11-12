@@ -27,10 +27,11 @@
             android:clickable="true"
             android:contentDescription="Back"
             android:focusable="true"
-            android:foreground="?attr/selectableItemBackground"
+            android:foreground="?attr/selectableItemBackgroundBorderless"
             android:onClick="backPress"
             android:padding="@dimen/_6sdp"
             android:src="@drawable/round_arrow_back_24"
+            app:tint="@color/textMain"
             tools:ignore="UsingOnClickInXml" />
 
         <TextView
@@ -39,9 +40,10 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="@dimen/_8sdp"
             android:layout_weight="1"
+            android:fontFamily="@font/avenir_next_bold"
             android:text="Favorites"
             android:textColor="@color/textMain"
-            android:textSize="@dimen/_16ssp"
+            android:textSize="@dimen/_18ssp"
             android:textStyle="bold" />
 
         <ImageView
@@ -51,9 +53,10 @@
             android:clickable="true"
             android:contentDescription="Clear favorites"
             android:focusable="true"
-            android:foreground="?attr/selectableItemBackground"
+            android:foreground="?attr/selectableItemBackgroundBorderless"
             android:padding="@dimen/_6sdp"
-            android:src="@drawable/baseline_clear_24" />
+            android:src="@drawable/baseline_clear_24"
+            app:tint="@color/textMain" />
 
     </LinearLayout>
 
@@ -61,6 +64,7 @@
         android:id="@+id/divider"
         android:layout_width="match_parent"
         android:layout_height="0.5dp"
+        android:alpha="0.2"
         android:background="@color/textSec"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
