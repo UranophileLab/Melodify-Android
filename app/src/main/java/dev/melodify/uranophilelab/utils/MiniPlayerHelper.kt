@@ -143,15 +143,16 @@ object MiniPlayerHelper {
         (activity as? ListActivity)?.updatePlayerControlsState()
         
         val bgCardColor = getDarkenedCardColor(MusicPlayerManager.IMAGE_BG_COLOR)
+        val density = activity.resources.displayMetrics.density
         if (playBar is com.google.android.material.card.MaterialCardView) {
             playBar.setCardBackgroundColor(bgCardColor)
             playBar.strokeColor = Color.parseColor("#25FFFFFF")
-            playBar.strokeWidth = (activity.resources.displayMetrics.density * 1.0f).toInt().coerceAtLeast(1)
+            playBar.strokeWidth = (density * 1.0f).toInt().coerceAtLeast(1)
         } else {
             val gradientDrawable = GradientDrawable()
             gradientDrawable.setColor(bgCardColor)
-            gradientDrawable.cornerRadius = activity.resources.getDimension(R.dimen._14sdp)
-            gradientDrawable.setStroke((activity.resources.displayMetrics.density * 1.0f).toInt().coerceAtLeast(1), Color.parseColor("#25FFFFFF"))
+            gradientDrawable.cornerRadius = density * 18f
+            gradientDrawable.setStroke((density * 1.0f).toInt().coerceAtLeast(1), Color.parseColor("#25FFFFFF"))
             playBar.background = gradientDrawable
         }
         
