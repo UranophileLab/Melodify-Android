@@ -54,13 +54,13 @@
                     <!-- Left Action Icon: 3-Dots Menu -->
                     <ImageView
                         android:id="@+id/more_button"
-                        android:layout_width="@dimen/_26sdp"
-                        android:layout_height="@dimen/_26sdp"
+                        android:layout_width="@dimen/_28sdp"
+                        android:layout_height="@dimen/_28sdp"
                         android:layout_marginEnd="@dimen/_10sdp"
                         android:clickable="true"
                         android:focusable="true"
                         android:foreground="?attr/selectableItemBackgroundBorderless"
-                        android:padding="@dimen/_3sdp"
+                        android:padding="@dimen/_4sdp"
                         android:src="@drawable/more_vert_24px"
                         app:tint="@color/text_light"
                         android:contentDescription="More options" />
@@ -79,12 +79,13 @@
                             android:includeFontPadding="false"
                             android:text="Good afternoon"
                             android:textColor="@color/text_light"
-                            android:textSize="@dimen/_17ssp" />
+                            android:textSize="@dimen/_18ssp" />
 
                         <TextView
                             android:id="@+id/sub_greeting_text"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/_2sdp"
                             android:fontFamily="@font/avenir_next_regular"
                             android:includeFontPadding="false"
                             android:text="Music for you"
@@ -95,25 +96,25 @@
                     <!-- Right Action Icons: History, Settings -->
                     <ImageView
                         android:id="@+id/history_button"
-                        android:layout_width="@dimen/_26sdp"
-                        android:layout_height="@dimen/_26sdp"
+                        android:layout_width="@dimen/_28sdp"
+                        android:layout_height="@dimen/_28sdp"
                         android:clickable="true"
                         android:focusable="true"
                         android:foreground="?attr/selectableItemBackgroundBorderless"
-                        android:padding="@dimen/_3sdp"
+                        android:padding="@dimen/_4sdp"
                         android:src="@drawable/round_history_24"
                         app:tint="@color/text_light"
                         android:contentDescription="History" />
 
                     <ImageView
                         android:id="@+id/settings_button"
-                        android:layout_width="@dimen/_26sdp"
-                        android:layout_height="@dimen/_26sdp"
+                        android:layout_width="@dimen/_28sdp"
+                        android:layout_height="@dimen/_28sdp"
                         android:layout_marginStart="@dimen/_8sdp"
                         android:clickable="true"
                         android:focusable="true"
                         android:foreground="?attr/selectableItemBackgroundBorderless"
-                        android:padding="@dimen/_3sdp"
+                        android:padding="@dimen/_4sdp"
                         android:src="@drawable/settings_24px"
                         app:tint="@color/text_light"
                         android:contentDescription="Settings" />
