@@ -44,7 +44,7 @@ class AurisGlassNavBar @JvmOverloads constructor(
     private var pillAnimator: ValueAnimator? = null
 
     init {
-        binding = ViewAurisGlassNavBarBinding.inflate(LayoutInflater.from(context), this, true)
+        binding = ViewAurisGlassNavBarBinding.inflate(LayoutInflater.from(context), this)
 
         tabViews[R.id.nav_home] = binding.tabHome
         tabViews[R.id.nav_search] = binding.tabSearch
@@ -147,3 +147,4 @@ class AurisGlassNavBar @JvmOverloads constructor(
         }
     }
 }
+
