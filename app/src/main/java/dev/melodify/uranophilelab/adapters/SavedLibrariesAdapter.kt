@@ -33,16 +33,19 @@ class SavedLibrariesAdapter(private val data: MutableList<Library?>) :
         holder.title.text = library.name
         holder.artist.text = library.description
 
-        // Use first song's image if library cover is blank
-        val coverUrl = library.image?.takeIf { it.isNotBlank() && it != "<shimmer>" }
-            ?: library.songs?.firstOrNull { it?.image?.isNotBlank() == true && it.image != "<shimmer>" }?.image
+        // Prefer the actual song cover from playlist songs if available, else library.image
+        val coverUrl = library.songs?.firstOrNull { !it?.image.isNullOrBlank() && it?.image != "<shimmer>" }?.image
+            ?: library.image?.takeIf { it.isNotBlank() && it != "<shimmer>" }
         if (!coverUrl.isNullOrBlank() && coverUrl != "<shimmer>") {
             holder.coverImage?.let { 
+                it.clearColorFilter()
                 Glide.with(it.context).load(coverUrl.toUri())
                     .placeholder(if (library.id == "liked_songs") R.drawable.favorite_24px else R.drawable.baseline_album_24)
+                    .error(if (library.id == "liked_songs") R.drawable.favorite_24px else R.drawable.baseline_album_24)
                     .into(it) 
             }
         } else {
+            holder.coverImage?.let { Glide.with(it.context).clear(it) }
             if (library.id == "liked_songs") {
                 holder.coverImage?.setImageResource(R.drawable.favorite_24px)
                 holder.coverImage?.setColorFilter(holder.itemView.context.resources.getColor(R.color.spotify_green, null))

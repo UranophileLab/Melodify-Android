@@ -428,7 +428,7 @@ object AnimatedMenuHelper {
                             val newSong = Library.Songs(songId, songTitle, artist, coverUrl)
                             songList.add(newSong)
                             val newDesc = "${songList.size} ${if (songList.size == 1) "song" else "songs"}"
-                            val newImage = if (targetPlaylist.image.isNullOrBlank()) coverUrl else targetPlaylist.image
+                            val newImage = if (targetPlaylist.image.isNullOrBlank() || targetPlaylist.image == "<shimmer>") coverUrl else targetPlaylist.image
                             val updatedLib = targetPlaylist.copy(description = newDesc, image = newImage)
                             val idx = lists.indexOfFirst { it?.id == targetPlaylist.id }
                             if (idx >= 0) {

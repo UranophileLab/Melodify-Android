@@ -533,14 +533,12 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
             val songId = if (!MusicPlayerManager.MUSIC_ID.isNullOrEmpty()) MusicPlayerManager.MUSIC_ID else ID_FROM_EXTRA
             if (songId.isNullOrEmpty()) return@setOnClickListener
 
-            val currentSong = mSongResponse?.data?.getOrNull(0)
-            val songTitle = binding!!.title.text.toString()
-            val primaryArtist = if (artistsList.size > 0) artistsList[0].name() else ""
+            val (finalTitle, primaryArtist, coverUrl) = getCurrentTrackMetadata()
             val songItem = SongHistoryItem(
                 id = songId,
-                title = if (songTitle != "loading...") songTitle else currentSong?.name() ?: "",
+                title = finalTitle,
                 artist = primaryArtist,
-                imageUrl = IMAGE_URL
+                imageUrl = coverUrl
             )
             val prefs = SharedPreferenceManager.getInstance(this)
             val added = prefs.toggleFavorite(songItem)
@@ -572,10 +570,13 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
             )
             val _binding = MusicOverviewMoreInfoBottomSheetBinding
                 .inflate(layoutInflater)
-            _binding.albumTitle.text = binding!!.title.text.toString()
-            _binding.albumSubTitle.text = binding!!.description.text.toString()
-            if (!IMAGE_URL.isNullOrBlank() && IMAGE_URL != "<shimmer>") {
-                Glide.with(_binding.coverImage.context).load(IMAGE_URL?.toUri()).into(_binding.coverImage)
+            val (metaTitle, metaArtist, metaCover) = getCurrentTrackMetadata()
+            _binding.albumTitle.text = metaTitle
+            _binding.albumSubTitle.text = metaArtist
+            if (!metaCover.isBlank() && metaCover != "<shimmer>") {
+                Glide.with(_binding.coverImage.context).load(metaCover.toUri()).into(_binding.coverImage)
+            } else {
+                _binding.coverImage.setImageResource(R.drawable.headphone)
             }
             val linearLayout = _binding.main
 
@@ -595,16 +596,13 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
                 bottomSheetDialog.dismiss()
                 val songId = if (!MusicPlayerManager.MUSIC_ID.isNullOrEmpty()) MusicPlayerManager.MUSIC_ID else ID_FROM_EXTRA
                 if (songId.isNullOrEmpty()) return@OnClickListener
-                val currentSong = mSongResponse?.data?.getOrNull(0)
-                val songTitle = binding!!.title.text.toString()
-                val finalTitle = if (songTitle != "loading...") songTitle else currentSong?.name() ?: ""
-                val primaryArtist = if (artistsList.isNotEmpty()) artistsList[0].name() else ""
+                val (finalTitle, primaryArtist, coverUrl) = getCurrentTrackMetadata()
                 AnimatedMenuHelper.showAddToPlaylistDialog(
                     activity = this@MusicOverviewActivity,
                     songId = songId,
                     songTitle = finalTitle,
                     artist = primaryArtist,
-                    coverUrl = IMAGE_URL ?: ""
+                    coverUrl = coverUrl
                 )
             })
 
@@ -1123,9 +1121,51 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
     private val mHandler = Handler(Looper.getMainLooper())
     private val mUpdateTimeTask = Runnable { this.updateTrackInfo() }
 
+    private fun getCurrentTrackMetadata(): Triple<String, String, String> {
+        val currentTrackData = MusicPlayerManager.CURRENT_TRACK?.data?.getOrNull(0)
+
+        // 1. Cover URL
+        val coverUrl = when {
+            !MusicPlayerManager.IMAGE_URL.isNullOrBlank() && MusicPlayerManager.IMAGE_URL != "<shimmer>" -> MusicPlayerManager.IMAGE_URL!!
+            !IMAGE_URL.isNullOrBlank() && IMAGE_URL != "<shimmer>" -> IMAGE_URL!!
+            !currentTrackData?.image.isNullOrEmpty() -> currentTrackData?.image?.lastOrNull()?.url ?: ""
+            !mSongResponse?.data.isNullOrEmpty() -> mSongResponse?.data?.getOrNull(0)?.image?.lastOrNull()?.url ?: ""
+            else -> ""
+        }
+
+        // 2. Title
+        val title = when {
+            !binding?.title?.text.isNullOrBlank() && binding?.title?.text != "loading..." -> binding!!.title.text.toString()
+            !MusicPlayerManager.MUSIC_TITLE.isNullOrBlank() -> MusicPlayerManager.MUSIC_TITLE!!
+            currentTrackData != null -> currentTrackData.name()
+            !mSongResponse?.data.isNullOrEmpty() -> mSongResponse!!.data!![0]!!.name()
+            else -> "Unknown Track"
+        }
+
+        // 3. Artist
+        val artist = when {
+            !MusicPlayerManager.MUSIC_DESCRIPTION.isNullOrBlank() -> MusicPlayerManager.MUSIC_DESCRIPTION!!
+            !binding?.description?.text.isNullOrBlank() -> binding!!.description.text.toString()
+            currentTrackData?.artists?.primary?.isNotEmpty() == true -> currentTrackData.artists!!.primary!![0]!!.name()
+            artistsList.isNotEmpty() -> artistsList[0].name()
+            else -> ""
+        }
+
+        return Triple(title, artist, coverUrl)
+    }
+
     private fun updateTrackInfo() {
         mHandler.removeCallbacks(mUpdateTimeTask)
         if (isFinishing || isDestroyed || binding == null) return
+
+        val playerImage = MusicPlayerManager.IMAGE_URL
+        if (!playerImage.isNullOrBlank() && playerImage != "<shimmer>") {
+            IMAGE_URL = playerImage
+        }
+        val playerId = MusicPlayerManager.MUSIC_ID
+        if (!playerId.isNullOrBlank()) {
+            ID_FROM_EXTRA = playerId
+        }
 
         updateFavoriteStatus()
 
