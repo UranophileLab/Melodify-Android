@@ -177,6 +177,7 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
 
         binding!!.title.isSelected = true
         binding!!.description.isSelected = true
+        binding!!.headerTitle?.isSelected = true
 
         val toggleLyrics = {
             lastLyricsToggledTime = System.currentTimeMillis()
@@ -559,6 +560,10 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
             startActivity(sendIntent)
         })
 
+        binding!!.collapseIcon?.setOnClickListener {
+            finish()
+        }
+
         binding!!.moreIcon.setOnClickListener(View.OnClickListener {
             val bottomSheetDialog = BottomSheetDialog(
                 this@MusicOverviewActivity,
@@ -900,6 +905,12 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
 
         binding!!.title.text = song.name()
         binding!!.description.text = if (!primaryArtistName.isNullOrEmpty()) primaryArtistName else song.copyright ?: ""
+        
+        binding!!.title.isSelected = true
+        binding!!.description.isSelected = true
+        binding!!.headerTitle?.isSelected = true
+        binding!!.headerTitle?.text = if (!albumName.isNullOrEmpty()) albumName else (primaryArtistName ?: getString(R.string.app_name))
+        binding!!.headerTitle?.isSelected = true
         val image = song.image
         IMAGE_URL = if (!image.isNullOrEmpty()) image[image.size - 1]?.url ?: "" else ""
         SHARE_URL = song.url ?: ""
