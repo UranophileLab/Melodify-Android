@@ -430,43 +430,20 @@
         layout="@layout/layout_mini_player"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/_8sdp"
-        app:layout_constraintBottom_toTopOf="@+id/bottom_nav_card"
+        android:layout_marginBottom="@dimen/_6sdp"
+        app:layout_constraintBottom_toTopOf="@+id/bottom_nav_bar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <!-- True Auris Floating Stadium Pill Bottom Navigation -->
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/bottom_nav_card"
-        android:layout_width="wrap_content"
-        android:layout_height="@dimen/_44sdp"
-        android:layout_marginBottom="@dimen/_14sdp"
-        app:cardCornerRadius="999dp"
-        app:cardElevation="@dimen/_8sdp"
-        app:cardMaxElevation="@dimen/_12sdp"
-        app:cardBackgroundColor="@color/glass_pill_background"
-        app:strokeWidth="1dp"
-        app:strokeColor="@color/glass_pill_stroke"
-        app:cardPreventCornerOverlap="false"
+    <!-- Authentic Auris Floating Stadium Liquid Glass Navigation Bar -->
+    <dev.melodify.uranophilelab.utils.customview.AurisGlassNavBar
+        android:id="@+id/bottom_nav_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/_14sdp"
+        android:layout_marginBottom="@dimen/_12sdp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
-
-        <com.google.android.material.bottomnavigation.BottomNavigationView
-            android:id="@+id/bottom_navigation"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_gravity="center"
-            android:paddingHorizontal="@dimen/_12sdp"
-            android:background="@android:color/transparent"
-            app:elevation="0dp"
-            app:itemIconTint="@color/bottom_nav_item_color"
-            app:itemTextColor="@color/bottom_nav_item_color"
-            app:itemRippleColor="@color/glass_pill_rim_highlight"
-            app:labelVisibilityMode="labeled"
-            app:itemHorizontalTranslationEnabled="false"
-            app:menu="@menu/bottom_nav_menu" />
-
-    </com.google.android.material.card.MaterialCardView>
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

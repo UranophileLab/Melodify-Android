@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Subtle specular rim border around the active pill -->
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="999dp" />
+            <stroke
+                android:width="0.8dp"
+                android:color="#4DFFFFFF" />
+            <solid android:color="@android:color/transparent" />
+        </shape>
+    </item>
+    <!-- Vibrant ambient gradient pill fill (Auris coral red) -->
+    <item
+        android:bottom="0.5dp"
+        android:left="0.5dp"
+        android:right="0.5dp"
+        android:top="0.5dp">
+        <shape android:shape="rectangle">
+            <corners android:radius="999dp" />
+            <gradient
+                android:angle="0"
+                android:startColor="#E6E02553"
+                android:centerColor="#E6F43F5E"
+                android:endColor="#E6FB7185"
+                android:type="linear" />
+        </shape>
+    </item>
+</layer-list>

@@ -96,7 +96,7 @@ class MainActivity : AppCompatActivity() {
         BaseApplicationClass.updateTheme(this)
 
         val initialToolbarPaddingTop = inflatedBinding.toolbar.paddingTop
-        val initialBottomNavCardMarginBottom = (inflatedBinding.bottomNavCard?.layoutParams as? ViewGroup.MarginLayoutParams)?.bottomMargin ?: 0
+        val initialBottomNavBarMarginBottom = (inflatedBinding.bottomNavBar?.layoutParams as? ViewGroup.MarginLayoutParams)?.bottomMargin ?: 0
 
         ViewCompat.setOnApplyWindowInsetsListener(inflatedBinding.main) { _, insets ->
             val statusBarInset = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
@@ -109,11 +109,11 @@ class MainActivity : AppCompatActivity() {
                 inflatedBinding.toolbar.paddingBottom
             )
 
-            inflatedBinding.bottomNavCard?.let { card ->
-                val lp = card.layoutParams as? ViewGroup.MarginLayoutParams
+            inflatedBinding.bottomNavBar?.let { bar ->
+                val lp = bar.layoutParams as? ViewGroup.MarginLayoutParams
                 if (lp != null) {
-                    lp.bottomMargin = initialBottomNavCardMarginBottom + navBarInset
-                    card.layoutParams = lp
+                    lp.bottomMargin = initialBottomNavBarMarginBottom + navBarInset
+                    bar.layoutParams = lp
                 }
             }
 
@@ -258,7 +258,7 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         NetworkChangeReceiver.registerReceiver(this, networkChangeReceiver)
         showSavedLibrariesData()
-        binding?.bottomNavigation?.selectedItemId = R.id.nav_home
+        binding?.bottomNavBar?.selectTab(R.id.nav_home, animate = false)
         MiniPlayerHelper.onActivityResume(this)
     }
 
@@ -688,22 +688,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupBottomNavigation() {
-        binding?.bottomNavigation?.setOnItemSelectedListener { item ->
-            HapticUtil.tap(binding?.bottomNavCard)
-            when (item.itemId) {
+        binding?.bottomNavBar?.onTabSelectedListener = { tabId ->
+            when (tabId) {
                 R.id.nav_home -> {
                     binding?.nestedScrollView?.smoothScrollTo(0, 0)
-                    true
                 }
                 R.id.nav_search -> {
                     startActivity(Intent(this, SearchActivity::class.java))
-                    true
                 }
                 R.id.nav_library -> {
                     startActivity(Intent(this, SavedLibrariesActivity::class.java))
-                    true
                 }
-                else -> false
             }
         }
     }
