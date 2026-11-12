@@ -96,7 +96,7 @@ class MainActivity : AppCompatActivity() {
         BaseApplicationClass.updateTheme(this)
 
         val initialToolbarPaddingTop = inflatedBinding.toolbar.paddingTop
-        val initialBottomNavCardMarginBottom = (inflatedBinding.bottomNavCard.layoutParams as? ViewGroup.MarginLayoutParams)?.bottomMargin ?: 0
+        val initialBottomNavCardMarginBottom = (inflatedBinding.bottomNavCard?.layoutParams as? ViewGroup.MarginLayoutParams)?.bottomMargin ?: 0
 
         ViewCompat.setOnApplyWindowInsetsListener(inflatedBinding.main) { _, insets ->
             val statusBarInset = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
@@ -109,7 +109,7 @@ class MainActivity : AppCompatActivity() {
                 inflatedBinding.toolbar.paddingBottom
             )
 
-            inflatedBinding.bottomNavCard.let { card ->
+            inflatedBinding.bottomNavCard?.let { card ->
                 val lp = card.layoutParams as? ViewGroup.MarginLayoutParams
                 if (lp != null) {
                     lp.bottomMargin = initialBottomNavCardMarginBottom + navBarInset
