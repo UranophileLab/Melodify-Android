@@ -13,6 +13,7 @@ import dev.melodify.uranophilelab.R
 import dev.melodify.uranophilelab.activities.MusicOverviewActivity
 import dev.melodify.uranophilelab.databinding.ActivityListSongItemBinding
 import dev.melodify.uranophilelab.records.sharedpref.SavedLibraries.Library
+import dev.melodify.uranophilelab.utils.HapticUtil
 import dev.melodify.uranophilelab.utils.MusicPlayerManager
 import com.bumptech.glide.Glide
 import androidx.core.net.toUri
@@ -45,6 +46,11 @@ class UserCreatedSongsListAdapter(private val data: MutableList<Library.Songs?>)
             holder.binding.title.setTypeface(null, Typeface.NORMAL)
         }
 
+        val eqView = holder.binding.playingEqualizer
+        val isPlaying = isCurrentPlaying && (MusicPlayerManager.player?.isPlaying == true)
+        eqView.visibility = if (isCurrentPlaying) View.VISIBLE else View.GONE
+        eqView.isAnimating = isPlaying
+
         holder.binding.artist.text = songItem?.description
         val imageUrl = songItem?.image
         if (imageUrl?.isNotBlank() == true && imageUrl != "<shimmer>") {
@@ -61,6 +67,7 @@ class UserCreatedSongsListAdapter(private val data: MutableList<Library.Songs?>)
         // Wire up the 3-dots menu
         val moreIcon = holder.itemView.findViewById<ImageView>(R.id.more)
         moreIcon?.setOnClickListener { v ->
+            HapticUtil.tap(v)
             val popup = androidx.appcompat.widget.PopupMenu(v.context, v)
             popup.menu.add("Play Next")
             popup.menu.add("Add to Queue")
@@ -83,6 +90,7 @@ class UserCreatedSongsListAdapter(private val data: MutableList<Library.Songs?>)
         }
 
         holder.itemView.setOnClickListener { view: View? ->
+            HapticUtil.tap(view)
             // Build full queue from list and set correct position
             MusicPlayerManager.trackQueue?.clear()
             var clickIndex = 0

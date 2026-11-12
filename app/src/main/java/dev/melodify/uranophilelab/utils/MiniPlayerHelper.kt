@@ -46,6 +46,7 @@ object MiniPlayerHelper {
             ?: return
         
         playBar.setOnClickListener {
+            HapticUtil.tap(it)
             if (!MusicPlayerManager.MUSIC_ID.isNullOrBlank()) {
                 activity.startActivity(
                     Intent(activity, MusicOverviewActivity::class.java).apply {
@@ -55,12 +56,14 @@ object MiniPlayerHelper {
             }
         }
         
-        activity.findViewById<View>(R.id.play_bar_play_pause_icon)?.setOnClickListener {
+        activity.findViewById<View>(R.id.play_bar_play_pause_icon)?.setOnClickListener { view ->
+            HapticUtil.tap(view)
             MusicPlayerManager.togglePlayPause()
             handler.postDelayed({ updatePlayBar(activity) }, 100)
         }
         
         activity.findViewById<View>(R.id.play_bar_prev_icon)?.setOnClickListener { view ->
+            HapticUtil.tap(view)
             view.alpha = 0.5f
             view.animate().alpha(1.0f).setDuration(200).start()
             MusicPlayerManager.prevTrack()
@@ -68,13 +71,15 @@ object MiniPlayerHelper {
         }
         
         activity.findViewById<View>(R.id.play_bar_next_icon)?.setOnClickListener { view ->
+            HapticUtil.tap(view)
             view.alpha = 0.5f
             view.animate().alpha(1.0f).setDuration(200).start()
             MusicPlayerManager.nextTrack()
             handler.postDelayed({ updatePlayBar(activity) }, 100)
         }
 
-        activity.findViewById<View>(R.id.play_bar_queue_icon)?.setOnClickListener {
+        activity.findViewById<View>(R.id.play_bar_queue_icon)?.setOnClickListener { view ->
+            HapticUtil.tap(view)
             showQueueBottomSheet(activity)
         }
     }
@@ -134,10 +139,18 @@ object MiniPlayerHelper {
         }
         
         val p = MusicPlayerManager.player
+        val isPlaying = p?.isPlaying == true
         if (p != null && playPauseIcon != null) {
             playPauseIcon.setImageResource(
-                if (p.isPlaying) R.drawable.baseline_pause_24 else R.drawable.play_arrow_24px
+                if (isPlaying) R.drawable.baseline_pause_24 else R.drawable.play_arrow_24px
             )
+        }
+
+        // Update animated playing equalizer indicator in mini-player
+        val eqView = activity.findViewById<dev.melodify.uranophilelab.utils.customview.AnimatedEqualizerView>(R.id.play_bar_equalizer)
+        if (eqView != null) {
+            eqView.visibility = if (isPlaying) View.VISIBLE else View.GONE
+            eqView.isAnimating = isPlaying
         }
 
         (activity as? ListActivity)?.updatePlayerControlsState()
@@ -146,13 +159,13 @@ object MiniPlayerHelper {
         val density = activity.resources.displayMetrics.density
         if (playBar is com.google.android.material.card.MaterialCardView) {
             playBar.setCardBackgroundColor(bgCardColor)
-            playBar.strokeColor = Color.parseColor("#25FFFFFF")
+            playBar.strokeColor = Color.parseColor("#33FFFFFF")
             playBar.strokeWidth = (density * 1.0f).toInt().coerceAtLeast(1)
         } else {
             val gradientDrawable = GradientDrawable()
             gradientDrawable.setColor(bgCardColor)
             gradientDrawable.cornerRadius = density * 18f
-            gradientDrawable.setStroke((density * 1.0f).toInt().coerceAtLeast(1), Color.parseColor("#25FFFFFF"))
+            gradientDrawable.setStroke((density * 1.0f).toInt().coerceAtLeast(1), Color.parseColor("#33FFFFFF"))
             playBar.background = gradientDrawable
         }
         
@@ -294,7 +307,8 @@ object MiniPlayerHelper {
     private fun getDarkenedCardColor(color: Int): Int {
         val hsv = FloatArray(3)
         Color.colorToHSV(color, hsv)
-        hsv[2] = (hsv[2] * 0.25f).coerceIn(0.12f, 0.22f)
-        return Color.HSVToColor(hsv)
+        hsv[2] = (hsv[2] * 0.25f).coerceIn(0.10f, 0.18f)
+        val base = Color.HSVToColor(hsv)
+        return Color.argb(0xDE, Color.red(base), Color.green(base), Color.blue(base))
     }
 }

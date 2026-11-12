@@ -47,6 +47,13 @@
 
     <color name="widget_transparent_75">#BF0A0A0A</color>
 
+    <!-- Glassmorphism colors -->
+    <color name="glass_nav_background">#E6FDFDFD</color>
+    <color name="glass_nav_stroke">#18000000</color>
+    <color name="glass_card_background">#D9F6F6F6</color>
+    <color name="glass_card_stroke">#20000000</color>
+    <color name="glass_sheet_background">#F5F8F8F8</color>
+
     <!-- Seekbar track colors -->
     <color name="seekbar_track_background">#33000000</color>
     <color name="seekbar_secondary_progress">#66000000</color>

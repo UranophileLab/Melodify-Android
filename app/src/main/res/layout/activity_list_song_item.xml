@@ -79,6 +79,13 @@
 
         </LinearLayout>
 
+        <dev.melodify.uranophilelab.utils.customview.AnimatedEqualizerView
+            android:id="@+id/playing_equalizer"
+            android:layout_width="@dimen/_14sdp"
+            android:layout_height="@dimen/_12sdp"
+            android:layout_marginEnd="@dimen/_6sdp"
+            android:visibility="gone" />
+
         <ImageView
             android:id="@+id/favorite_item_icon"
             android:layout_width="@dimen/_18sdp"

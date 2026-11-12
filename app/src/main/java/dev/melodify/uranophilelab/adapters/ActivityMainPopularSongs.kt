@@ -14,6 +14,7 @@ import dev.melodify.uranophilelab.R
 import dev.melodify.uranophilelab.activities.MusicOverviewActivity
 import dev.melodify.uranophilelab.model.AlbumItem
 import dev.melodify.uranophilelab.utils.AnimatedMenuHelper
+import dev.melodify.uranophilelab.utils.HapticUtil
 import dev.melodify.uranophilelab.utils.MusicPlayerManager
 
 class ActivityMainPopularSongs(private val data: MutableList<AlbumItem?>) :
@@ -53,6 +54,7 @@ class ActivityMainPopularSongs(private val data: MutableList<AlbumItem?>) :
         }
 
         holder.itemView.findViewById<View?>(R.id.more)?.setOnClickListener { v ->
+            HapticUtil.tap(v)
             val songId = item.id ?: return@setOnClickListener
             AnimatedMenuHelper.showAnimatedSongMenu(
                 context = v.context,
@@ -64,6 +66,7 @@ class ActivityMainPopularSongs(private val data: MutableList<AlbumItem?>) :
         }
 
         holder.itemView.setOnClickListener { v: View? ->
+            HapticUtil.tap(v)
             MusicPlayerManager.trackQueue?.clear()
             Log.d(
                 "AdapterDebug",

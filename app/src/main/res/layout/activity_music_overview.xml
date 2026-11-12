@@ -105,6 +105,20 @@
             android:layout_weight="1.3"
             android:layout_gravity="center">
 
+            <!-- Dynamic Ambient Artwork Glow (Auris & Echo style) -->
+            <ImageView
+                android:id="@+id/ambientGlowView"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_margin="-28dp"
+                android:alpha="0.75"
+                android:scaleType="centerCrop"
+                android:importantForAccessibility="no"
+                app:layout_constraintTop_toTopOf="@id/coverImageCard"
+                app:layout_constraintBottom_toBottomOf="@id/coverImageCard"
+                app:layout_constraintStart_toStartOf="@id/coverImageCard"
+                app:layout_constraintEnd_toEndOf="@id/coverImageCard" />
+
             <!-- Square Artwork Card with Rounded Corners & Subtle Outline -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/coverImageCard"
@@ -168,20 +182,37 @@
                 android:layout_weight="1"
                 android:orientation="vertical">
 
-                <TextView
-                    android:id="@+id/title"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:ellipsize="marquee"
-                    android:marqueeRepeatLimit="marquee_forever"
-                    android:fontFamily="@font/avenir_next_bold"
-                    android:scrollHorizontally="true"
-                    android:singleLine="true"
-                    android:focusable="true"
-                    android:focusableInTouchMode="true"
-                    android:text="loading..."
-                    android:textColor="@color/text_light"
-                    android:textSize="@dimen/_20ssp" />
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/title"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:ellipsize="marquee"
+                        android:marqueeRepeatLimit="marquee_forever"
+                        android:fontFamily="@font/avenir_next_bold"
+                        android:scrollHorizontally="true"
+                        android:singleLine="true"
+                        android:focusable="true"
+                        android:focusableInTouchMode="true"
+                        android:text="loading..."
+                        android:textColor="@color/text_light"
+                        android:textSize="@dimen/_20ssp" />
+
+                    <dev.melodify.uranophilelab.utils.customview.AnimatedEqualizerView
+                        android:id="@+id/now_playing_equalizer"
+                        android:layout_width="@dimen/_16sdp"
+                        android:layout_height="@dimen/_14sdp"
+                        android:layout_marginStart="@dimen/_8sdp"
+                        android:visibility="gone"
+                        tools:visibility="visible" />
+
+                </LinearLayout>
 
                 <TextView
                     android:id="@+id/description"

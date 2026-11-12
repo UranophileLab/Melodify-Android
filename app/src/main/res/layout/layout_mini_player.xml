@@ -10,13 +10,13 @@
     android:layout_height="wrap_content"
     android:layout_marginHorizontal="@dimen/_10sdp"
     android:layout_marginBottom="@dimen/_10sdp"
-    app:cardBackgroundColor="@color/spotify_dark_green"
-    app:cardCornerRadius="@dimen/_14sdp"
+    app:cardBackgroundColor="@color/glass_card_background"
+    app:cardCornerRadius="@dimen/_16sdp"
     app:cardElevation="@dimen/_8sdp"
     app:cardMaxElevation="@dimen/_10sdp"
     app:cardPreventCornerOverlap="false"
     app:strokeWidth="1dp"
-    app:strokeColor="#25FFFFFF"
+    app:strokeColor="@color/glass_card_stroke"
     app:rippleColor="#1AFFFFFF"
     android:clickable="true"
     android:focusable="true"
@@ -64,20 +64,37 @@
                 android:layout_marginEnd="@dimen/_8sdp"
                 android:layout_weight="1">
 
-                <TextView
-                    android:id="@+id/play_bar_music_title"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:singleLine="true"
-                    android:ellipsize="marquee"
-                    android:marqueeRepeatLimit="marquee_forever"
-                    android:scrollHorizontally="true"
-                    android:focusable="true"
-                    android:focusableInTouchMode="true"
-                    android:text="@string/app_name"
-                    android:fontFamily="@font/avenir_next_bold"
-                    android:textColor="@android:color/white"
-                    android:textSize="@dimen/_12ssp" />
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/play_bar_music_title"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:singleLine="true"
+                        android:ellipsize="marquee"
+                        android:marqueeRepeatLimit="marquee_forever"
+                        android:scrollHorizontally="true"
+                        android:focusable="true"
+                        android:focusableInTouchMode="true"
+                        android:text="@string/app_name"
+                        android:fontFamily="@font/avenir_next_bold"
+                        android:textColor="@android:color/white"
+                        android:textSize="@dimen/_12ssp" />
+
+                    <dev.melodify.uranophilelab.utils.customview.AnimatedEqualizerView
+                        android:id="@+id/play_bar_equalizer"
+                        android:layout_width="@dimen/_13sdp"
+                        android:layout_height="@dimen/_11sdp"
+                        android:layout_marginStart="@dimen/_5sdp"
+                        android:visibility="gone"
+                        tools:visibility="visible" />
+
+                </LinearLayout>
 
                 <TextView
                     android:id="@+id/play_bar_music_desc"
