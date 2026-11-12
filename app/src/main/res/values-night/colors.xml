@@ -53,6 +53,8 @@
     <color name="glass_card_background">#D9181C20</color>
     <color name="glass_card_stroke">#2BFFFFFF</color>
     <color name="glass_sheet_background">#F214171A</color>
+    <color name="glass_pill_background">#CC12151B</color>
+    <color name="glass_pill_stroke">#38FFFFFF</color>
 
     <!-- Seekbar track colors -->
     <color name="seekbar_track_background">#33FFFFFF</color>

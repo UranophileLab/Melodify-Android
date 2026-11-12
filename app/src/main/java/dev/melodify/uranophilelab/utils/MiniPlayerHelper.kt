@@ -159,13 +159,14 @@ object MiniPlayerHelper {
         val density = activity.resources.displayMetrics.density
         if (playBar is com.google.android.material.card.MaterialCardView) {
             playBar.setCardBackgroundColor(bgCardColor)
-            playBar.strokeColor = Color.parseColor("#33FFFFFF")
-            playBar.strokeWidth = (density * 1.0f).toInt().coerceAtLeast(1)
+            playBar.strokeColor = Color.parseColor("#38FFFFFF")
+            playBar.strokeWidth = (density * 1.2f).toInt().coerceAtLeast(1)
+            playBar.radius = density * 28f
         } else {
             val gradientDrawable = GradientDrawable()
             gradientDrawable.setColor(bgCardColor)
-            gradientDrawable.cornerRadius = density * 18f
-            gradientDrawable.setStroke((density * 1.0f).toInt().coerceAtLeast(1), Color.parseColor("#33FFFFFF"))
+            gradientDrawable.cornerRadius = density * 28f
+            gradientDrawable.setStroke((density * 1.2f).toInt().coerceAtLeast(1), Color.parseColor("#38FFFFFF"))
             playBar.background = gradientDrawable
         }
         
@@ -307,8 +308,8 @@ object MiniPlayerHelper {
     private fun getDarkenedCardColor(color: Int): Int {
         val hsv = FloatArray(3)
         Color.colorToHSV(color, hsv)
-        hsv[2] = (hsv[2] * 0.25f).coerceIn(0.10f, 0.18f)
+        hsv[2] = (hsv[2] * 0.22f).coerceIn(0.08f, 0.16f)
         val base = Color.HSVToColor(hsv)
-        return Color.argb(0xDE, Color.red(base), Color.green(base), Color.blue(base))
+        return Color.argb(0xCC, Color.red(base), Color.green(base), Color.blue(base))
     }
 }

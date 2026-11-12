@@ -99,3 +99,4 @@ object HapticUtil {
         } catch (_: Exception) {}
     }
 }
+

@@ -39,7 +39,7 @@
                 android:clipToPadding="false"
                 android:paddingHorizontal="@dimen/_12sdp"
                 android:paddingTop="@dimen/_8sdp"
-                android:paddingBottom="@dimen/_80sdp">
+                android:paddingBottom="@dimen/_130sdp">
 
                 <!-- Header Toolbar -->
                 <LinearLayout
@@ -430,22 +430,42 @@
         layout="@layout/layout_mini_player"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toTopOf="@+id/bottom_navigation"
+        android:layout_marginBottom="@dimen/_8sdp"
+        app:layout_constraintBottom_toTopOf="@+id/bottom_nav_card"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottom_navigation"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/bg_bottom_nav_glass"
-        app:elevation="8dp"
-        app:itemIconTint="@color/bottom_nav_item_color"
-        app:itemTextColor="@color/bottom_nav_item_color"
-        app:labelVisibilityMode="labeled"
-        app:menu="@menu/bottom_nav_menu"
+    <!-- Floating Pill Bottom Navigation (Echo & Auris style) -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/bottom_nav_card"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/_46sdp"
+        android:layout_marginBottom="@dimen/_14sdp"
+        app:cardCornerRadius="999dp"
+        app:cardElevation="@dimen/_12sdp"
+        app:cardMaxElevation="@dimen/_16sdp"
+        app:cardBackgroundColor="@color/glass_pill_background"
+        app:strokeWidth="1.2dp"
+        app:strokeColor="@color/glass_pill_stroke"
+        app:cardPreventCornerOverlap="false"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent">
+
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottom_navigation"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:paddingHorizontal="@dimen/_14sdp"
+            android:background="@android:color/transparent"
+            app:elevation="0dp"
+            app:itemIconTint="@color/bottom_nav_item_color"
+            app:itemTextColor="@color/bottom_nav_item_color"
+            app:itemRippleColor="#25FFFFFF"
+            app:labelVisibilityMode="labeled"
+            app:menu="@menu/bottom_nav_menu" />
+
+    </com.google.android.material.card.MaterialCardView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

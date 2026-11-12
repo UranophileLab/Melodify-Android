@@ -8,15 +8,15 @@
     android:id="@+id/play_bar_background"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="@dimen/_10sdp"
-    android:layout_marginBottom="@dimen/_10sdp"
-    app:cardBackgroundColor="@color/glass_card_background"
-    app:cardCornerRadius="@dimen/_16sdp"
-    app:cardElevation="@dimen/_8sdp"
-    app:cardMaxElevation="@dimen/_10sdp"
+    android:layout_marginHorizontal="@dimen/_12sdp"
+    android:layout_marginBottom="@dimen/_6sdp"
+    app:cardBackgroundColor="@color/glass_pill_background"
+    app:cardCornerRadius="999dp"
+    app:cardElevation="@dimen/_10sdp"
+    app:cardMaxElevation="@dimen/_14sdp"
     app:cardPreventCornerOverlap="false"
-    app:strokeWidth="1dp"
-    app:strokeColor="@color/glass_card_stroke"
+    app:strokeWidth="1.2dp"
+    app:strokeColor="@color/glass_pill_stroke"
     app:rippleColor="#1AFFFFFF"
     android:clickable="true"
     android:focusable="true"
@@ -38,13 +38,13 @@
             android:gravity="center_vertical">
 
             <com.google.android.material.card.MaterialCardView
-                android:layout_width="@dimen/_40sdp"
-                android:layout_height="@dimen/_40sdp"
+                android:layout_width="@dimen/_38sdp"
+                android:layout_height="@dimen/_38sdp"
                 app:cardBackgroundColor="@android:color/transparent"
-                app:cardCornerRadius="@dimen/_10sdp"
+                app:cardCornerRadius="999dp"
                 app:cardElevation="0dp"
-                app:strokeWidth="0.5dp"
-                app:strokeColor="#30FFFFFF">
+                app:strokeWidth="1dp"
+                app:strokeColor="#35FFFFFF">
 
                 <ImageView
                     android:id="@+id/play_bar_cover_image"
@@ -183,10 +183,12 @@
             android:layout_width="match_parent"
             android:layout_height="2.5dp"
             android:layout_gravity="bottom"
+            android:layout_marginHorizontal="@dimen/_24sdp"
+            android:layout_marginBottom="2dp"
             android:max="1000"
             android:progress="0"
             android:progressBackgroundTint="#26FFFFFF"
-            android:progressTint="@color/spotify_dark_green"
+            android:progressTint="@color/spotify_green"
             android:indeterminate="false" />
 
     </FrameLayout>

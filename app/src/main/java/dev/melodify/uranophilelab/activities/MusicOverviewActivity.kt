@@ -95,7 +95,6 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
     private var currentLyricsRecyclerView: androidx.recyclerview.widget.RecyclerView? = null
     private var lastLyricItemClickedTime = 0L
     private var lastLyricsToggledTime = 0L
-    private var coverBreathingAnimator: ValueAnimator? = null
 
     inner class LyricsAdapter(private val lyrics: List<Pair<Long, String>>) : androidx.recyclerview.widget.RecyclerView.Adapter<LyricsAdapter.ViewHolder>() {
         var activeIndex = -1
@@ -781,8 +780,6 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
     }
 
     override fun onDestroy() {
-        coverBreathingAnimator?.cancel()
-        coverBreathingAnimator = null
         musicService?.setCallback(null)
         musicService = null
         handler.removeCallbacksAndMessages(null)
@@ -1003,20 +1000,6 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
                 ) {
                     if (isFinishing || isDestroyed || binding == null) return
                     b.coverImage.setImageBitmap(resource)
-                    b.ambientGlowView.setImageBitmap(resource)
-
-                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-                        try {
-                            b.ambientGlowView.setRenderEffect(
-                                RenderEffect.createBlurEffect(
-                                    85f, 85f, Shader.TileMode.CLAMP
-                                )
-                            )
-                        } catch (e: Exception) {
-                            Log.e(TAG, "RenderEffect error", e)
-                        }
-                        b.ambientGlowView.alpha = 0.72f
-                    }
 
                     Palette.from(resource).generate { palette ->
                         if (isFinishing || isDestroyed || binding == null || palette == null) return@generate
@@ -1036,21 +1019,10 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
                             else -> 0xFF2A150D.toInt()
                         }
 
-                        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.S) {
-                            val glow = GradientDrawable().apply {
-                                gradientType = GradientDrawable.RADIAL_GRADIENT
-                                gradientRadius = 500f
-                                val glowColor = Color.argb(0xB0, Color.red(primaryColor), Color.green(primaryColor), Color.blue(primaryColor))
-                                colors = intArrayOf(glowColor, Color.TRANSPARENT)
-                            }
-                            b.ambientGlowView.background = glow
-                            b.ambientGlowView.alpha = 0.85f
-                        }
-
                         val isNight = isNightMode()
                         val dynamicGradient = if (isNight) {
-                            val topColor = adjustColorDarkness(primaryColor, 0.65f)
-                            val centerColor = adjustColorDarkness(primaryColor, 0.20f)
+                            val topColor = adjustColorDarkness(primaryColor, 0.70f)
+                            val centerColor = adjustColorDarkness(primaryColor, 0.22f)
                             val bottomColor = Color.parseColor("#121212")
                             GradientDrawable(
                                 GradientDrawable.Orientation.TOP_BOTTOM,
@@ -1072,31 +1044,6 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
 
                 override fun onLoadCleared(placeholder: Drawable?) {}
             })
-    }
-
-    private fun updateBreathingAnimation(isPlaying: Boolean) {
-        val b = binding ?: return
-        coverBreathingAnimator?.cancel()
-        if (isPlaying) {
-            val animator = ValueAnimator.ofFloat(1.0f, 1.025f).apply {
-                duration = 2600L
-                repeatMode = ValueAnimator.REVERSE
-                repeatCount = ValueAnimator.INFINITE
-                interpolator = AccelerateDecelerateInterpolator()
-                addUpdateListener { va ->
-                    val scale = va.animatedValue as Float
-                    b.coverImageCard.scaleX = scale
-                    b.coverImageCard.scaleY = scale
-                    b.ambientGlowView.scaleX = scale * 1.04f
-                    b.ambientGlowView.scaleY = scale * 1.04f
-                }
-            }
-            coverBreathingAnimator = animator
-            animator.start()
-        } else {
-            b.coverImageCard.animate().scaleX(1.0f).scaleY(1.0f).setDuration(350).start()
-            b.ambientGlowView.animate().scaleX(1.0f).scaleY(1.0f).setDuration(350).start()
-        }
     }
 
     private fun isNightMode(): Boolean {
@@ -1288,7 +1235,6 @@ class MusicOverviewActivity : AppCompatActivity(), ActionPlaying, ServiceConnect
             eq.visibility = if (isPlaying) View.VISIBLE else View.GONE
             eq.isAnimating = isPlaying
         }
-        updateBreathingAnimation(isPlaying)
 
         // Update repeat and shuffle button UI
         updateRepeatButtonUI()

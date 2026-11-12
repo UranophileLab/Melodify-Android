@@ -8,6 +8,7 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
@@ -35,6 +36,7 @@ import dev.melodify.uranophilelab.adapters.SavedLibrariesAdapter
 import dev.melodify.uranophilelab.databinding.ActivityMainBinding
 import dev.melodify.uranophilelab.databinding.RecommendationsBottomSheetBinding
 import dev.melodify.uranophilelab.model.AlbumItem
+import dev.melodify.uranophilelab.utils.HapticUtil
 import dev.melodify.uranophilelab.network.ApiManager
 import dev.melodify.uranophilelab.network.NetworkChangeReceiver
 import dev.melodify.uranophilelab.network.NetworkChangeReceiver.NetworkStatusListener
@@ -94,7 +96,7 @@ class MainActivity : AppCompatActivity() {
         BaseApplicationClass.updateTheme(this)
 
         val initialToolbarPaddingTop = inflatedBinding.toolbar.paddingTop
-        val initialBottomNavPaddingBottom = inflatedBinding.bottomNavigation?.paddingBottom ?: 0
+        val initialBottomNavCardMarginBottom = (inflatedBinding.bottomNavCard.layoutParams as? ViewGroup.MarginLayoutParams)?.bottomMargin ?: 0
 
         ViewCompat.setOnApplyWindowInsetsListener(inflatedBinding.main) { _, insets ->
             val statusBarInset = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
@@ -107,13 +109,12 @@ class MainActivity : AppCompatActivity() {
                 inflatedBinding.toolbar.paddingBottom
             )
 
-            inflatedBinding.bottomNavigation?.let { bottomNav ->
-                bottomNav.setPadding(
-                    bottomNav.paddingLeft,
-                    bottomNav.paddingTop,
-                    bottomNav.paddingRight,
-                    initialBottomNavPaddingBottom + navBarInset
-                )
+            inflatedBinding.bottomNavCard.let { card ->
+                val lp = card.layoutParams as? ViewGroup.MarginLayoutParams
+                if (lp != null) {
+                    lp.bottomMargin = initialBottomNavCardMarginBottom + navBarInset
+                    card.layoutParams = lp
+                }
             }
 
             insets
@@ -688,6 +689,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupBottomNavigation() {
         binding?.bottomNavigation?.setOnItemSelectedListener { item ->
+            HapticUtil.tap(binding?.bottomNavCard)
             when (item.itemId) {
                 R.id.nav_home -> {
                     binding?.nestedScrollView?.smoothScrollTo(0, 0)
