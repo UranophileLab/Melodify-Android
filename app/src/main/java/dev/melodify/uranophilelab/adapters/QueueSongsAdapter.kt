@@ -20,7 +20,7 @@ class QueueSongsAdapter(
     private val onSongClick: (Int) -> Unit,
     private val onRemoveClick: (Int) -> Unit,
     /** Called whenever a drag-reorder completes so the caller can sync MusicPlayerManager.trackQueue */
-    private val onOrderChanged: ((fromIndex: Int, toIndex: Int) -> Unit)? = null
+    private val onOrderChanged: (() -> Unit)? = null
 ) : RecyclerView.Adapter<QueueSongsAdapter.ViewHolder>() {
 
     // ── Drag-to-reorder support ───────────────────────────────────────────────
@@ -63,7 +63,7 @@ class QueueSongsAdapter(
                 // Notify caller only once the drag is fully released
                 if (dragFrom != -1 && dragTo != -1 && dragFrom != dragTo) {
                     HapticUtil.confirm(recyclerView)
-                    onOrderChanged?.invoke(dragFrom, dragTo)
+                    onOrderChanged?.invoke()
                 }
                 dragFrom = -1
                 dragTo   = -1

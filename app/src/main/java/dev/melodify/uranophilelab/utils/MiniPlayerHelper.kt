@@ -249,22 +249,31 @@ object MiniPlayerHelper {
                             val adapter = dev.melodify.uranophilelab.adapters.QueueSongsAdapter(
                                 songList,
                                 onSongClick = { itemIndex ->
-                                    val songId = songList.getOrNull(itemIndex)?.id
-                                    val targetPos = if (songId != null) queue.indexOf(songId) else -1
-                                    if (targetPos in queue.indices) {
+                                    val currentPos = MusicPlayerManager.track_position
+                                    val targetPos = currentPos + 1 + itemIndex
+                                    val currentQueue = MusicPlayerManager.trackQueue ?: ArrayList()
+                                    if (targetPos in currentQueue.indices) {
                                         MusicPlayerManager.track_position = targetPos
-                                        MusicPlayerManager.MUSIC_ID = queue[targetPos]
+                                        MusicPlayerManager.MUSIC_ID = currentQueue[targetPos]
                                         MusicPlayerManager.playTrack()
                                         bottomSheetDialog.dismiss()
                                     }
                                 },
                                 onRemoveClick = { itemIndex ->
-                                    val songId = songList.getOrNull(itemIndex)?.id
-                                    val targetPos = if (songId != null) queue.indexOf(songId) else -1
-                                    if (targetPos in queue.indices && itemIndex in songList.indices) {
-                                        queue.removeAt(targetPos)
+                                    if (itemIndex in songList.indices) {
                                         songList.removeAt(itemIndex)
+                                        val currentQueue = MusicPlayerManager.trackQueue ?: ArrayList()
+                                        val currentPos = MusicPlayerManager.track_position
+                                        val newQueue = ArrayList<String?>()
+                                        for (i in 0..currentPos) {
+                                            if (i in currentQueue.indices) newQueue.add(currentQueue[i])
+                                        }
+                                        for (s in songList) {
+                                            s.id?.let { newQueue.add(it) }
+                                        }
+                                        MusicPlayerManager.trackQueue = newQueue
                                         queueRecyclerView.adapter?.notifyItemRemoved(itemIndex)
+                                        queueRecyclerView.adapter?.notifyItemRangeChanged(itemIndex, songList.size - itemIndex)
                                         if (songList.isEmpty()) {
                                             queueEmptyTv.visibility = View.VISIBLE
                                             queueRecyclerView.visibility = View.GONE
@@ -272,15 +281,17 @@ object MiniPlayerHelper {
                                         Toast.makeText(activity, "Removed from queue", Toast.LENGTH_SHORT).show()
                                     }
                                 },
-                                onOrderChanged = { fromItem, toItem ->
-                                    val fromId = songList.getOrNull(fromItem)?.id
-                                    val toId = songList.getOrNull(toItem)?.id
-                                    val fromPos = if (fromId != null) queue.indexOf(fromId) else -1
-                                    val toPos = if (toId != null) queue.indexOf(toId) else -1
-                                    if (fromPos in queue.indices && toPos in queue.indices) {
-                                        val id = queue.removeAt(fromPos)
-                                        queue.add(toPos, id)
+                                onOrderChanged = {
+                                    val currentQueue = MusicPlayerManager.trackQueue ?: ArrayList()
+                                    val currentPos = MusicPlayerManager.track_position
+                                    val newQueue = ArrayList<String?>()
+                                    for (i in 0..currentPos) {
+                                        if (i in currentQueue.indices) newQueue.add(currentQueue[i])
                                     }
+                                    for (s in songList) {
+                                        s.id?.let { newQueue.add(it) }
+                                    }
+                                    MusicPlayerManager.trackQueue = newQueue
                                 }
                             )
                             adapter.attachDragHelper(queueRecyclerView)

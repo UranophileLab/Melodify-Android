@@ -51,19 +51,31 @@
                     android:paddingTop="@dimen/_4sdp"
                     android:paddingBottom="@dimen/_10sdp">
 
-                    <!-- Left Action Icon: 3-Dots Menu -->
-                    <ImageView
-                        android:id="@+id/more_button"
+                    <!-- Left Action Icon: Profile Icon Button -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/profile_button"
                         android:layout_width="@dimen/_28sdp"
                         android:layout_height="@dimen/_28sdp"
                         android:layout_marginEnd="@dimen/_10sdp"
                         android:clickable="true"
                         android:focusable="true"
-                        android:foreground="?attr/selectableItemBackgroundBorderless"
-                        android:padding="@dimen/_4sdp"
-                        android:src="@drawable/more_vert_24px"
-                        app:tint="@color/text_light"
-                        android:contentDescription="More options" />
+                        android:foreground="?attr/selectableItemBackground"
+                        app:cardBackgroundColor="#22FFFFFF"
+                        app:cardCornerRadius="999dp"
+                        app:cardElevation="0dp"
+                        app:strokeColor="#33FFFFFF"
+                        app:strokeWidth="1dp">
+
+                        <ImageView
+                            android:id="@+id/profile_icon"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:padding="@dimen/_5sdp"
+                            android:src="@drawable/baseline_person_24"
+                            app:tint="@color/text_light"
+                            android:contentDescription="Profile" />
+
+                    </com.google.android.material.card.MaterialCardView>
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -260,13 +272,80 @@
                                 android:layout_marginTop="@dimen/_2sdp"
                                 android:fontFamily="@font/avenir_next_regular"
                                 android:includeFontPadding="false"
-                                android:text="Global fresh tracks &amp; latest music"
+                                android:text="This year's fresh tracks • Local, Country &amp; Global"
                                 android:textColor="@color/textSec"
                                 android:textSize="@dimen/_10ssp" />
 
                         </LinearLayout>
 
                     </LinearLayout>
+
+                    <HorizontalScrollView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/_6sdp"
+                        android:clipChildren="false"
+                        android:clipToPadding="false"
+                        android:scrollbars="none">
+
+                        <com.google.android.material.chip.ChipGroup
+                            android:id="@+id/new_releases_chip_group"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:checkedChip="@id/new_releases_chip_all"
+                            app:selectionRequired="true"
+                            app:singleSelection="true">
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/new_releases_chip_all"
+                                style="@style/Widget.Material3.Chip.Filter"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="All"
+                                android:textColor="@color/chip_text_color"
+                                app:chipBackgroundColor="@color/chip_background_color"
+                                app:chipCornerRadius="999dp"
+                                app:chipStrokeColor="@color/chip_stroke_color"
+                                app:chipStrokeWidth="1dp" />
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/new_releases_chip_local"
+                                style="@style/Widget.Material3.Chip.Filter"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Local"
+                                android:textColor="@color/chip_text_color"
+                                app:chipBackgroundColor="@color/chip_background_color"
+                                app:chipCornerRadius="999dp"
+                                app:chipStrokeColor="@color/chip_stroke_color"
+                                app:chipStrokeWidth="1dp" />
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/new_releases_chip_country"
+                                style="@style/Widget.Material3.Chip.Filter"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Country"
+                                android:textColor="@color/chip_text_color"
+                                app:chipBackgroundColor="@color/chip_background_color"
+                                app:chipCornerRadius="999dp"
+                                app:chipStrokeColor="@color/chip_stroke_color"
+                                app:chipStrokeWidth="1dp" />
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/new_releases_chip_global"
+                                style="@style/Widget.Material3.Chip.Filter"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Global"
+                                android:textColor="@color/chip_text_color"
+                                app:chipBackgroundColor="@color/chip_background_color"
+                                app:chipCornerRadius="999dp"
+                                app:chipStrokeColor="@color/chip_stroke_color"
+                                app:chipStrokeWidth="1dp" />
+
+                        </com.google.android.material.chip.ChipGroup>
+                    </HorizontalScrollView>
 
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/new_releases_recycler_view"

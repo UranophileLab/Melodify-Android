@@ -41,11 +41,11 @@ class ActivityArtistProfileTopSongsAdapter(private val data: MutableList<Song?>)
 
         val itemView = ActivityArtistProfileViewTopSongsItemBinding.bind(holder.itemView)
 
-        val songData = data[position]
-        val isCurrentPlaying = songData != null && !songData.id.isNullOrEmpty() && (songData.id == MusicPlayerManager.MUSIC_ID)
+        val songData = data.getOrNull(position) ?: return
+        val isCurrentPlaying = !songData.id.isNullOrEmpty() && (songData.id == MusicPlayerManager.MUSIC_ID)
 
         itemView.position.text = (position + 1).toString()
-        itemView.coverTitle.text = songData?.name()
+        itemView.coverTitle.text = songData.name()
         if (isCurrentPlaying) {
             itemView.coverTitle.setTextColor(ContextCompat.getColor(holder.itemView.context, R.color.spotify_green))
             itemView.coverTitle.setTypeface(null, Typeface.BOLD)
@@ -54,18 +54,18 @@ class ActivityArtistProfileTopSongsAdapter(private val data: MutableList<Song?>)
             itemView.coverTitle.setTypeface(null, Typeface.NORMAL)
         }
 
-        itemView.coverPlayed.text = String.format("%s | %s", data[position]!!.year, data[position]!!.label)
-        val images = data[position]?.image
+        itemView.coverPlayed.text = String.format("%s | %s", songData.year ?: "", songData.label ?: "")
+        val images = songData.image
         val url = if (images.isNullOrEmpty()) "" else images[images.size - 1]?.url ?: ""
         if (url.isNotEmpty() && url != "<shimmer>") {
             Glide.with(itemView.coverImage.context).load(url.toUri()).into(itemView.coverImage)
         }
 
         itemView.more.setOnClickListener { v ->
-            val song = data[position] ?: return@setOnClickListener
+            val song = data.getOrNull(holder.bindingAdapterPosition) ?: return@setOnClickListener
             val songId = song.id ?: return@setOnClickListener
-            val images = song.image
-            val coverUrl = if (images.isNullOrEmpty()) "" else images[images.size - 1]?.url ?: ""
+            val itemImages = song.image
+            val coverUrl = if (itemImages.isNullOrEmpty()) "" else itemImages[itemImages.size - 1]?.url ?: ""
             val primaryArtist = song.artists?.primary?.firstOrNull()?.name() ?: song.label ?: ""
             AnimatedMenuHelper.showAnimatedSongMenu(
                 context = v.context,
@@ -81,25 +81,33 @@ class ActivityArtistProfileTopSongsAdapter(private val data: MutableList<Song?>)
         }
 
         holder.itemView.setOnClickListener { view: View? ->
+            val currentPos = holder.bindingAdapterPosition
+            val currentSong = data.getOrNull(currentPos)
+            val currentSongId = currentSong?.id ?: return@setOnClickListener
+
+            if (MusicPlayerManager.trackQueue == null) {
+                MusicPlayerManager.trackQueue = ArrayList()
+            }
             MusicPlayerManager.trackQueue?.clear()
-            var clickIndex = position
+            var clickIndex = currentPos
             var validIndex = 0
             for (i in data.indices) {
                 val song = data[i]
                 if (song != null && song.id != null && song.id != "<shimmer>") {
                     MusicPlayerManager.trackQueue?.add(song.id)
-                    if (i == position) {
+                    if (i == currentPos) {
                         clickIndex = validIndex
                     }
                     validIndex++
                 }
             }
             MusicPlayerManager.track_position = clickIndex
-            view!!.context.startActivity(
+            val ctx = view?.context ?: holder.itemView.context
+            ctx.startActivity(
                 Intent(
-                    view.context,
+                    ctx,
                     MusicOverviewActivity::class.java
-                ).putExtra("id", data[position]!!.id)
+                ).putExtra("id", currentSongId)
             )
         }
     }
@@ -109,7 +117,7 @@ class ActivityArtistProfileTopSongsAdapter(private val data: MutableList<Song?>)
     }
 
     override fun getItemViewType(position: Int): Int {
-        if (data.get(position)!!.id == "<shimmer>") return 0
+        if (data.getOrNull(position)?.id == "<shimmer>") return 0
         else return 1
     }
 

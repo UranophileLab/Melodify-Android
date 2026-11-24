@@ -47,6 +47,8 @@ class ActivitySeeMoreAlbumListAdapter :
             return
         }
 
+        val item = data?.getOrNull(position) ?: return
+
         val coverImage = holder.itemView.findViewById<ImageView?>(R.id.coverImage)
         val coverTitle = holder.itemView.findViewById<TextView>(R.id.coverTitle)
         val coverPlayed = holder.itemView.findViewById<TextView>(R.id.coverPlayed)
@@ -54,30 +56,31 @@ class ActivitySeeMoreAlbumListAdapter :
         holder.itemView.findViewById<ImageView?>(R.id.more)
 
         positionTextView.text = (position + 1).toString()
-        coverTitle.text = data!![position]!!.name()
-        coverPlayed.text = String.format("%s | %s", data[position]!!.year, data[position]!!.language)
-        val images = data[position]?.image
+        coverTitle.text = item.name()
+        coverPlayed.text = String.format("%s | %s", item.year ?: "", item.language ?: "")
+        val images = item.image
         val url = if (images.isNullOrEmpty()) "" else images[images.size - 1]?.url ?: ""
-        if (url.isNotEmpty() && url != "<shimmer>") {
+        if (url.isNotEmpty() && url != "<shimmer>" && coverImage != null) {
             Glide.with(coverImage.context).load(url.toUri()).into(coverImage)
         }
 
         holder.itemView.setOnClickListener(View.OnClickListener {
-            val item = data[position] ?: return@OnClickListener
-            val itemImages = item.image
+            val currentPos = holder.bindingAdapterPosition
+            val currentItem = data?.getOrNull(currentPos) ?: return@OnClickListener
+            val itemImages = currentItem.image
             val itemUrl = if (itemImages.isNullOrEmpty()) "" else itemImages[itemImages.size - 1]?.url ?: ""
 
             val albumItem = AlbumItem(
-                item.name(),
-                "${item.year} | ${item.language ?: ""}",
+                currentItem.name(),
+                "${currentItem.year ?: ""} | ${currentItem.language ?: ""}",
                 itemUrl,
-                item.id
+                currentItem.id
             )
             holder.itemView.context.startActivity(
                 Intent(holder.itemView.context, ListActivity::class.java)
                     .putExtra("data", Gson().toJson(albumItem))
                     .putExtra("type", "album")
-                    .putExtra("id", data.get(position)!!.id)
+                    .putExtra("id", currentItem.id)
             )
         })
     }

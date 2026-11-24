@@ -19,7 +19,6 @@ import dev.melodify.uranophilelab.adapters.SongHistoryAdapter
 import dev.melodify.uranophilelab.databinding.ActivityHistoryBinding
 import dev.melodify.uranophilelab.model.history.AlbumHistoryItem
 import dev.melodify.uranophilelab.model.history.SongHistoryItem
-import dev.melodify.uranophilelab.records.sharedpref.SavedLibraries
 import dev.melodify.uranophilelab.utils.MiniPlayerHelper
 import dev.melodify.uranophilelab.utils.MusicPlayerManager
 import dev.melodify.uranophilelab.utils.SharedPreferenceManager
@@ -219,14 +218,12 @@ class HistoryActivity : AppCompatActivity() {
                     }
                     2 -> {
                         prefs.clearPlaylistHistory()
-                        prefs.savedLibrariesData = SavedLibraries(ArrayList())
                         playlistHistoryList.clear()
                         playlistAdapter?.updateData(playlistHistoryList)
                         Toast.makeText(this, "Playlist history cleared", Toast.LENGTH_SHORT).show()
                     }
                     3 -> {
                         prefs.clearAllHistory()
-                        prefs.savedLibrariesData = SavedLibraries(ArrayList())
                         songHistoryList.clear()
                         albumHistoryList.clear()
                         playlistHistoryList.clear()

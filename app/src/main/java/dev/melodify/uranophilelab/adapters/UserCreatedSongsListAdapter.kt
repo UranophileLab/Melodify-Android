@@ -72,15 +72,20 @@ class UserCreatedSongsListAdapter(private val data: MutableList<Library.Songs?>)
             popup.menu.add("Play Next")
             popup.menu.add("Add to Queue")
             popup.setOnMenuItemClickListener { menuItem ->
+                val songId = data.getOrNull(holder.bindingAdapterPosition)?.id
                 when (menuItem.title) {
                     "Play Next" -> {
-                        MusicPlayerManager.playNext(data[position]?.id)
-                        Toast.makeText(v.context, "Song will play next", Toast.LENGTH_SHORT).show()
+                        if (!songId.isNullOrEmpty()) {
+                            MusicPlayerManager.playNext(songId)
+                            Toast.makeText(v.context, "Song will play next", Toast.LENGTH_SHORT).show()
+                        }
                         true
                     }
                     "Add to Queue" -> {
-                        MusicPlayerManager.addToQueue(data[position]?.id)
-                        Toast.makeText(v.context, "Song added to queue", Toast.LENGTH_SHORT).show()
+                        if (!songId.isNullOrEmpty()) {
+                            MusicPlayerManager.addToQueue(songId)
+                            Toast.makeText(v.context, "Song added to queue", Toast.LENGTH_SHORT).show()
+                        }
                         true
                     }
                     else -> false
@@ -91,7 +96,14 @@ class UserCreatedSongsListAdapter(private val data: MutableList<Library.Songs?>)
 
         holder.itemView.setOnClickListener { view: View? ->
             HapticUtil.tap(view)
+            val currentPos = holder.bindingAdapterPosition
+            val targetSong = data.getOrNull(currentPos)
+            val targetId = targetSong?.id ?: return@setOnClickListener
+
             // Build full queue from list and set correct position
+            if (MusicPlayerManager.trackQueue == null) {
+                MusicPlayerManager.trackQueue = ArrayList()
+            }
             MusicPlayerManager.trackQueue?.clear()
             var clickIndex = 0
             var validIndex = 0
@@ -99,14 +111,15 @@ class UserCreatedSongsListAdapter(private val data: MutableList<Library.Songs?>)
                 val song = data[i]
                 if (song != null && !song.id.isNullOrEmpty()) {
                     MusicPlayerManager.trackQueue?.add(song.id)
-                    if (i == position) clickIndex = validIndex
+                    if (i == currentPos) clickIndex = validIndex
                     validIndex++
                 }
             }
             MusicPlayerManager.track_position = clickIndex
-            holder.itemView.context.startActivity(
-                Intent(view!!.context, MusicOverviewActivity::class.java)
-                    .putExtra("id", data[position]!!.id)
+            val ctx = view?.context ?: holder.itemView.context
+            ctx.startActivity(
+                Intent(ctx, MusicOverviewActivity::class.java)
+                    .putExtra("id", targetId)
             )
         }
     }

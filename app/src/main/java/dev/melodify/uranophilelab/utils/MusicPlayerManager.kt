@@ -161,6 +161,10 @@ object MusicPlayerManager {
                                 EqualizerManager.attachAudioSession(sessionId)
                             }
                         }
+                        val durSec = (player?.duration ?: 0L) / 1000
+                        if (durSec > 0) {
+                            ListeningEventTracker.updateDuration(durSec)
+                        }
                         player?.play()
                         updateWidget()
                     }
@@ -422,6 +426,15 @@ object MusicPlayerManager {
     }
 
     fun resolveStreamAndPlay(song: SongResponse.Song, context: Context, onResolved: (() -> Unit)? = null) {
+        val downloadedFile = TrackDownloader.getDownloadedFile(song.name())
+        if (downloadedFile != null && downloadedFile.exists()) {
+            SONG_URL = android.net.Uri.fromFile(downloadedFile).toString()
+            isTrackDownloaded = true
+            prepareMediaPlayer()
+            onResolved?.invoke()
+            return
+        }
+
         val prefs = SharedPreferenceManager.getInstance(context)
         val quality = prefs.getStreamQuality()
         val apiManager = ApiManager(context)
@@ -565,12 +578,24 @@ object MusicPlayerManager {
         p.prepare()
         appContext?.let { ctx ->
             MUSIC_ID?.let { id ->
-                val durationSec = (p.duration / 1000).coerceAtLeast(0L)
+                val metaDuration = CURRENT_TRACK?.data?.firstOrNull()?.duration?.toLong() ?: 0L
+                val durationSec = if (metaDuration > 0L) metaDuration else (p.duration / 1000).coerceAtLeast(0L)
                 ListeningEventTracker.onTrackStarted(ctx, id, durationSec)
             }
         }
         showNotification()
         updateWidget()
+    }
+
+    fun playLocalTrack(file: java.io.File, title: String?, artist: String?, coverBitmap: android.graphics.Bitmap? = null) {
+        val songTitle = title ?: file.nameWithoutExtension
+        val songArtist = artist ?: ""
+        setMusicDetails("", songTitle, songArtist, file.name)
+        SONG_URL = android.net.Uri.fromFile(file).toString()
+        track_position = 0
+        trackQueue = ArrayList(listOf(file.name))
+        isTrackDownloaded = true
+        prepareMediaPlayer()
     }
 
     fun playNext(trackId: String?) {

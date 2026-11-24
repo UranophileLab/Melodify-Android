@@ -6,10 +6,14 @@ class MediaPlayerUtil private constructor() : MediaPlayer() {
     private val TAG = "MediaPlayerUtil"
 
     companion object {
-        val instance: MediaPlayerUtil? = null
+        @Volatile
+        private var INSTANCE: MediaPlayerUtil? = null
+
+        val instance: MediaPlayerUtil
             get() {
-                if (field != null) return field
-                return MediaPlayerUtil()
+                return INSTANCE ?: synchronized(this) {
+                    INSTANCE ?: MediaPlayerUtil().also { INSTANCE = it }
+                }
             }
     }
 }
