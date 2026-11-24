@@ -125,6 +125,7 @@ class ArtistProfileActivity : AppCompatActivity() {
                         Log.i(TAG, "onResponse: $response")
                         val id = artistSearch?.data?.id
                         if (id != null) {
+                            artistId = id
                             sharedPreferenceManager.setArtistData(id, artistSearch)
                             Log.i(TAG, "onResponse: " + sharedPreferenceManager.getArtistData(id))
                         }

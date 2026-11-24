@@ -65,6 +65,10 @@ class MainActivity : AppCompatActivity() {
     private var baseApplicationClass: BaseApplicationClass? = null
     val songs: MutableList<AlbumItem?> = ArrayList<AlbumItem?>()
     val newReleaseSongs: MutableList<AlbumItem?> = ArrayList<AlbumItem?>()
+    val localNewReleases: MutableList<AlbumItem> = ArrayList()
+    val countryNewReleases: MutableList<AlbumItem> = ArrayList()
+    val globalNewReleases: MutableList<AlbumItem> = ArrayList()
+    val allNewReleases: MutableList<AlbumItem> = ArrayList()
     val artists: MutableList<ArtistsSearch.Data.Results?> = ArrayList<ArtistsSearch.Data.Results?>()
     val albums: MutableList<AlbumItem?> = ArrayList<AlbumItem?>()
     val playlists: MutableList<AlbumItem?> = ArrayList<AlbumItem?>()
@@ -131,7 +135,7 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, SettingsActivity::class.java))
         }
 
-        inflatedBinding.moreButton?.setOnClickListener {
+        inflatedBinding.profileButton?.setOnClickListener {
             AnimatedMenuHelper.showAnimatedHomeMenu(this)
         }
 
@@ -153,6 +157,11 @@ class MainActivity : AppCompatActivity() {
             LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         inflatedBinding.savedRecyclerView.layoutManager =
             LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+
+        inflatedBinding.newReleasesChipGroup?.setOnCheckedStateChangeListener { _, _ ->
+            val checkedId = inflatedBinding.newReleasesChipGroup?.checkedChipId ?: R.id.new_releases_chip_all
+            updateNewReleasesDisplay(checkedId)
+        }
 
         // Snap helpers — smooth magnetic scroll on all horizontal lists
         inflatedBinding.recommendationsRecyclerView?.attachSnapHelper()
@@ -295,62 +304,102 @@ class MainActivity : AppCompatActivity() {
             recAdapter.notifyDataSetChanged()
         }
 
-        val songSeeds = listOf("2023", "2024", "2025", "2026", "Hits", "Latest", "Romantic", "Chill", "Lo-Fi", "Dance", "Hindi", "Sad", "Love", "Workout")
-        val newReleaseSeeds = listOf("New Releases", "Global New Releases", "Latest Global Hits", "Latest Releases", "New Pop Hits", "2025 New Releases", "Global New", "Latest Songs", "New Hits")
+        localNewReleases.clear()
+        countryNewReleases.clear()
+        globalNewReleases.clear()
+        allNewReleases.clear()
+        newReleaseSongs.clear()
+
+        val currentYear = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR)
+        val currentYearStr = currentYear.toString()
+        val userLocale = java.util.Locale.getDefault()
+        val countryName = userLocale.displayCountry.takeIf { it.isNotBlank() } ?: "India"
+        val languageName = userLocale.displayLanguage.takeIf { it.isNotBlank() && !it.equals("English", ignoreCase = true) }
+
+        val localQueries = listOf(
+            "$currentYearStr ${languageName ?: "Hindi"} latest songs",
+            "$currentYearStr regional hits",
+            "$currentYearStr local new releases",
+            "$currentYearStr Punjabi new songs"
+        )
+        val countryQueries = listOf(
+            "$currentYearStr $countryName hits",
+            "$currentYearStr Bollywood new",
+            "$currentYearStr national new releases",
+            "$currentYearStr top $countryName"
+        )
+        val globalQueries = listOf(
+            "$currentYearStr Global new releases",
+            "$currentYearStr Global top hits",
+            "$currentYearStr Billboard new",
+            "$currentYearStr International pop hits"
+        )
+
+        val songSeeds = listOf(currentYearStr, "Hits", "Latest", "Romantic", "Chill", "Lo-Fi", "Dance", "Hindi", "Sad", "Love", "Workout")
         val artistSeeds = listOf("Arijit", "Taylor", "Drake", "BTS", "Ed Sheeran", "Shreya", "Justin", "Badshah")
-        val albumSeeds = listOf("2023", "2024", "2025", "2026", "Hits", "Latest", "New", "Sad", "Lo-Fi", "Romantic", "Rock", "Pop", "Classic", "Party")
-        val playlistSeeds = listOf("2023", "2024", "2025", "2026", "Hits", "Latest", "Trending", "Party", "Devotional", "Chill", "Love", "Sad", "Top", "Classic")
+        val albumSeeds = listOf(currentYearStr, "Hits", "Latest", "New", "Sad", "Lo-Fi", "Romantic", "Rock", "Pop", "Classic", "Party")
+        val playlistSeeds = listOf(currentYearStr, "Hits", "Latest", "Trending", "Party", "Devotional", "Chill", "Love", "Sad", "Top", "Classic")
 
         val songQuery = songSeeds.random()
-        val newReleaseQuery = newReleaseSeeds.random()
         val artistQuery = artistSeeds.random()
         val albumQuery = albumSeeds.random()
         val playlistQuery = playlistSeeds.random()
 
         val apiManager = ApiManager(this)
 
-        apiManager.searchSongs(newReleaseQuery, 0, 15, object : RequestNetwork.RequestListener {
-            override fun onResponse(
-                tag: String?,
-                response: String?,
-                responseHeaders: HashMap<String?, Any?>?
-            ) {
-                val currentBinding = binding ?: return
-                try {
-                    val songSearch = Gson().fromJson(response, SongSearch::class.java)
-                    Log.i(TAG, "onResponse New Releases: $response")
-                    if (songSearch?.success == true) {
-                        val resultsList = songSearch.data?.results ?: emptyList()
-                        for (results in resultsList) {
-                            if (results == null) continue
-                            val imageList = results.image
-                            val imageUrl =
-                                if (!imageList.isNullOrEmpty()) imageList[imageList.size - 1]?.url ?: "" else ""
-                            newReleaseSongs.add(
-                                AlbumItem(
-                                    results.name(), results.language + " " + results.year,
-                                    imageUrl, results.id, "song"
-                                )
-                            )
-                        }
-                        val adapter = ActivityMainPopularSongs(newReleaseSongs)
-                        currentBinding.newReleasesRecyclerView?.adapter = adapter
-                        adapter.notifyDataSetChanged()
-                        updateTrendingGrid()
-                        BaseApplicationClass.sharedPreferenceManager?.homeNewReleasesRecommended = songSearch
-                    } else {
-                        showOfflineData()
-                    }
-                } catch (e: Exception) {
-                    Log.e(TAG, "onResponse new release song parse error: ", e)
-                    showOfflineData()
-                }
+        fun syncAndDisplayNewReleases() {
+            val currentBinding = binding ?: return
+            val combined = ArrayList<AlbumItem>()
+            val seenIds = HashSet<String?>()
+            val maxLen = maxOf(localNewReleases.size, countryNewReleases.size, globalNewReleases.size)
+            for (i in 0 until maxLen) {
+                if (i < localNewReleases.size && seenIds.add(localNewReleases[i].id)) combined.add(localNewReleases[i])
+                if (i < countryNewReleases.size && seenIds.add(countryNewReleases[i].id)) combined.add(countryNewReleases[i])
+                if (i < globalNewReleases.size && seenIds.add(globalNewReleases[i].id)) combined.add(globalNewReleases[i])
             }
+            allNewReleases.clear()
+            allNewReleases.addAll(combined)
 
-            override fun onErrorResponse(tag: String?, message: String?) {
-                showOfflineData()
-            }
-        })
+            val checkedId = currentBinding.newReleasesChipGroup?.checkedChipId ?: R.id.new_releases_chip_all
+            updateNewReleasesDisplay(checkedId)
+        }
+
+        fun fetchCategoryReleases(query: String, targetList: MutableList<AlbumItem>) {
+            apiManager.searchSongs(query, 0, 20, object : RequestNetwork.RequestListener {
+                override fun onResponse(tag: String?, response: String?, responseHeaders: HashMap<String?, Any?>?) {
+                    try {
+                        val songSearch = Gson().fromJson(response, SongSearch::class.java)
+                        if (songSearch?.success == true) {
+                            val resultsList = songSearch.data?.results ?: emptyList()
+                            val thisYearSongs = resultsList.filterNotNull().filter { isFromThisYear(it, currentYear) }
+                            for (results in thisYearSongs) {
+                                val imageList = results.image
+                                val imageUrl = if (!imageList.isNullOrEmpty()) imageList[imageList.size - 1]?.url ?: "" else ""
+                                targetList.add(
+                                    AlbumItem(
+                                        results.name(),
+                                        "${results.language ?: ""} ${results.year ?: currentYearStr}".trim(),
+                                        imageUrl,
+                                        results.id,
+                                        "song"
+                                    )
+                                )
+                            }
+                            syncAndDisplayNewReleases()
+                            BaseApplicationClass.sharedPreferenceManager?.homeNewReleasesRecommended = songSearch
+                        }
+                    } catch (e: Exception) {
+                        Log.e(TAG, "onResponse category new release error: ", e)
+                    }
+                }
+
+                override fun onErrorResponse(tag: String?, message: String?) {}
+            })
+        }
+
+        fetchCategoryReleases(localQueries.random(), localNewReleases)
+        fetchCategoryReleases(countryQueries.random(), countryNewReleases)
+        fetchCategoryReleases(globalQueries.random(), globalNewReleases)
 
         apiManager.searchSongs(songQuery, 0, 15, object : RequestNetwork.RequestListener {
             override fun onResponse(
@@ -542,10 +591,58 @@ class MainActivity : AppCompatActivity() {
         currentBinding.playlistRecyclerView.adapter = ActivityMainPlaylistAdapter(dataShimmer)
     }
 
+    private fun isFromThisYear(song: SongResponse.Song?, targetYear: Int): Boolean {
+        if (song == null) return false
+        val targetYearStr = targetYear.toString()
+        val yearStr = song.year?.trim()
+        val releaseDate = song.releaseDate?.trim()
+
+        if (yearStr == targetYearStr) return true
+        if (!releaseDate.isNullOrEmpty() && releaseDate.contains(targetYearStr)) return true
+
+        val parsedYear = yearStr?.toIntOrNull()
+        if (parsedYear != null && parsedYear >= targetYear) return true
+
+        return false
+    }
+
+    private fun updateNewReleasesDisplay(checkedId: Int) {
+        val currentBinding = binding ?: return
+        val currentYear = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR)
+        newReleaseSongs.clear()
+        when (checkedId) {
+            R.id.new_releases_chip_local -> {
+                newReleaseSongs.addAll(localNewReleases)
+                currentBinding.newReleasesSubtitle?.text = "Local & regional fresh releases ($currentYear)"
+            }
+            R.id.new_releases_chip_country -> {
+                newReleaseSongs.addAll(countryNewReleases)
+                currentBinding.newReleasesSubtitle?.text = "Country-wide top fresh releases ($currentYear)"
+            }
+            R.id.new_releases_chip_global -> {
+                newReleaseSongs.addAll(globalNewReleases)
+                currentBinding.newReleasesSubtitle?.text = "Global international fresh releases ($currentYear)"
+            }
+            else -> {
+                newReleaseSongs.addAll(allNewReleases)
+                currentBinding.newReleasesSubtitle?.text = "This year's fresh tracks • Local, Country & Global ($currentYear)"
+            }
+        }
+        val adapter = ActivityMainPopularSongs(newReleaseSongs)
+        currentBinding.newReleasesRecyclerView?.adapter = adapter
+        adapter.notifyDataSetChanged()
+        updateTrendingGrid()
+    }
+
     private fun showOfflineData() {
         val currentBinding = binding ?: return
         val prefManager = BaseApplicationClass.sharedPreferenceManager ?: return
+        val currentYear = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR)
         newReleaseSongs.clear()
+        localNewReleases.clear()
+        countryNewReleases.clear()
+        globalNewReleases.clear()
+        allNewReleases.clear()
         songs.clear()
         artists.clear()
         albums.clear()
@@ -554,17 +651,18 @@ class MainActivity : AppCompatActivity() {
         if (newReleasesSearch?.success == true) {
             val resultsList = newReleasesSearch.data?.results ?: emptyList()
             for (results in resultsList) {
-                if (results == null) continue
+                if (results == null || !isFromThisYear(results, currentYear)) continue
                 val imageList = results.image
                 val imageUrl =
                     if (!imageList.isNullOrEmpty()) imageList[imageList.size - 1]?.url ?: "" else ""
                 newReleaseSongs.add(
                     AlbumItem(
-                        results.name(), results.language + " " + results.year,
+                        results.name(), "${results.language ?: ""} ${results.year ?: currentYear}".trim(),
                         imageUrl, results.id, "song"
                     )
                 )
             }
+            allNewReleases.addAll(newReleaseSongs.filterNotNull())
             val adapter = ActivityMainPopularSongs(newReleaseSongs)
             currentBinding.newReleasesRecyclerView?.adapter = adapter
             adapter.notifyDataSetChanged()

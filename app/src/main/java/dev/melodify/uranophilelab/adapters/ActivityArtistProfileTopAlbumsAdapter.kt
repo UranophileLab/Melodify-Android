@@ -36,32 +36,35 @@ class ActivityArtistProfileTopAlbumsAdapter(private val data: MutableList<Albums
             return
         }
 
+        val item = data.getOrNull(position) ?: return
+
         val itemView = ActivityArtistProfileViewTopSongsItemBinding.bind(holder.itemView)
 
         itemView.position.text = (position + 1).toString()
-        itemView.coverTitle.text = data[position]!!.name()
-        itemView.coverPlayed.text = String.format("%s | %s", data[position]!!.year, data[position]!!.language)
-        val images = data[position]?.image
+        itemView.coverTitle.text = item.name()
+        itemView.coverPlayed.text = String.format("%s | %s", item.year, item.language ?: "")
+        val images = item.image
         val url = if (images.isNullOrEmpty()) "" else images[images.size - 1]?.url ?: ""
         if (url.isNotEmpty() && url != "<shimmer>") {
             Glide.with(itemView.coverImage.context).load(url.toUri()).into(itemView.coverImage)
         }
 
         holder.itemView.setOnClickListener(View.OnClickListener {
-            val item = data[position] ?: return@OnClickListener
-            val itemImages = item.image
+            val currentPos = holder.bindingAdapterPosition
+            val currentItem = data.getOrNull(currentPos) ?: return@OnClickListener
+            val itemImages = currentItem.image
             val itemUrl = if (itemImages.isNullOrEmpty()) "" else itemImages[itemImages.size - 1]?.url ?: ""
             val albumItem = AlbumItem(
-                item.name(),
-                "${item.year} | ${item.language ?: ""}",
+                currentItem.name(),
+                "${currentItem.year} | ${currentItem.language ?: ""}",
                 itemUrl,
-                item.id
+                currentItem.id
             )
             holder.itemView.context.startActivity(
                 Intent(holder.itemView.context, ListActivity::class.java)
                     .putExtra("data", Gson().toJson(albumItem))
                     .putExtra("type", "album")
-                    .putExtra("id", data[position]!!.id)
+                    .putExtra("id", currentItem.id)
             )
         })
     }
@@ -71,7 +74,7 @@ class ActivityArtistProfileTopAlbumsAdapter(private val data: MutableList<Albums
     }
 
     override fun getItemViewType(position: Int): Int {
-        return if (data[position]!!.id == "<shimmer>") 0 else 1
+        return if (data.getOrNull(position)?.id == "<shimmer>") 0 else 1
     }
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)

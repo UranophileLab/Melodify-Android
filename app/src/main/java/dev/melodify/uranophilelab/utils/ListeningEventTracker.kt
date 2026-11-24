@@ -64,6 +64,12 @@ object ListeningEventTracker {
         Log.d(TAG, "Started tracking playback session for songId: $songId")
     }
 
+    fun updateDuration(durationSeconds: Long) {
+        if (durationSeconds > 0) {
+            songDurationSeconds = durationSeconds
+        }
+    }
+
     fun onTrackLiked(songId: String) {
         currentEvent?.takeIf { it.songId == songId }?.let {
             it.liked = true

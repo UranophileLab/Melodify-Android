@@ -104,21 +104,29 @@ object LrcLib {
     value class Lyrics(
         val text: String,
     ) {
-        val sentences
+        val sentences: Map<Long, String>?
             get() =
                 runCatching {
+                    val timestampRegex = Regex("""^\[(\d{1,2}):(\d{2})(?:[.:](\d{1,3}))?](.*)""")
                     buildMap {
                         put(0L, "")
-                        text.trim().lines().filter { it.length >= 10 }.forEach {
-                            put(
-                                it[8].digitToInt() * 10L +
-                                        it[7].digitToInt() * 100 +
-                                        it[5].digitToInt() * 1000 +
-                                        it[4].digitToInt() * 10000 +
-                                        it[2].digitToInt() * 60 * 1000 +
-                                        it[1].digitToInt() * 600 * 1000,
-                                it.substring(10),
-                            )
+                        text.trim().lines().forEach { line ->
+                            val trimmed = line.trim()
+                            val match = timestampRegex.find(trimmed)
+                            if (match != null) {
+                                val minutes = match.groupValues[1].toLongOrNull() ?: 0L
+                                val seconds = match.groupValues[2].toLongOrNull() ?: 0L
+                                val fractionStr = match.groupValues[3]
+                                val millis = when (fractionStr.length) {
+                                    1 -> fractionStr.toLong() * 100L
+                                    2 -> fractionStr.toLong() * 10L
+                                    3 -> fractionStr.toLong()
+                                    else -> 0L
+                                }
+                                val totalTimeMs = minutes * 60 * 1000L + seconds * 1000L + millis
+                                val lyric = match.groupValues[4].trim()
+                                put(totalTimeMs, lyric)
+                            }
                         }
                     }
                 }.getOrNull()

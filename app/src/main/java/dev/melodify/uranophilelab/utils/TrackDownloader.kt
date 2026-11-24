@@ -78,6 +78,23 @@ object TrackDownloader {
         }
     }
 
+    fun getDownloadedFile(title: String?): File? {
+        if (title.isNullOrBlank()) return null
+        val musicDir = File(
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),
+            "Melodify"
+        )
+        if (!musicDir.exists()) return null
+        val safeTitle = sanitizeFilename(title)
+        for (fmt in DownloadFormat.values()) {
+            val f1 = File(musicDir, "$safeTitle.${fmt.extension}")
+            if (f1.exists() && f1.length() > 0) return f1
+            val f2 = File(musicDir, "$title.${fmt.extension}")
+            if (f2.exists() && f2.length() > 0) return f2
+        }
+        return null
+    }
+
     fun getDownloadedTracks(context: Context): MutableList<DownloadedTrack?> {
         val data: MutableList<DownloadedTrack?> = ArrayList()
         val musicDir = File(
@@ -383,7 +400,7 @@ object TrackDownloader {
                 val newUri = resolver.insert(audioCollection, values)
                     ?: throw Exception("Failed to insert into MediaStore")
 
-                URL("file://${taggedFile.absolutePath}").openStream().use { inp ->
+                taggedFile.inputStream().use { inp ->
                     resolver.openOutputStream(newUri)?.use { out ->
                         inp.copyTo(out)
                     } ?: throw Exception("Failed to open MediaStore output stream")

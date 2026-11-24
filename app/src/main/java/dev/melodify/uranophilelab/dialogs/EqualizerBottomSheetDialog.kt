@@ -78,6 +78,9 @@ class EqualizerBottomSheetDialog(context: Context) :
         updateUI(EqualizerManager.isEnabled, EqualizerManager.currentPresetId, EqualizerManager.gains)
 
         EqualizerManager.addListener(this)
+        setOnDismissListener {
+            EqualizerManager.removeListener(this)
+        }
     }
 
     override fun onStart() {

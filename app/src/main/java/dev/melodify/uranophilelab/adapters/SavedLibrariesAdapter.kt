@@ -29,7 +29,7 @@ class SavedLibrariesAdapter(private val data: MutableList<Library?>) :
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val library = data[position]!!
+        val library = data.getOrNull(position) ?: return
         holder.title.text = library.name
         holder.artist.text = library.description
 
@@ -90,6 +90,7 @@ class SavedLibrariesAdapter(private val data: MutableList<Library?>) :
                             }
                             data.removeAt(currentPos)
                             notifyItemRemoved(currentPos)
+                            notifyItemRangeChanged(currentPos, data.size - currentPos)
                             Toast.makeText(v.context, "Playlist deleted", Toast.LENGTH_SHORT).show()
                         }
                         true
@@ -101,6 +102,7 @@ class SavedLibrariesAdapter(private val data: MutableList<Library?>) :
         }
 
         holder.itemView.setOnClickListener(View.OnClickListener { v: View? ->
+            val context = v?.context ?: return@OnClickListener
             val albumItem = AlbumItem(
                 library.name,
                 library.description,
@@ -108,8 +110,8 @@ class SavedLibrariesAdapter(private val data: MutableList<Library?>) :
                 library.id
             )
             if (library.isCreatedByUser) {
-                v!!.context.startActivity(
-                    Intent(v.context, ListActivity::class.java)
+                context.startActivity(
+                    Intent(context, ListActivity::class.java)
                         .putExtra("id", library.id)
                         .putExtra("data", Gson().toJson(albumItem))
                         .putExtra("type", "playlist")
@@ -117,8 +119,8 @@ class SavedLibrariesAdapter(private val data: MutableList<Library?>) :
                 )
                 return@OnClickListener
             }
-            v!!.context.startActivity(
-                Intent(v.context, ListActivity::class.java)
+            context.startActivity(
+                Intent(context, ListActivity::class.java)
                     .putExtra("data", Gson().toJson(albumItem))
                     .putExtra("type", if (library.isAlbum) "album" else "playlist")
                     .putExtra("id", library.id)

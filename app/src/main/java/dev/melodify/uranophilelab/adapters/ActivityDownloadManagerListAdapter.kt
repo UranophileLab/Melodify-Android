@@ -57,7 +57,7 @@ class ActivityDownloadManagerListAdapter(private val data: MutableList<Downloade
         val bottomSheetDialog =
             BottomSheetDialog(view.context, R.style.MyBottomSheetDialogTheme)
         val _binding =
-            DownloadManagerMoreViewBinding.inflate((view.context as Activity).layoutInflater)
+            DownloadManagerMoreViewBinding.inflate(android.view.LayoutInflater.from(view.context))
         _binding.songTitle.text = track.title
         _binding.songSubTitle.text = track.artist
         _binding.coverImage.setImageBitmap(track.coverImage)
@@ -65,14 +65,24 @@ class ActivityDownloadManagerListAdapter(private val data: MutableList<Downloade
         _binding.songYear.text = track.year
         _binding.bitrate.text = track.bitrate + " kbps"
         _binding.duration.text = track.trackLength + " Seconds"
-        if (track.trackUID.isNullOrEmpty()) _binding.button.visibility = View.GONE
         _binding.button.setOnClickListener(View.OnClickListener { v: View? ->
-            v!!.context.startActivity(
-                Intent(v.context, MusicOverviewActivity::class.java).putExtra(
-                    "type",
-                    "clear"
-                ).putExtra("id", track.trackUID)
-            )
+            val ctx = v?.context ?: view.context
+            val file = track.file
+            if (!track.trackUID.isNullOrEmpty()) {
+                ctx.startActivity(
+                    Intent(ctx, MusicOverviewActivity::class.java).putExtra(
+                        "type",
+                        "clear"
+                    ).putExtra("id", track.trackUID)
+                )
+            } else if (file != null && file.exists()) {
+                dev.melodify.uranophilelab.utils.MusicPlayerManager.playLocalTrack(
+                    file,
+                    track.title,
+                    track.artist,
+                    track.coverImage
+                )
+            }
             bottomSheetDialog.dismiss()
         })
         bottomSheetDialog.setContentView(_binding.getRoot())

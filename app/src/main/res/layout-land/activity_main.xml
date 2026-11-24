@@ -41,22 +41,26 @@
                     app:layout_constraintTop_toTopOf="parent">
 
                     <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/profile_button"
                         android:layout_width="@dimen/_35sdp"
                         android:layout_height="@dimen/_35sdp"
-                        app:cardBackgroundColor="#0D000000"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:foreground="?attr/selectableItemBackground"
+                        app:cardBackgroundColor="#22FFFFFF"
                         app:cardCornerRadius="999dp"
-                        app:strokeWidth="0dp">
+                        app:cardElevation="0dp"
+                        app:strokeColor="#33FFFFFF"
+                        app:strokeWidth="1dp">
 
                         <ImageView
-                            android:id="@+id/more_button"
+                            android:id="@+id/profile_icon"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:padding="@dimen/_8sdp"
-                            android:src="@drawable/more_vert_24px"
-                            android:clickable="true"
-                            android:focusable="true"
-                            android:foreground="?attr/selectableItemBackgroundBorderless"
-                            android:contentDescription="More options" />
+                            android:padding="@dimen/_7sdp"
+                            android:src="@drawable/baseline_person_24"
+                            app:tint="@color/text_light"
+                            android:contentDescription="Profile" />
                     </com.google.android.material.card.MaterialCardView>
 
                     <TextView

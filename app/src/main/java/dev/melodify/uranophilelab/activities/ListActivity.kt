@@ -112,10 +112,19 @@ class ListActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
+            val shuffledQueue = ShuffleUtil.shuffleTrackIds(validQueue, loadedArtistMap)
+            MusicPlayerManager.trackQueue = ArrayList(shuffledQueue)
+            MusicPlayerManager.track_position = 0
             val player = MusicPlayerManager.player
             if (player != null) {
                 player.shuffleModeEnabled = true
             }
+            startActivity(
+                Intent(this@ListActivity, MusicOverviewActivity::class.java).putExtra(
+                    "id",
+                    shuffledQueue[0]
+                )
+            )
         }
 
         val shareAction = View.OnClickListener {
@@ -179,8 +188,8 @@ class ListActivity : AppCompatActivity() {
             SharedPreferenceManager.getInstance(this@ListActivity)
 
         binding!!.addToLibrary.setOnClickListener(View.OnClickListener {
-            if (albumItem == null) return@OnClickListener
-            if (isAlbumInLibrary(albumItem!!, sharedPreferenceManager.savedLibrariesData)) {
+            val currentAlbum = albumItem ?: return@OnClickListener
+            if (isAlbumInLibrary(currentAlbum, sharedPreferenceManager.savedLibrariesData)) {
                 MaterialAlertDialogBuilder(this@ListActivity)
                     .setTitle("Are you sure?")
                     .setMessage("Do you want to remove this album from your library?")
@@ -188,7 +197,7 @@ class ListActivity : AppCompatActivity() {
                         "Yes",
                         DialogInterface.OnClickListener { _: DialogInterface?, _: Int ->
                             val index = getAlbumIndexInLibrary(
-                                albumItem!!,
+                                currentAlbum,
                                 sharedPreferenceManager.savedLibrariesData
                             )
                             if (index == -1) return@OnClickListener
@@ -207,11 +216,11 @@ class ListActivity : AppCompatActivity() {
                     .show()
             } else {
                 val library = Library(
-                    albumItem!!.id,
+                    currentAlbum.id,
                     false,
                     isAlbum,
                     binding!!.albumTitle.text.toString(),
-                    albumItem!!.albumCover,
+                    currentAlbum.albumCover,
                     binding!!.albumSubTitle.text.toString(),
                     ArrayList()
                 )
@@ -288,11 +297,12 @@ class ListActivity : AppCompatActivity() {
         val sharedPreferenceManager: SharedPreferenceManager =
             SharedPreferenceManager.getInstance(this@ListActivity)
         val savedLibraries: SavedLibraries? = sharedPreferenceManager.savedLibrariesData
-        if (savedLibraries == null || savedLibraries.lists == null) {
+        val currentItem = albumItem
+        if (savedLibraries == null || savedLibraries.lists == null || currentItem == null) {
             _binding.addToLibrary.titleTextView?.text = "Add to library"
             _binding.addToLibrary.iconImageView?.setImageResource(R.drawable.round_add_24)
         } else {
-            if (isAlbumInLibrary(albumItem!!, savedLibraries)) {
+            if (isAlbumInLibrary(currentItem, savedLibraries)) {
                 _binding.addToLibrary.titleTextView?.text = "Remove from library"
                 _binding.addToLibrary.iconImageView?.setImageResource(R.drawable.round_close_24)
             } else {
@@ -359,49 +369,33 @@ class ListActivity : AppCompatActivity() {
     private fun updateAlbumInLibraryStatus() {
         val sharedPreferenceManager: SharedPreferenceManager =
             SharedPreferenceManager.getInstance(this@ListActivity)
-        if (sharedPreferenceManager.savedLibrariesData == null) binding!!.addToLibrary.setImageResource(
-            R.drawable.round_add_24
-        )
-        else {
-            val savedLibraries = sharedPreferenceManager.savedLibrariesData
-            binding!!.addToLibrary.setImageResource(
-                if (savedLibraries != null && isAlbumInLibrary(
-                        albumItem!!,
-                        savedLibraries
-                    )
-                ) R.drawable.round_done_24 else R.drawable.round_add_24
+        val item = albumItem
+        val savedLibraries = sharedPreferenceManager.savedLibrariesData
+        if (item == null || savedLibraries == null || savedLibraries.lists == null) {
+            binding?.addToLibrary?.setImageResource(R.drawable.round_add_24)
+        } else {
+            binding?.addToLibrary?.setImageResource(
+                if (isAlbumInLibrary(item, savedLibraries)) R.drawable.round_done_24 else R.drawable.round_add_24
             )
         }
     }
 
     @SuppressLint("NewApi")
-    private fun isAlbumInLibrary(albumItem: AlbumItem, savedLibraries: SavedLibraries?): Boolean {
-        if (savedLibraries == null || savedLibraries.lists == null) {
+    private fun isAlbumInLibrary(albumItem: AlbumItem?, savedLibraries: SavedLibraries?): Boolean {
+        if (albumItem == null || savedLibraries == null || savedLibraries.lists.isNullOrEmpty()) {
             return false
         }
-        Log.i("ListActivity", "isAlbumInLibrary: $savedLibraries")
-        if (savedLibraries.lists.isEmpty()) return false
-        val lists = savedLibraries.lists
-        return lists.stream()
-            .anyMatch { library: Library? -> library?.id == albumItem.id }
+        val lists = savedLibraries.lists ?: return false
+        return lists.any { library: Library? -> library?.id == albumItem.id }
     }
 
     @SuppressLint("NewApi")
-    private fun getAlbumIndexInLibrary(albumItem: AlbumItem, savedLibraries: SavedLibraries?): Int {
-        if (savedLibraries == null || savedLibraries.lists == null) {
+    private fun getAlbumIndexInLibrary(albumItem: AlbumItem?, savedLibraries: SavedLibraries?): Int {
+        if (albumItem == null || savedLibraries == null || savedLibraries.lists.isNullOrEmpty()) {
             return -1
         }
-        Log.i("ListActivity", "getAlbumIndexInLibrary: $savedLibraries")
-        if (savedLibraries.lists.isEmpty()) return -1
-        var index = -1
-        val lists = savedLibraries.lists
-        for (library in lists) {
-            if (library?.id == albumItem.id) {
-                index = lists.indexOf(library)
-                break
-            }
-        }
-        return index
+        val lists = savedLibraries.lists ?: return -1
+        return lists.indexOfFirst { library -> library?.id == albumItem.id }
     }
 
     private fun showShimmerData() {
@@ -530,10 +524,14 @@ class ListActivity : AppCompatActivity() {
 
     private fun showData() {
         if (intent.extras == null) return
-        albumItem = Gson().fromJson(
-            intent.extras!!.getString("data"),
-            AlbumItem::class.java
-        )
+        val dataExtra = intent.extras?.getString("data")
+        if (!dataExtra.isNullOrEmpty()) {
+            try {
+                albumItem = Gson().fromJson(dataExtra, AlbumItem::class.java)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error parsing albumItem data", e)
+            }
+        }
         updateAlbumInLibraryStatus()
         if (albumItem != null) {
             binding!!.albumTitle.text = albumItem!!.albumTitle()
@@ -544,18 +542,19 @@ class ListActivity : AppCompatActivity() {
         val apiManager = ApiManager(this)
         val sharedPreferenceManager: SharedPreferenceManager =
             SharedPreferenceManager.getInstance(this)
-        val intentId = intent.extras!!.getString("id", "")
+        val intentId = intent.extras?.getString("id", "") ?: ""
+        val targetId = albumItem?.id?.takeIf { it.isNotBlank() } ?: intentId
 
-        if (intent.extras!!.getBoolean("createdByUser", false)) {
+        if (intent.extras?.getBoolean("createdByUser", false) == true) {
             onUserCreatedFetch()
             return
         }
 
         val checkIfUrlData =
-            (intentId.startsWith("http") || intentId.startsWith("www")) && intentId.contains("jiosaavn.com")
-        if (intent.extras!!.getString("type", "") == "album") {
+            (targetId.startsWith("http") || targetId.startsWith("www")) && targetId.contains("jiosaavn.com")
+        if (intent.extras?.getString("type", "") == "album") {
             isAlbum = true
-            if (albumItem != null) {
+            if (albumItem != null && !albumItem!!.id.isNullOrBlank()) {
                 val cached = sharedPreferenceManager.getAlbumResponseById(albumItem!!.id)
                 if (cached != null) {
                     onAlbumFetched(cached)
@@ -593,9 +592,9 @@ class ListActivity : AppCompatActivity() {
                 }
 
             if (checkIfUrlData) {
-                apiManager.retrieveAlbumByLink(intentId, requestListener)
+                apiManager.retrieveAlbumByLink(targetId, requestListener)
             } else {
-                apiManager.retrieveAlbumById(albumItem!!.id ?: "", requestListener)
+                apiManager.retrieveAlbumById(targetId, requestListener)
             }
             return
         }
@@ -624,13 +623,13 @@ class ListActivity : AppCompatActivity() {
                 }
             }
         if (checkIfUrlData) {
-            apiManager.retrievePlaylistByLink(intentId, null, null, responseListener)
+            apiManager.retrievePlaylistByLink(targetId, null, null, responseListener)
         } else {
-            val cached = sharedPreferenceManager.getPlaylistResponseById(albumItem!!.id ?: "")
+            val cached = sharedPreferenceManager.getPlaylistResponseById(targetId)
             if (cached != null && !cached.data?.songs.isNullOrEmpty()) {
                 onPlaylistFetched(cached)
             }
-            apiManager.retrievePlaylistById(albumItem!!.id ?: "", null, null, responseListener)
+            apiManager.retrievePlaylistById(targetId, null, null, responseListener)
         }
     }
 
@@ -653,8 +652,9 @@ class ListActivity : AppCompatActivity() {
         val savedLibraries = sharedPreferenceManager.savedLibrariesData
         if (savedLibraries == null || savedLibraries.lists.isNullOrEmpty()) finish()
         var library: Library? = null
+        val targetId = albumItem?.id ?: intent.getStringExtra("id") ?: ""
         if (savedLibraries != null) for (l in savedLibraries.lists ?: emptyList()) {
-            if (l?.id == albumItem!!.id) {
+            if (l?.id == targetId) {
                 library = l
                 break
             }
@@ -716,6 +716,16 @@ class ListActivity : AppCompatActivity() {
         val coverUrl = if (!imageList.isNullOrEmpty()) imageList[imageList.size - 1]?.url ?: "" else albumItem?.albumCover ?: ""
         if (coverUrl.isNotEmpty() && coverUrl != "<shimmer>") {
             loadArtworkAndApplyDynamicTheme(coverUrl)
+        }
+        if (albumItem == null) {
+            val resolvedId = if (!data.id.isNullOrBlank()) data.id else intent.getStringExtra("id") ?: ""
+            albumItem = AlbumItem(
+                title,
+                subtitle,
+                coverUrl,
+                resolvedId
+            )
+            updateAlbumInLibraryStatus()
         }
         if (title.isNotBlank()) {
             val isPlaylist = intent.getStringExtra("type") == "playlist" ||
@@ -784,6 +794,16 @@ class ListActivity : AppCompatActivity() {
         val coverUrl = if (!imageList.isNullOrEmpty()) imageList[imageList.size - 1]?.url ?: "" else albumItem?.albumCover ?: ""
         if (coverUrl.isNotEmpty() && coverUrl != "<shimmer>") {
             loadArtworkAndApplyDynamicTheme(coverUrl)
+        }
+        if (albumItem == null) {
+            val resolvedId = if (!data.id.isNullOrBlank()) data.id else intent.getStringExtra("id") ?: ""
+            albumItem = AlbumItem(
+                title,
+                subtitle,
+                coverUrl,
+                resolvedId
+            )
+            updateAlbumInLibraryStatus()
         }
         if (title.isNotBlank()) {
             SharedPreferenceManager.getInstance(this).addPlaylistToHistory(
