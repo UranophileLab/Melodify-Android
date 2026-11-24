@@ -93,3 +93,12 @@ Enjoy high-fidelity, ad-free music with an authentic liquid glass interface, cus
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+<img width="720" height="1600" alt="image" src="https://github.com/user-attachments/assets/f6259b19-91a5-49a5-bcb1-30ee441599c4" />
+<img width="720" height="1600" alt="image" src="https://github.com/user-attachments/assets/bb7a9158-e1fb-4e39-9584-2b25b685b1da" />
+<img width="720" height="1600" alt="image" src="https://github.com/user-attachments/assets/5fa0d31c-0968-4338-b56f-789cb73d7325" />
+<img width="720" height="1600" alt="image" src="https://github.com/user-attachments/assets/b0f408e8-b64a-4207-a184-0a417901992b" />
+
+
+
+
+
